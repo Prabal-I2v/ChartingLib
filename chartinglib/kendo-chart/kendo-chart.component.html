@@ -1,0 +1,535 @@
+
+
+
+
+
+
+
+Kendo Grid
+
+<div class="example-config">
+  <button kendoButton (click)="pdf.saveAs('invoice.pdf')">
+    Save As PDF...
+  </button>
+</div>
+<kendo-pdf-export #pdf paperSize="A2" margin="2cm" style="width: 100%;height: 100%;">
+
+
+
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+  <kendo-chart>
+    <kendo-chart-title text="Units sold"></kendo-chart-title>
+    <kendo-chart-category-axis>
+      <kendo-chart-category-axis-item [categories]="['Q1', 'Q2', 'Q3', 'Q4']">
+      </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="bar"
+        [gap]="2"
+        [spacing]="0.25"
+        [data]="[100, 123, 234, 343]"
+      >
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[120, 67, 231, 196]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[45, 124, 189, 143]">
+      </kendo-chart-series-item>
+      <kendo-chart-series-item type="bar" [data]="[87, 154, 210, 215]">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+  </kendo-chart>
+<!-- <kendo-chart #chart>
+  <kendo-chart-series>
+    <kendo-chart-series-item [data]="seriesData">
+    </kendo-chart-series-item>
+  </kendo-chart-series>
+</kendo-chart> -->
+
+<kendo-grid [kendoGridBinding]="products" [height]="400" [group]="group" id="grid" >
+  <!-- <ng-template kendoGridToolbarTemplate>
+    <button type="button" kendoGridExcelCommand >
+      Export to Excel
+    </button>
+  </ng-template> -->
+  <!-- <kendo-grid-column
+    field="ProductID"
+    [locked]="true"
+    title="Product ID"
+    [width]="200"
+  >
+  </kendo-grid-column> -->
+  <kendo-grid-column field="ProductName" title="Product Name" [width]="350">
+  </kendo-grid-column>
+  <kendo-grid-column-group title="Availability" [width]="360">
+    <kendo-grid-column field="UnitPrice" title="Unit Price" [width]="120">
+      <ng-template kendoGridGroupFooterTemplate let-aggregates>
+        Sum: {{ aggregates["UnitPrice"].sum }}
+      </ng-template>
+      <ng-template kendoGridFooterTemplate let-column="column">
+        Total {{ column.title }}: {{ total["UnitPrice"].sum }}
+      </ng-template>
+    </kendo-grid-column>
+    <kendo-grid-column
+      field="UnitsOnOrder"
+      title="Units On Order"
+      [width]="120"
+    >
+    </kendo-grid-column>
+    <kendo-grid-column
+      field="UnitsInStock"
+      title="Units In Stock"
+      [width]="120"
+    >
+    </kendo-grid-column>
+  </kendo-grid-column-group>
+  <!-- <kendo-grid-column field="Discontinued" [width]="120">
+    <ng-template kendoGridGroupHeaderTemplate let-value="value">
+      Discontinued: {{ value }}
+    </ng-template>
+    <ng-template kendoGridCellTemplate let-dataItem>
+      <input type="checkbox" [checked]="dataItem.Discontinued" disabled />
+    </ng-template>
+  </kendo-grid-column> -->
+  <kendo-grid-excel fileName="Products.xlsx"></kendo-grid-excel>
+</kendo-grid>
+</kendo-pdf-export>

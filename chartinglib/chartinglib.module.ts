@@ -5,7 +5,7 @@ import { BarChartComponent } from './bar-chart/bar-chart.component';
 import { EchartsxModule } from 'echarts-for-angular';
 import { LineChartComponent } from './line-chart/line-chart.component';
 import { FusionChartsModule } from "angular-fusioncharts";
-import { GridModule, ExcelModule } from "@progress/kendo-angular-grid";
+import { GridModule, ExcelModule, PDFModule } from "@progress/kendo-angular-grid";
 
 // Import FusionCharts library and chart modules
 import * as FusionCharts from "fusioncharts";
@@ -17,11 +17,11 @@ import * as CandyTheme from "fusioncharts/themes/fusioncharts.theme.candy";
 import * as OceanTheme from "fusioncharts/themes/fusioncharts.theme.ocean";
 
 import { FusionChartComponent } from './fusion-chart/fusion-chart.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { KendoChartComponent } from './kendo-chart/kendo-chart.component';
 import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
-
 
 FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -35,13 +35,15 @@ FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, Gammel
   ],
   imports: [
     CommonModule,
+    BrowserAnimationsModule,
     EchartsxModule,
-    PDFExportModule
-,    FusionChartsModule,
+    PDFExportModule,
+    FusionChartsModule,
     BrowserModule,
     ChartsModule,
     GridModule,
-    ExcelModule
+    ExcelModule,
+    PDFModule
   ],
   exports:[
     BarChartComponent,

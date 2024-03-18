@@ -1,7 +1,30 @@
 <h1>
     Fusion Charts
   </h1>
- 
+
+<h2>Drill Down 1</h2>
+
+<fusioncharts
+width="500"
+height="500"
+[dataSource]="drillDown1Chart"
+type= 'column2d'
+></fusioncharts>
+
+
+<h2>Drill Down 2</h2>
+
+<fusioncharts
+width="500"
+height="500"
+[dataSource]="drillDown2Chart"
+events='drillDown2Events'
+type= 'column2d'
+
+></fusioncharts>
+
+
+
   <fusioncharts
     width="700"
     height="400"

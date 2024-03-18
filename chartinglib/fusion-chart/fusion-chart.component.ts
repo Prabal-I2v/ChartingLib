@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import * as FusionCharts from 'fusioncharts';
 
 @Component({
   selector: 'app-fusion-chart',
@@ -14,6 +15,278 @@ export class FusionChartComponent implements OnInit {
   scrollStackedSource : Object;
   heatmapSource : Object;
   worldDataSource : Object;
+
+  chart: any;
+
+
+
+  //drill down 1
+  drillDown1Chart:Object={
+    "chart": {
+      "caption": "Top 3 Juice Flavors",
+      "subcaption": "Last year",
+      "xaxisName": "Flavor",
+      "yaxisName": "Amount (In USD)",
+      "numberPrefix": "$",
+      "theme": "fusion",
+      "rotateValues": "0",
+      "exportenabled": "1",
+      "exportmode": "client"
+    },
+    "data": [
+      {
+        "label": "Apple",
+        "value": "810000",
+        "link": "newchart-xml-apple"
+      },
+      {
+        "label": "Cranberry",
+        "value": "620000",
+        "link": "newchart-xml-cranberry"
+      },
+      {
+        "label": "Grapes",
+        "value": "350000",
+        "link": "newchart-xml-grapes"
+      }
+    ],
+    "linkeddata": [
+      {
+        "id": "apple",
+        "linkedchart": {
+          "chart": {
+            "caption": "Apple Juice - Quarterly Sales",
+            "subcaption": "Last year",
+            "xaxisname": "Quarter",
+            "yaxisname": "Amount (In USD)",
+            "numberprefix": "$",
+            "theme": "fusion",
+            "rotateValues": "0"
+          },
+          "data": [
+            {
+              "label": "Q1",
+              "value": "157000"
+            },
+            {
+              "label": "Q2",
+              "value": "172000"
+            },
+            {
+              "label": "Q3",
+              "value": "206000"
+            },
+            {
+              "label": "Q4",
+              "value": "275000",
+              "rotateValues": "0"
+            }
+          ]
+        }
+      },
+      {
+        "id": "cranberry",
+        "linkedchart": {
+          "chart": {
+            "caption": "Cranberry Juice - Quarterly Sales",
+            "subcaption": "Last year",
+            "xaxisname": "Quarter",
+            "yaxisname": "Amount (In USD)",
+            "numberprefix": "$",
+            "theme": "fusion",
+            "rotateValues": "0"
+          },
+          "data": [
+            {
+              "label": "Q1",
+              "value": "102000"
+            },
+            {
+              "label": "Q2",
+              "value": "142000"
+            },
+            {
+              "label": "Q3",
+              "value": "187000"
+            },
+            {
+              "label": "Q4",
+              "value": "189000"
+            }
+          ]
+        }
+      },
+      {
+        "id": "grapes",
+        "linkedchart": {
+          "chart": {
+            "caption": "Grape Juice - Quarterly Sales",
+            "subcaption": "Last year",
+            "xaxisname": "Quarter",
+            "yaxisname": "Amount (In USD)",
+            "numberprefix": "$",
+            "theme": "fusion",
+            "rotateValues": "0"
+          },
+          "data": [
+            {
+              "label": "Q1",
+              "value": "45000"
+            },
+            {
+              "label": "Q2",
+              "value": "72000"
+            },
+            {
+              "label": "Q3",
+              "value": "95000"
+            },
+            {
+              "label": "Q4",
+              "value": "108000"
+            }
+          ]
+        }
+      }
+    ]
+  };
+drillDown2Events:Object= {
+  'beforeRender': function(evt:any, args:any) {
+    evt.sender.configureLink({
+      type: "pie2d",
+      overlayButton: {
+        message: 'close',
+        fontColor: '880000',
+        bgColor: 'FFEEEE',
+        borderColor: '660000'
+      }
+    }, 0);
+
+  },
+
+}
+  drillDown2Chart:Object={
+    "chart": {
+        "caption": "Top 3 Juice Flavors",
+        "subcaption": "Last year",
+        "xaxisname": "Flavor",
+        "yaxisname": "Amount (In USD)",
+        "numberprefix": "$",
+        "theme": "fusion",
+        "rotateValues": "0"
+    },
+    "data": [
+        {
+            "label": "Apple",
+            "value": "810000",
+            "link": "newchart-xml-apple"
+        },
+        {
+            "label": "Cranberry",
+            "value": "620000",
+            "link": "newchart-xml-cranberry"
+        },
+        {
+            "label": "Grapes",
+            "value": "350000",
+            "link": "newchart-xml-grapes"
+        }
+    ],
+    "linkeddata": [
+        {
+            "id": "apple",
+            "linkedchart": {
+                "chart": {
+                    "caption": "Apple Juice - Quarterly Sales",
+                    "subcaption": "Last year",
+                    "numberprefix": "$",
+                    "theme": "fusion",
+                    "rotateValues": "0",
+                    "plottooltext": "$label, $dataValue,  $percentValue"
+                },
+                "data": [
+                    {
+                        "label": "Q1",
+                        "value": "157000"
+                    },
+                    {
+                        "label": "Q2",
+                        "value": "172000"
+                    },
+                    {
+                        "label": "Q3",
+                        "value": "206000"
+                    },
+                    {
+                        "label": "Q4",
+                        "value": "275000"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "cranberry",
+            "linkedchart": {
+                "chart": {
+                    "caption": "Cranberry Juice - Quarterly Sales",
+                    "subcaption": "Last year",
+                    "numberprefix": "$",
+                    "theme": "fusion",
+                    "plottooltext": "$label, $dataValue,  $percentValue"
+                },
+                "data": [
+                    {
+                        "label": "Q1",
+                        "value": "102000"
+                    },
+                    {
+                        "label": "Q2",
+                        "value": "142000"
+                    },
+                    {
+                        "label": "Q3",
+                        "value": "187000"
+                    },
+                    {
+                        "label": "Q4",
+                        "value": "189000"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "grapes",
+            "linkedchart": {
+                "chart": {
+                    "caption": "Grapes Juice - Quarterly Sales",
+                    "subcaption": "Last year",
+                    "numberprefix": "$",
+                    "theme": "fusion",
+                    "rotateValues": "0",
+                    "plottooltext": "$label, $dataValue,  $percentValue"
+                },
+                "data": [
+                    {
+                        "label": "Q1",
+                        "value": "45000"
+                    },
+                    {
+                        "label": "Q2",
+                        "value": "72000"
+                    },
+                    {
+                        "label": "Q3",
+                        "value": "95000"
+                    },
+                    {
+                        "label": "Q4",
+                        "value": "108000"
+                    }
+                ]
+            }
+        }
+    ]
+};
   constructor() {
     //STEP 2 - Chart Data
     const chartData = [
@@ -817,7 +1090,7 @@ export class FusionChartComponent implements OnInit {
         plottooltext: "$rowlabel's $columnlabel grading score: <b>$value</b>"
       }
     };
- 
+
     this.heatmapSource = heatmapdata;
 
     const worldData = {
@@ -1300,6 +1573,8 @@ export class FusionChartComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    
+
   }
+
+
 }

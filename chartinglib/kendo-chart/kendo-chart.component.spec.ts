@@ -8,8 +8,9 @@ describe('KendoChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ KendoChartComponent ]
-    })
+    declarations: [KendoChartComponent],
+    teardown: { destroyAfterEach: false }
+})
     .compileComponents();
   });
 

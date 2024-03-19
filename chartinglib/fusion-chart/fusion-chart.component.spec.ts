@@ -8,8 +8,9 @@ describe('FusionChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FusionChartComponent ]
-    })
+    declarations: [FusionChartComponent],
+    teardown: { destroyAfterEach: false }
+})
     .compileComponents();
   });
 

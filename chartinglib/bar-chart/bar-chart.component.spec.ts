@@ -8,8 +8,9 @@ describe('BarChartComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [BarChartComponent]
-    });
+    declarations: [BarChartComponent],
+    teardown: { destroyAfterEach: false }
+});
     fixture = TestBed.createComponent(BarChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -22,6 +22,7 @@ import { KendoChartComponent } from './kendo-chart/kendo-chart.component';
 import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
+import { LayoutModule } from '@progress/kendo-angular-layout';
 
 FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -41,6 +42,7 @@ FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, Gammel
     FusionChartsModule,
     BrowserModule,
     ChartsModule,
+    LayoutModule,
     GridModule,
     ExcelModule,
     PDFModule

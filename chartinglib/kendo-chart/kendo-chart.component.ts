@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ChartComponent } from '@progress/kendo-angular-charts';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChartComponent, SeriesLabelsContentArgs } from '@progress/kendo-angular-charts';
 import { process } from "@progress/kendo-data-query";
 import {
   aggregateBy,
@@ -32,19 +32,50 @@ const dayLabels: { [index: number]: string } = {
   styleUrls: ['./kendo-chart.component.scss']
 })
 export class KendoChartComponent implements OnInit {
-  @ViewChild('chart')
+  // @ViewChild('chart');
+  @ViewChild('pdf') pdf;
   private chart!: ChartComponent;
+  public breakParagraphs = false;
+  public get keepTogether(): string {
+    return this.breakParagraphs ? "" : "p";
+  }
+  
+  @ViewChild(DataBindingDirective) dataBinding: DataBindingDirective;
+  public gridData: unknown[] = employees;
+  public gridView: unknown[];
 
-  public commitData = data();
-
-  public yAxisLabelContent = (e: { value: string }): string => {
-    return dayLabels[e.value] || "";
-  };
+  public mySelection: string[] = [];
+  public pdfSVG: SVGIcon = filePdfIcon;
+  public excelSVG: SVGIcon = fileExcelIcon;
 
 
-   seriesData: number[] = [1, 2, 3, 5];
+ 
 
-  constructor() { }
+  seriesData: number[] = [];
+
+  constructor(private cdr : ChangeDetectorRef) {
+    setInterval(() => {
+      // Clone the array
+      const data = this.seriesData.slice(0);
+
+      // Produce one random value each 100ms
+      data.push(Math.random());
+
+      if (data.length > 10) {
+          // Keep only 10 items in the array
+          data.shift();
+      }
+
+      // Replace with the new array instance
+      this.seriesData = data;
+      this.cdr.detectChanges();
+  }, 100);
+   }
+
+   ngOnChanges()
+   {
+      
+   }
 
   //  fileExcelIcon: SVGIcon = fileExcelIcon;
 
@@ -63,16 +94,15 @@ export class KendoChartComponent implements OnInit {
     },
   ];
 
-  @ViewChild(DataBindingDirective) dataBinding: DataBindingDirective;
-  public gridData: unknown[] = employees;
-  public gridView: unknown[];
-
-  public mySelection: string[] = [];
-  public pdfSVG: SVGIcon = filePdfIcon;
-  public excelSVG: SVGIcon = fileExcelIcon;
-
   public ngOnInit(): void {
     this.gridView = this.gridData;
+    setInterval(()=> {
+      // Update your data here
+      this.updateData();
+      console.log("pie Data : " + this.pieData)
+      console.log("bar and line Data : " + this.barandLineData)
+    }, 1000);
+    
   }
 
   public onFilter(value: Event): void {
@@ -127,6 +157,62 @@ export class KendoChartComponent implements OnInit {
 
     return image[code];
   }
+
+  public saveAs()
+  {
+    this.pdf.saveAs('Graphical Report.pdf');
+  }
+
+  //Bar&LineChart Data
+  public barandLineData =   [200, 450, 300, 125]
+  public barandLineCategories = ['Jan', 'Feb', 'Mar', 'Apr'];
+
+
+  //pieData
+  public pieData = [
+    { category: "0-14", value: 0.2545 },
+    { category: "15-24", value: 0.1552 },
+    { category: "25-54", value: 0.4059 },
+    { category: "55-64", value: 0.0911 },
+    { category: "65+", value: 0.0933 },
+  ];
+
+  public labelContent(args: SeriesLabelsContentArgs): string {
+    return `${args.dataItem.category} years old`;
+  }
+
+  //heat Map
+  public commitData = data();
+
+  public yAxisLabelContent = (e: { value: string }): string => {
+    return dayLabels[e.value] || "";
+  };
+
+
+
+  // Function to update data
+  updateData() {
+    // Update bar and line chart data with random values
+    this.barandLineData = this.generateRandomValues(4, 100, 500);
+    
+    // Update pie chart data with random values
+    this.pieData.forEach((item) => {
+      item.value = Math.random();
+    });
+
+    // Update other data arrays similarly if needed
+  }
+
+  // Function to generate random values array
+  generateRandomValues(length: number, min: number, max: number): number[] {
+    var randomValues = [];
+    for (let i = 0; i < length; i++) {
+      randomValues.push(Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+    return randomValues;
+  }
+
+
 }
 
 

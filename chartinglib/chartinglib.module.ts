@@ -23,6 +23,9 @@ import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
 import { LayoutModule } from '@progress/kendo-angular-layout';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DropdownModule } from 'primeng/dropdown';
+import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -32,25 +35,35 @@ import { LayoutModule } from '@progress/kendo-angular-layout';
     BarChartComponent,
     LineChartComponent,
     // FusionChartComponent,
-    KendoChartComponent
+    KendoChartComponent,
+    I2vChartsComponent
   ],
   imports: [
     CommonModule,
     BrowserAnimationsModule,
     // EchartsxModule,
-    PDFExportModule,
     // FusionChartsModule,
     BrowserModule,
+    PDFExportModule,
+    
+    ChartsModule,
+    LayoutModule,
+    GridModule,
+    ExcelModule,
+    PDFModule,
+    MultiSelectModule,
+    DropdownModule
+  ],
+  exports:[
+    BarChartComponent,
+    // FusionChartComponent,
+    KendoChartComponent,
+    I2vChartsComponent,
     ChartsModule,
     LayoutModule,
     GridModule,
     ExcelModule,
     PDFModule
-  ],
-  exports:[
-    BarChartComponent,
-    // FusionChartComponent,
-    KendoChartComponent
   ]
 })
 export class ChartinglibModule { }

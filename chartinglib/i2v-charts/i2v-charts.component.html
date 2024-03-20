@@ -1,0 +1,22 @@
+<div style="display: flex; flex-direction: column;">
+    <div style="display: flex; justify-items: center; align-items: center; gap: 10px;">
+        <span style="display: flex; justify-items: center; align-items: center; gap: 10px;">
+            <h3 style="text-wrap: nowrap;">{{heading}}</h3>
+            <span style="text-wrap: nowrap;" *ngIf="subHeading">({{subHeading}})</span>
+        </span>
+        <p-dropdown [options]="CustomFilterKeys" (ngModel)="selectedCustomFilterkey" placeholder="Select an Entity"
+            [editable]="true"
+            (onChange)="onCustomFilterKeyChange($event)"></p-dropdown>
+
+        <p-multiSelect [options]="customFilters[selectedCustomFilterkey]" #multiselect
+            placeholder="Select {{selectedCustomFilterkey}}" display="chip"
+            [showClear]="true" (onchange)="onCustomFilterValuesChange($event)"></p-multiSelect>
+
+        <p-dropdown [options]="TimeFilter" (ngModel)="TimeFilterValue" placeholder="Select Time"
+            [editable]="true" 
+            (onChange)="onTimeChange($event)"></p-dropdown>
+    </div>
+    <div>
+        <ng-content></ng-content>
+    </div>
+</div>

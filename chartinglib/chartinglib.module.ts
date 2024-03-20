@@ -22,6 +22,7 @@ import { KendoChartComponent } from './kendo-chart/kendo-chart.component';
 import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
+import { KendoDashoardComponent } from './kendo-dashboard/kendo-dashboard.component';
 
 FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -32,10 +33,11 @@ FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, Gammel
     LineChartComponent,
     FusionChartComponent,
     KendoChartComponent,
+    KendoDashoardComponent
   ],
   imports: [
     CommonModule,
-    BrowserAnimationsModule,
+    // BrowserAnimationsModule,
     EchartsxModule,
     PDFExportModule,
     FusionChartsModule,
@@ -48,7 +50,8 @@ FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, Gammel
   exports:[
     BarChartComponent,
     FusionChartComponent,
-    KendoChartComponent
+    KendoChartComponent,
+    KendoDashoardComponent
   ]
 })
 export class ChartinglibModule { }

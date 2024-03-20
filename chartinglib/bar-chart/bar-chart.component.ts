@@ -6,7 +6,6 @@ import {
   GridComponent,
   LegendComponent,
 } from 'echarts/components';
-import { Observable } from 'rxjs';
 
 type EChartsOption = echarts.EChartsOption;
 

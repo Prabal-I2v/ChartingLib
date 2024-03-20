@@ -12,11 +12,12 @@ import { Product } from "./model";
 import { products } from './product';
 import { DataBindingDirective, GridComponent } from '@progress/kendo-angular-grid';
 import { SVGIcon, filePdfIcon, fileExcelIcon } from "@progress/kendo-svg-icons"
-import { employees } from './employees';
+import { employees, employees2, employees3, employees4 } from './employees';
 import  { images }  from './images';
-import { data } from "./commit-data";
+import { data, data2, data3, data4 } from "./commit-data";
 
 const dayLabels: { [index: number]: string } = {
+  0: "Sun",
   1: "Mon",
   2: "Tue",
   3: "Wed",
@@ -54,27 +55,22 @@ export class KendoChartComponent implements OnInit {
   seriesData: number[] = [];
 
   constructor(private cdr : ChangeDetectorRef) {
-    setInterval(() => {
-      // Clone the array
-      const data = this.seriesData.slice(0);
+    // setInterval(() => {
+    //   // Clone the array
+    //   const data = this.seriesData.slice(0);
 
-      // Produce one random value each 100ms
-      data.push(Math.random());
+    //   // Produce one random value each 100ms
+    //   data.push(Math.random());
 
-      if (data.length > 10) {
-          // Keep only 10 items in the array
-          data.shift();
-      }
+    //   if (data.length > 10) {
+    //       // Keep only 10 items in the array
+    //       data.shift();
+    //   }
 
-      // Replace with the new array instance
-      this.seriesData = data;
-      this.cdr.detectChanges();
-  }, 100);
-   }
-
-   ngOnChanges()
-   {
-      
+    //   // Replace with the new array instance
+    //   this.seriesData = data;
+    //   this.cdr.detectChanges();
+  // }, 100);
    }
 
   //  fileExcelIcon: SVGIcon = fileExcelIcon;
@@ -99,8 +95,8 @@ export class KendoChartComponent implements OnInit {
     setInterval(()=> {
       // Update your data here
       this.updateData();
-      console.log("pie Data : " + this.pieData)
-      console.log("bar and line Data : " + this.barandLineData)
+      // console.log("pie Data : " + this.pieData)
+      // console.log("bar and line Data : " + this.barandLineData)
     }, 1000);
     
   }
@@ -177,12 +173,18 @@ export class KendoChartComponent implements OnInit {
     { category: "65+", value: 0.0933 },
   ];
 
+  public newpieData = []
+
   public labelContent(args: SeriesLabelsContentArgs): string {
     return `${args.dataItem.category} years old`;
   }
 
   //heat Map
   public commitData = data();
+
+  public heatMapData = [data(), data2(), data3(), data4()]
+
+  public gridDataArray = [employees, employees2, employees3, employees4]
 
   public yAxisLabelContent = (e: { value: string }): string => {
     return dayLabels[e.value] || "";
@@ -196,11 +198,23 @@ export class KendoChartComponent implements OnInit {
     this.barandLineData = this.generateRandomValues(4, 100, 500);
     
     // Update pie chart data with random values
-    this.pieData.forEach((item) => {
-      item.value = Math.random();
+    this.newpieData = this.pieData.map(item => {
+      return {
+        category: item.category,
+        value: Math.random()
+      };
     });
 
+    var heaprandomIndex = Math.floor(Math.random() * this.heatMapData.length);
+
+    // Call the randomly selected function to get the data
+    this.commitData  = this.heatMapData[heaprandomIndex];
+
     // Update other data arrays similarly if needed
+    var gridrandomIndex = Math.floor(Math.random() * this.gridDataArray.length);
+
+    // Call the randomly selected function to get the data
+    this.gridView   = this.gridDataArray[gridrandomIndex];
   }
 
   // Function to generate random values array

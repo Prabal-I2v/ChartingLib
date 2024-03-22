@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column;">
+<div style="display: flex; flex-direction: column;width: 100%;">
     <div style="display: flex; justify-items: center; align-items: center; gap: 10px;">
         <span style="display: flex; justify-items: center; align-items: center; gap: 10px;">
             <h3 style="text-wrap: nowrap;">{{heading}}</h3>
@@ -13,10 +13,10 @@
             [showClear]="true" (onchange)="onCustomFilterValuesChange($event)"></p-multiSelect>
 
         <p-dropdown [options]="TimeFilter" (ngModel)="TimeFilterValue" placeholder="Select Time"
-            [editable]="true" 
+            [editable]="true"
             (onChange)="onTimeChange($event)"></p-dropdown>
     </div>
-    <div>
+    <div style="width: 100%">
         <ng-content></ng-content>
     </div>
 </div>

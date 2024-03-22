@@ -24,6 +24,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
 import { LayoutModule } from '@progress/kendo-angular-layout';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { GaugesModule } from "@progress/kendo-angular-gauges";
 import { DropdownModule } from 'primeng/dropdown';
 import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
 
@@ -45,7 +46,7 @@ import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
     // FusionChartsModule,
     BrowserModule,
     PDFExportModule,
-    
+    GaugesModule,
     ChartsModule,
     LayoutModule,
     GridModule,

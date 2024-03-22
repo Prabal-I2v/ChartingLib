@@ -1,0 +1,18 @@
+<kendo-chart style="width: 100%">
+    <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
+    <kendo-chart-series>
+      <kendo-chart-series-item type="heatmap" color="#216e39" [data]="chartData" [labels]="{ visible: false }"
+        [markers]="{ type: 'roundedRect', border: { width: 2 } }">
+      </kendo-chart-series-item>
+    </kendo-chart-series>
+
+    <kendo-chart-x-axis>
+      <kendo-chart-x-axis-item [visible]="true"> </kendo-chart-x-axis-item>
+    </kendo-chart-x-axis>
+
+    <kendo-chart-y-axis>
+      <kendo-chart-y-axis-item [reverse]="true" [line]="{ visible: false }"
+        [labels]="{ content: yAxisLabelContent }">
+      </kendo-chart-y-axis-item>
+    </kendo-chart-y-axis>
+  </kendo-chart>

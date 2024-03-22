@@ -1,0 +1,22 @@
+<div style="display: flex; flex-direction: column; width: 100%;">
+    <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+        <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
+            [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
+            (customFilterOutput)="onCustomFilterValuesChange($event)">
+        </i2v-chart-header>
+    </div>
+    <kendo-chart>
+        <kendo-chart-title text="Line Chart"></kendo-chart-title>
+        <kendo-chart-x-axis>
+          <kendo-chart-x-axis-item [visible]="false"> </kendo-chart-x-axis-item>
+        </kendo-chart-x-axis>
+        <kendo-chart-category-axis>
+          <kendo-chart-category-axis-item [categories]="chartCategories" [title]="{ text: 'Months' }">
+          </kendo-chart-category-axis-item>
+        </kendo-chart-category-axis>
+        <kendo-chart-series>
+          <kendo-chart-series-item type="area" [data]="chartData">
+          </kendo-chart-series-item>
+        </kendo-chart-series>
+      </kendo-chart>
+</div>

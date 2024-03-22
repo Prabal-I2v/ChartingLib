@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartingComponent } from './chartinglib.component';
-import { BarChartComponent } from './bar-chart/bar-chart.component';
-import { EchartsxModule } from 'echarts-for-angular';
-import { LineChartComponent } from './line-chart/line-chart.component';
 // import { FusionChartsModule } from "angular-fusioncharts";
 import { GridModule, ExcelModule, PDFModule } from "@progress/kendo-angular-grid";
 
@@ -26,20 +23,38 @@ import { LayoutModule } from '@progress/kendo-angular-layout';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DropdownModule } from 'primeng/dropdown';
 import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
+import { I2vBarChartComponent } from './i2v-bar-chart/i2v-bar-chart.component';
+import { I2vChartHeaderComponent } from './i2v-chart-header/i2v-chart-header.component';
+import { FormsModule } from '@angular/forms';
+import { I2vPieChartComponent } from './i2v-pie-chart/i2v-pie-chart.component';
+import { I2vColumnChartComponent } from './i2v-column-chart/i2v-column-chart.component';
+import { I2vStackedcolumnChartComponent } from './i2v-stackedcolumn-chart/i2v-stackedcolumn-chart.component';
+import { I2vHeatmapChartComponent } from './i2v-heatmap-chart/i2v-heatmap-chart.component';
+import { I2vStackedbarChartComponent } from './i2v-stackedbar-chart/i2v-stackedbar-chart.component';
+import { I2vLineChartComponent } from './i2v-line-chart/i2v-line-chart.component';
+import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
 @NgModule({
   declarations: [
     ChartingComponent,
-    BarChartComponent,
-    LineChartComponent,
     // FusionChartComponent,
     KendoChartComponent,
-    I2vChartsComponent
+    I2vChartsComponent,
+    I2vChartHeaderComponent,
+    I2vBarChartComponent,
+    I2vPieChartComponent,
+    I2vColumnChartComponent,
+    I2vStackedcolumnChartComponent,
+    I2vHeatmapChartComponent,
+    I2vStackedbarChartComponent,
+    I2vLineChartComponent,
+    I2vAreaChartComponent
   ],
   imports: [
     CommonModule,
+    FormsModule,
     BrowserAnimationsModule,
     // EchartsxModule,
     // FusionChartsModule,
@@ -55,10 +70,17 @@ import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
     DropdownModule
   ],
   exports:[
-    BarChartComponent,
     // FusionChartComponent,
     KendoChartComponent,
-    I2vChartsComponent,
+    I2vChartHeaderComponent,
+    I2vBarChartComponent,
+    I2vPieChartComponent,
+    I2vColumnChartComponent,
+    I2vStackedcolumnChartComponent,
+    I2vHeatmapChartComponent,
+    I2vStackedbarChartComponent,
+    I2vLineChartComponent,
+    I2vAreaChartComponent,
     ChartsModule,
     LayoutModule,
     GridModule,

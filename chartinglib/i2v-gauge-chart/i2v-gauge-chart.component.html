@@ -1,0 +1,20 @@
+<div style="display: flex; flex-direction: column; width: 100%;">
+  <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+      <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
+          [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
+          (customFilterOutput)="onCustomFilterValuesChange($event)">
+      </i2v-chart-header>
+  </div>
+    <kendo-arcgauge [value]="gaugevalue" [color]="color"
+    [transitions]="true">
+    <kendo-arcgauge-scale
+    rangePlaceholderColor="#f2f5fa"
+    [rangeSize]="25"
+    rangeLineCap="round" >
+    <ng-template kendoArcGaugeCenterTemplate let-value="value">
+      <h2>4 hrs 15 min</h2>
+    </ng-template>
+    </kendo-arcgauge-scale>
+  </kendo-arcgauge>
+
+</div>

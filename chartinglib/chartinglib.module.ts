@@ -33,6 +33,9 @@ import { I2vHeatmapChartComponent } from './i2v-heatmap-chart/i2v-heatmap-chart.
 import { I2vStackedbarChartComponent } from './i2v-stackedbar-chart/i2v-stackedbar-chart.component';
 import { I2vLineChartComponent } from './i2v-line-chart/i2v-line-chart.component';
 import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component';
+import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.component';
+import { I2vGaugeChartComponent } from './i2v-gauge-chart/i2v-gauge-chart.component';
+import { GaugesModule } from '@progress/kendo-angular-gauges';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -50,7 +53,9 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     I2vHeatmapChartComponent,
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
-    I2vAreaChartComponent
+    I2vAreaChartComponent,
+    I2vDonutChartComponent,
+    I2vGaugeChartComponent
   ],
   imports: [
     CommonModule,
@@ -60,11 +65,12 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     // FusionChartsModule,
     BrowserModule,
     PDFExportModule,
-    
+
     ChartsModule,
     LayoutModule,
     GridModule,
     ExcelModule,
+    GaugesModule,
     PDFModule,
     MultiSelectModule,
     DropdownModule
@@ -73,11 +79,14 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     // FusionChartComponent,
     KendoChartComponent,
     I2vChartHeaderComponent,
+    I2vGaugeChartComponent,
+    I2vChartsComponent,
     I2vBarChartComponent,
     I2vPieChartComponent,
     I2vColumnChartComponent,
     I2vStackedcolumnChartComponent,
     I2vHeatmapChartComponent,
+    I2vDonutChartComponent,
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
@@ -85,7 +94,7 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     LayoutModule,
     GridModule,
     ExcelModule,
-    PDFModule
+    PDFModule,
   ]
 })
 export class ChartinglibModule { }

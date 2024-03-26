@@ -1,0 +1,16 @@
+<div style="display: flex; flex-direction: column; width: 100%;">
+  <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+      <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
+          [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
+          (customFilterOutput)="onCustomFilterValuesChange($event)">
+      </i2v-chart-header>
+  </div>
+  <kendo-chart  [seriesColors]='seriesColors' [transitions]="true">
+      <kendo-chart-legend [position]="position"></kendo-chart-legend>
+      <kendo-chart-series>
+        <kendo-chart-series-item type="donut" [data]="chartData" field="value" categoryField="category"
+          [labels]="{ visible: false, content: labelContent }">
+        </kendo-chart-series-item>
+      </kendo-chart-series>
+    </kendo-chart>
+</div>

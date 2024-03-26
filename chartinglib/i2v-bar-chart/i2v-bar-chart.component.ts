@@ -9,6 +9,7 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 export class I2vBarChartComponent extends I2vChartsComponent {
     @Input() chartCategories : any;
     @Input() chartData : any;
+    @Input() color:any
 
     constructor() {
       super();

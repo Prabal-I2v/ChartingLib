@@ -23,6 +23,7 @@ import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
 import { LayoutModule } from '@progress/kendo-angular-layout';
+import { KpiChartComponent } from './kpi-chart/kpi-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -32,7 +33,8 @@ import { LayoutModule } from '@progress/kendo-angular-layout';
     BarChartComponent,
     LineChartComponent,
     // FusionChartComponent,
-    KendoChartComponent
+    KendoChartComponent,
+    KpiChartComponent
   ],
   imports: [
     CommonModule,

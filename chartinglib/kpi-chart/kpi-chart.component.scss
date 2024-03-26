@@ -1,0 +1,58 @@
+.card{
+    width: 300px;
+    height: 150px;
+    border-radius: 8px;
+    background-color: rgb(231, 220, 220);
+    padding: 20px;
+    margin: 20px;
+
+}
+.top{
+    width: 300px;
+    height: 100px;
+    padding: 20px , 20px , 40px , 20px;
+    gap: 12px;
+    display: flex;
+    flex-direction: row;
+.number-grp{
+
+    width: 190px;
+    height:  60px;
+    display: flex;
+    flex-direction: column;
+    gap : 8px;
+ .minorheader{
+width: 187px;
+height: 17px;
+font-weight: 500;
+font-size: 14px;
+line-height: 17.05px;
+
+ }
+ .digits{
+    width: 187px;
+    height: 32px;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+
+ }
+
+}
+.sparkline{
+    width: 80px ;
+    height:  50px;
+
+}
+}
+.bottom{
+
+    width: 300px;
+    height: 50px;
+    border-top: 1px solid black;
+    padding: 16px,20px,16px,20px;
+    gap : 4px;
+   display: flex;
+
+
+}

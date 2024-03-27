@@ -33,8 +33,11 @@ import { I2vHeatmapChartComponent } from './i2v-heatmap-chart/i2v-heatmap-chart.
 import { I2vStackedbarChartComponent } from './i2v-stackedbar-chart/i2v-stackedbar-chart.component';
 import { I2vLineChartComponent } from './i2v-line-chart/i2v-line-chart.component';
 import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component';
+import { HttpClientModule } from '@angular/common/http';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
+
+
 
 @NgModule({
   declarations: [
@@ -67,7 +70,8 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     ExcelModule,
     PDFModule,
     MultiSelectModule,
-    DropdownModule
+    DropdownModule,
+    HttpClientModule
   ],
   exports:[
     // FusionChartComponent,
@@ -86,6 +90,7 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
     GridModule,
     ExcelModule,
     PDFModule
-  ]
+  ],
+
 })
 export class ChartinglibModule { }

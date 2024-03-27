@@ -5,18 +5,6 @@
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>
-    <kendo-chart>
-        <kendo-chart-title text="Line Chart"></kendo-chart-title>
-        <kendo-chart-x-axis>
-          <kendo-chart-x-axis-item [visible]="false"> </kendo-chart-x-axis-item>
-        </kendo-chart-x-axis>
-        <kendo-chart-category-axis>
-          <kendo-chart-category-axis-item [categories]="chartCategories" [title]="{ text: 'Months' }">
-          </kendo-chart-category-axis-item>
-        </kendo-chart-category-axis>
-        <kendo-chart-series>
-          <kendo-chart-series-item type="area" [data]="chartData">
-          </kendo-chart-series-item>
-        </kendo-chart-series>
-      </kendo-chart>
+  
+    
 </div>

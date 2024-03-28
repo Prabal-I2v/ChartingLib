@@ -10,7 +10,7 @@ class LineChartModel extends BaseChartClassModel{
     formatChartData(title = '', xAxisLabel = '', yAxisLabel = ''): (source: IChartDataModel) => EChartsOption {
         return (source: IChartDataModel) => {
             let options: EChartsOption = {
-                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }},
                 grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
                 title: { text: title, show: true },
                 xAxis: { type: 'category', data: source.xAxisData, name: xAxisLabel, axisTick: { alignWithLabel: true } },

@@ -1,17 +1,26 @@
 <div style="display: flex; flex-direction: column; width: 100%;">
-    <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+    <div   style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
         <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
             [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>
-    <kendo-chart>
-        <kendo-chart-category-axis>
-            <kendo-chart-category-axis-item [categories]="chartCategories" >
-            </kendo-chart-category-axis-item>
-        </kendo-chart-category-axis>
+    <kendo-chart class="k-chart .k-bar  ">
+      <kendo-chart-category-axis>
+        <kendo-chart-category-axis-item    [categories]="chartCategories"  [majorGridLines]="{visible:false}">
+        </kendo-chart-category-axis-item>
+    </kendo-chart-category-axis>
+
+
+    <kendo-chart-tooltip>
+        <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+            {{value}}
+        </ng-template>
+    </kendo-chart-tooltip>
+
+        <!-- <kendo-chart-value-axis  majorGridLines="{visible:false}" minorGridLines="{visible:false}" ></kendo-chart-value-axis> -->
         <kendo-chart-series>
-            <kendo-chart-series-item type="column" [color]="color" [gap]="2" [spacing]="0.25" [data]="chartData">
+            <kendo-chart-series-item type="column"  [data]="chartData" [color]="color" field="data[0]">
             </kendo-chart-series-item>
         </kendo-chart-series>
     </kendo-chart>

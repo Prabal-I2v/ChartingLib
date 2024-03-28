@@ -11,12 +11,12 @@ export class ICustomFilter{
 })
 
 export class I2vChartsComponent {
-    @Input() heading : string = "";
-    @Input() subHeading : string = "";
-    @Input() customFilters : ICustomFilter;
-    @Output() daysFilterOutput : EventEmitter<string> = new EventEmitter<string>();
-    @Output() customFilterOutput : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
-  
+    @Input() heading? : string = "";
+    @Input() subHeading? : string = "";
+    @Input() customFilters? : ICustomFilter;
+    @Output() daysFilterOutput? : EventEmitter<string> = new EventEmitter<string>();
+    @Output() customFilterOutput? : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
+
 
     constructor(){
 

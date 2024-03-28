@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { SeriesVisualArgs } from '@progress/kendo-angular-charts';
 import { Circle, Group, Path, geometry } from '@progress/kendo-drawing';
@@ -6,20 +6,15 @@ import { IntlService } from '@progress/kendo-angular-intl';
 const { transform, Circle: GeomCircle } = geometry;
 
 @Component({
-  selector: 'i2v-column-chart',
-  templateUrl: './i2v-column-chart.component.html',
-  styleUrl: './i2v-column-chart.component.scss'
+  selector: 'i2v-multi-column-chart',
+  templateUrl: './i2v-multi-column-chart.component.html',
+  styleUrl: './i2v-multi-column-chart.component.scss'
 })
-export class I2vColumnChartComponent extends I2vChartsComponent implements OnInit{
-  @Input() chartCategories: any=[];
+export class I2vMultiColumnChartComponent extends I2vChartsComponent {
+  @Input() chartCategories: any;
   @Input() chartData: any;
   @Input() color:any
   @Input() mwidth:any
-  ngOnInit(): void {
-    this.chartData.forEach(element => {
-      this.chartCategories.push(element.name);
-     });
-  }
 
   public radius = (e: SeriesVisualArgs) => {
     var height = e.rect.size.height;
@@ -66,3 +61,4 @@ export class I2vColumnChartComponent extends I2vChartsComponent implements OnIni
   }
 
 }
+

@@ -7,21 +7,26 @@
       </i2v-chart-header>
   </div>
   <kendo-chart style="width: 100%">
-    <!-- <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title> -->
-    <kendo-chart-series>
-      <kendo-chart-series-item type="heatmap" [color]="color" [data]="chartData" [labels]="{ visible: false }"
-        [markers]="{ type: 'rect', border: { width: 2 } }">
-      </kendo-chart-series-item>
-    </kendo-chart-series>
-
-    <kendo-chart-x-axis>
+    <!-- <kendo-chart-x-axis>
       <kendo-chart-x-axis-item [visible]="true" > </kendo-chart-x-axis-item>
     </kendo-chart-x-axis>
 
     <kendo-chart-y-axis>
-      <kendo-chart-y-axis-item [reverse]="true" [line]="{ visible: false }"
+      <kendo-chart-y-axis-item [reverse]="true" [line]="{ visible: true }"
         [labels]="{ content: yAxisLabelContent }">
       </kendo-chart-y-axis-item>
-    </kendo-chart-y-axis>
+    </kendo-chart-y-axis> -->
+    <kendo-chart-series>
+      <kendo-chart-series-item
+        type="heatmap" [color]="color"
+        [data]="chartData"
+        xField="xAxis"
+        yField="yAxis"
+        valueField="value" [labels]="{ visible: true }"
+        [markers]="{ type: 'rect', border: { width: 2 } }"
+      >
+      </kendo-chart-series-item>
+    </kendo-chart-series>
   </kendo-chart>
+
 </div>

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
+import { IntlService } from '@progress/kendo-angular-intl';
 
 @Component({
   selector: 'i2v-stackedbar-chart',
@@ -9,8 +10,9 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 export class I2vStackedbarChartComponent extends I2vChartsComponent{
   @Input() chartCategories: any;
   @Input() chartData: any;
+  @Input() showChild=true;
 
-  constructor() {
+  constructor(public intl: IntlService) {
     super();
   }
 

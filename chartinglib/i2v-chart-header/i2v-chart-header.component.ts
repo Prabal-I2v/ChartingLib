@@ -8,11 +8,11 @@ import { ICustomFilter } from '../i2v-charts/i2v-charts.component';
 })
 export class I2vChartHeaderComponent {
 
-  @Input() heading : string = "";
-  @Input() subHeading : string = "";
-  @Input() customFilters : ICustomFilter;
-  @Output() daysFilterOutput : EventEmitter<string> = new EventEmitter<string>();
-  @Output() customFilterOutput : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
+  @Input() heading? : string = "";
+  @Input() subHeading? : string = "";
+  @Input() customFilters? : ICustomFilter;
+  @Output() daysFilterOutput? : EventEmitter<string> = new EventEmitter<string>();
+  @Output() customFilterOutput? : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
   @ViewChild("multiselect") multiselectRef : any;
   TimeFilter = ['hours', 'days', 'weeks', 'months', 'years']
   selectedCustomFilter : ICustomFilter;
@@ -29,10 +29,12 @@ export class I2vChartHeaderComponent {
   }
 
   ngOnInit()
-  {
-      this.selectedCustomFilterkey = Object.keys(this.customFilters)[0];
-      this.selectedCustomFilterValue = this.customFilters[this.selectedCustomFilterkey];
-      this.CustomFilterKeys = Object.keys(this.customFilters);
+  { if(this.customFilters!=null){
+    this.selectedCustomFilterkey = Object.keys(this.customFilters)[0];
+    this.selectedCustomFilterValue = this.customFilters[this.selectedCustomFilterkey];
+    this.CustomFilterKeys = Object.keys(this.customFilters);
+  }
+
   }
 
   onCustomFilterKeyChange(event)

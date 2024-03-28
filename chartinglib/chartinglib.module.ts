@@ -36,8 +36,12 @@ import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component
 import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.component';
 import { I2vGaugeChartComponent } from './i2v-gauge-chart/i2v-gauge-chart.component';
 import { GaugesModule } from '@progress/kendo-angular-gauges';
+import { HttpClientModule } from '@angular/common/http';
+import { I2vMultiColumnChartComponent } from './i2v-multi-column-chart/i2v-multi-column-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
+
+
 
 @NgModule({
   declarations: [
@@ -55,6 +59,7 @@ import { GaugesModule } from '@progress/kendo-angular-gauges';
     I2vLineChartComponent,
     I2vAreaChartComponent,
     I2vDonutChartComponent,
+    I2vMultiColumnChartComponent,
     I2vGaugeChartComponent
   ],
   imports: [
@@ -73,7 +78,8 @@ import { GaugesModule } from '@progress/kendo-angular-gauges';
     GaugesModule,
     PDFModule,
     MultiSelectModule,
-    DropdownModule
+    DropdownModule,
+    HttpClientModule
   ],
   exports:[
     // FusionChartComponent,
@@ -89,12 +95,14 @@ import { GaugesModule } from '@progress/kendo-angular-gauges';
     I2vDonutChartComponent,
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
+    I2vMultiColumnChartComponent,
     I2vAreaChartComponent,
     ChartsModule,
     LayoutModule,
     GridModule,
     ExcelModule,
-    PDFModule,
-  ]
+    PDFModule
+  ],
+
 })
 export class ChartinglibModule { }

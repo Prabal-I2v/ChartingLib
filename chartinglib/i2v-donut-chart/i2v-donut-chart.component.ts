@@ -1,5 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
+import { LegendItemVisualArgs, SeriesLabelsContentArgs } from '@progress/kendo-angular-charts';
+import { Group, Path, Rect } from '@progress/kendo-drawing';
+import { Point, Size } from '@progress/kendo-drawing/dist/npm/geometry';
 
 
 
@@ -11,10 +14,14 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 export class I2vDonutChartComponent extends I2vChartsComponent {
   @Input() chartCategories: any;
   @Input() chartData: any;
-  @Input() position:any;
   @Input() seriesColors:any[];
-  public labelContent(args: any): string {
-    return `${args.dataItem.category} years old`;
+  @Input() showCenter:any=false;
+
+
+
+
+  public labelContent(e: SeriesLabelsContentArgs): string {
+    return e.category;
   }
 
   constructor() {

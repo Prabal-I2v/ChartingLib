@@ -14,12 +14,25 @@
           <kendo-chart-x-axis-item [visible]="false"> </kendo-chart-x-axis-item>
         </kendo-chart-x-axis>
         <kendo-chart-category-axis>
-          <kendo-chart-category-axis-item [categories]="chartCategories" >
+          <kendo-chart-category-axis-item [categories]="chartCategories" [majorGridLines]="{visible:false}" >
           </kendo-chart-category-axis-item>
         </kendo-chart-category-axis>
 
+        <kendo-chart-legend
+        position="bottom"
+        orientation="horizontal"
+        background="#f4f5f8"
+        [spacing]="140"
+        [padding]="{ left: 80, right: 80 }"
+    ></kendo-chart-legend>
+    <kendo-chart-tooltip>
+        <ng-template kendoChartSeriesTooltipTemplate let-value="value1" let-category="category">
+            {{value}}
+        </ng-template>
+    </kendo-chart-tooltip>
+
         <kendo-chart-series>
-          <kendo-chart-series-item     [markers]="{ visible: false }" [style]="style" type="line" *ngFor="let data of chartData" [data]="data" >
+          <kendo-chart-series-item     [markers]="{ visible: false }" [style]="style" type="line" *ngFor="let item of chartData" type="line" [data]="item.data" [name]="item.name" >
           </kendo-chart-series-item>
         </kendo-chart-series>
 

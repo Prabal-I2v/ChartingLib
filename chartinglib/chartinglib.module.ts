@@ -38,6 +38,7 @@ import { I2vGaugeChartComponent } from './i2v-gauge-chart/i2v-gauge-chart.compon
 import { GaugesModule } from '@progress/kendo-angular-gauges';
 import { HttpClientModule } from '@angular/common/http';
 import { I2vMultiColumnChartComponent } from './i2v-multi-column-chart/i2v-multi-column-chart.component';
+import { I2vKpiChartComponent } from './i2v-kpi-chart/i2v-kpi-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -60,7 +61,8 @@ import { I2vMultiColumnChartComponent } from './i2v-multi-column-chart/i2v-multi
     I2vAreaChartComponent,
     I2vDonutChartComponent,
     I2vMultiColumnChartComponent,
-    I2vGaugeChartComponent
+    I2vGaugeChartComponent,
+    I2vKpiChartComponent
   ],
   imports: [
     CommonModule,
@@ -83,6 +85,7 @@ import { I2vMultiColumnChartComponent } from './i2v-multi-column-chart/i2v-multi
   ],
   exports:[
     // FusionChartComponent,
+    I2vKpiChartComponent,
     KendoChartComponent,
     I2vChartHeaderComponent,
     I2vGaugeChartComponent,

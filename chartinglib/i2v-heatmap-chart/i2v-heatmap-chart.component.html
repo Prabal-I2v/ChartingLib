@@ -16,6 +16,8 @@
         [labels]="{ content: yAxisLabelContent }">
       </kendo-chart-y-axis-item>
     </kendo-chart-y-axis> -->
+
+
     <kendo-chart-series>
       <kendo-chart-series-item
         type="heatmap" [color]="color"
@@ -23,10 +25,19 @@
         xField="xAxis"
         yField="yAxis"
         valueField="value" [labels]="{ visible: true }"
-        [markers]="{ type: 'rect', border: { width: 2 } }"
+        [markers]="{ type: 'rect', border: { width: 2 }}"
       >
+
+      <kendo-chart-series-item-tooltip>
+        <ng-template let-value="value">
+          {{ value.value }}  on  {{ value.x }}, {{ value.y }}
+        </ng-template>
+      </kendo-chart-series-item-tooltip>
       </kendo-chart-series-item>
     </kendo-chart-series>
+
+
+
   </kendo-chart>
 
 </div>

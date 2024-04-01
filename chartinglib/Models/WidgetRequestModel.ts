@@ -5,6 +5,7 @@ export class WidgetRequestModel {
     widgetType: Enum_WidgetType;
     entity: Enum_Entity;
     method: Enum_Method;
+    schemaName : Enum_Schema
     baseFilter: RuleSet;
     fieldName: { [key: string]: PropertyType };
     groupBy1: string;
@@ -12,7 +13,7 @@ export class WidgetRequestModel {
     groupByTwoIsTime: boolean;
     groupBy2: string;
     isDistinct: boolean;
-    clubbingTime: boolean;
+    ClubbingFieldName: string;
     pagination: boolean;
     pageLimit: number;
     pageNumber: number;
@@ -38,6 +39,12 @@ export enum Enum_Method {
     Sum,
     Average,
     LiveCount
+}
+
+export enum Enum_Schema
+{
+    Public,
+    Events
 }
 
 export enum Enum_WidgetType {

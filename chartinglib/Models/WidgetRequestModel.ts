@@ -17,6 +17,7 @@ export class WidgetRequestModel {
     pagination: boolean;
     pageLimit: number;
     pageNumber: number;
+    ClubbingTime : boolean;
     identifierFieldName: string;
     multiplicationFactor: number;
     propertyFilters: RuleSet;
@@ -31,7 +32,10 @@ export enum Enum_Entity {
     EnrolledPersonsEvent,
     Facepoint,
     Highway_ATCC,
-    VIDS
+    VIDS,
+    Vehicle_Stopped,
+    ANPR,
+    Wrong_Way_Detected
 }
 
 export enum Enum_Method {

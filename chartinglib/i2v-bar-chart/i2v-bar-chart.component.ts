@@ -11,6 +11,15 @@ export class I2vBarChartComponent extends I2vChartsComponent implements OnInit {
     @Input() chartData : any;
     @Input() color:any
 
+    public seriesDefaults: any = {
+      bar:{
+        showBackground: true,
+        backgroundStyle: {
+          color: 'rgba(180, 180, 180, 0.2)'
+        }
+      }
+
+    };
     constructor() {
       super();
     }

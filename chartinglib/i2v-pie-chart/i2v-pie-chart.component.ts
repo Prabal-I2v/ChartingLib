@@ -46,7 +46,7 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     widgetRequestModel.groupBy2 = ""
     widgetRequestModel.groupByTwoIsTime = false
     widgetRequestModel.isDistinct = true
-    widgetRequestModel.clubbingTime = false
+    // widgetRequestModel.clubbingTime = false
     widgetRequestModel.pagination = false
     widgetRequestModel.pageNumber = 0
     widgetRequestModel.pageLimit = 0

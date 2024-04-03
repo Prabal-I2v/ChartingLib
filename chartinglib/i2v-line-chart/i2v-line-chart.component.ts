@@ -10,8 +10,8 @@ import { LineStyle } from "@progress/kendo-angular-charts";
 export class I2vLineChartComponent extends I2vChartsComponent {
   @Input() chartCategories: any;
   @Input() chartData: any;
-  public style: LineStyle = "normal";
-
+  public style: LineStyle = "smooth";
+  
   constructor() {
     super();
   }

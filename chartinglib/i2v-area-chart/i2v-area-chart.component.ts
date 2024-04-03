@@ -11,6 +11,17 @@ export class I2vAreaChartComponent extends I2vChartsComponent {
   @Input() chartCategories: any;
   @Input() chartData: any;
 
+  public seriesDefaults: any = {
+    type: "area",
+    area: {
+      line:{
+       opacity:1,
+       width:1.5
+      },
+      opacity:0.1// Customize area color
+    }
+  };
+
   constructor() {
     super();
   }

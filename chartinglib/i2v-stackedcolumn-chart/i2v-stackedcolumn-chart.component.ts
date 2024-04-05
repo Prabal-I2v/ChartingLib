@@ -7,8 +7,7 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
   styleUrl: './i2v-stackedcolumn-chart.component.scss'
 })
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
-  @Input() chartCategories: any;
-  @Input() chartData: any;
+
 
   constructor() {
     super();

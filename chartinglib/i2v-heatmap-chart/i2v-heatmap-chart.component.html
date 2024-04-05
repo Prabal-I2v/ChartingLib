@@ -1,7 +1,7 @@
 <kendo-chart style="width: 100%">
     <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
     <kendo-chart-series>
-      <kendo-chart-series-item type="heatmap" color="#216e39" [data]="chartData" [labels]="{ visible: false }"
+      <kendo-chart-series-item type="heatmap" color="#216e39" [data]="chartData.series" [labels]="{ visible: false }"
         [markers]="{ type: 'roundedRect', border: { width: 2 } }">
       </kendo-chart-series-item>
     </kendo-chart-series>

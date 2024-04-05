@@ -8,7 +8,7 @@
     <kendo-chart title="Pie Chart">
         <kendo-chart-legend position="bottom"></kendo-chart-legend>
         <kendo-chart-series>
-          <kendo-chart-series-item type="pie" [data]="chartData" field="value" categoryField="category"
+          <kendo-chart-series-item type="pie" [data]="chartData.series" field="value" categoryField="category"
             [labels]="{ visible: true, content: labelContent }">
           </kendo-chart-series-item>
         </kendo-chart-series>

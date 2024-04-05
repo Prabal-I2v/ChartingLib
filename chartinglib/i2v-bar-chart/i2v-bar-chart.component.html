@@ -5,14 +5,22 @@
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>
+    Hello
+    {{chartData | json}}
+    <div *ngFor="let data of chartData.series">
+        {{data | json}}
+    </div>
     <kendo-chart>
         <kendo-chart-category-axis>
-            <kendo-chart-category-axis-item [categories]="chartCategories" [title]="{ text: 'Months' }">
+            <kendo-chart-category-axis-item [categories]="chartData.chartCategories" [title]="{ text:  chartData.x_label }">
+                <kendo-chart-category-axis-item-labels [rotation]="'auto'">
+                </kendo-chart-category-axis-item-labels>
             </kendo-chart-category-axis-item>
         </kendo-chart-category-axis>
         <kendo-chart-series>
-            <kendo-chart-series-item *ngFor="let data of chartData" type="bar" [gap]="2" [spacing]="0.25" [data]="data">
+            <kendo-chart-series-item *ngFor="let data of chartData.series" type="bar" [gap]="2" [spacing]="0.25" [data]="data.data">
             </kendo-chart-series-item>
         </kendo-chart-series>
     </kendo-chart>
+   
 </div>

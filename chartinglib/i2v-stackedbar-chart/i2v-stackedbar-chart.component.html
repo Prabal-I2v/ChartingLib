@@ -7,11 +7,11 @@
     </div>
     <kendo-chart>
         <kendo-chart-category-axis>
-            <kendo-chart-category-axis-item [categories]="chartCategories" [title]="{ text: 'Months' }">
+            <kendo-chart-category-axis-item [categories]="chartData.chartCategories" [title]="{ text: 'Months' }">
             </kendo-chart-category-axis-item>
         </kendo-chart-category-axis>
         <kendo-chart-series>
-            <kendo-chart-series-item type="bar" [stack]="true" *ngFor="let data of chartData" [data]="data">
+            <kendo-chart-series-item type="bar" [stack]="true" *ngFor="let data of chartData.series" [data]="data">
             </kendo-chart-series-item>
         </kendo-chart-series>
     </kendo-chart>

@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { ChartSeries, ClientChartModel } from '../Models/ClientChartModel';
+import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 
-export class ICustomFilter{
-  [key : string] : string[];
+export class ICustomFilter {
+  [key: string]: string[];
 }
 
 @Component({
@@ -11,31 +13,78 @@ export class ICustomFilter{
 })
 
 export class I2vChartsComponent {
-    @Input() heading : string = "";
-    @Input() subHeading : string = "";
-    @Input() customFilters : ICustomFilter;
-    @Output() daysFilterOutput : EventEmitter<string> = new EventEmitter<string>();
-    @Output() customFilterOutput : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
-  
+  // @Input() chartCategories : chartCategories;
+  private _chartData : ClientChartModel
+  @Input() 
+  set chartData(data : ChartsOutputModel){
+    this._chartData = this.transformData(data)
+  }
+  get chartData() : ClientChartModel{
+    return this._chartData
+  }
 
-    constructor(){
+  @Input() heading: string = "";
+  @Input() subHeading: string = "";
+  @Input() customFilters: ICustomFilter;
+  @Output() daysFilterOutput: EventEmitter<string> = new EventEmitter<string>();
+  @Output() customFilterOutput: EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
 
+
+  constructor() {
+
+  }
+
+  ngOnInit() {
+
+  }
+
+  onCustomFilterValuesChange(event) {
+    this.customFilterOutput.emit(event);
+  }
+
+  onTimeChange(event) {
+    this.daysFilterOutput.emit(event);
+  }
+
+  transformData(data: ChartsOutputModel) : ClientChartModel {
+
+    var chartData = new ClientChartModel();
+    chartData.series = data.data.map((x) => {
+      return new ChartSeries(x.label, x.data);
+    })
+    if (data.labels.length > 0) {
+      chartData.chartCategories = data.labels[0].value;
+      chartData.x_label = data.labels[0].key
+    }
+    else{
+      chartData.chartCategories = data.data.map((x) => {
+        return x.label
+      })
     }
 
-    ngOnInit()
+    return chartData;
+  }
+
+  public series = [
     {
-      
-    }
-
-    onCustomFilterValuesChange(event)
+        name: 'Tiger Team',
+        data: [100, 450, 360, 125],
+        color: '#FF6358'
+    },
     {
-      this.customFilterOutput.emit(event);
-    }
-
-    onTimeChange(event)
+        name: 'Lemon Team',
+        data: [200, 380, 300, 115],
+        color: '#F7C62F'
+    },
     {
-      this.daysFilterOutput.emit(event);
-    }
-
+        name: 'Organic Team',
+        data:[ 250, 450, 256, 456],
+        color: '#55AB1D'
+    },
+    {
+        name: 'Ocean Team',
+        data: [400],
+        color: '#28B4C8'
+    }];
 
 }

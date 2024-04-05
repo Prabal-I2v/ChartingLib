@@ -15,7 +15,7 @@ export class ICustomFilter {
 export class I2vChartsComponent {
   // @Input() chartCategories : chartCategories;
   private _chartData : ClientChartModel
-  @Input() 
+  @Input()
   set chartData(data : ChartsOutputModel){
     this._chartData = this.transformData(data)
   }
@@ -23,7 +23,7 @@ export class I2vChartsComponent {
     return this._chartData
   }
 
-  @Input() heading: string = "";
+  @Input() public heading: string = "";
   @Input() subHeading: string = "";
   @Input() customFilters: ICustomFilter;
   @Output() daysFilterOutput: EventEmitter<string> = new EventEmitter<string>();
@@ -65,6 +65,6 @@ export class I2vChartsComponent {
     return chartData;
   }
 
- 
+
 
 }

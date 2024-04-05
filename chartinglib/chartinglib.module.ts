@@ -63,7 +63,7 @@ import { HttpClientModule } from '@angular/common/http';
     // FusionChartsModule,
     BrowserModule,
     PDFExportModule,
-    
+
     ChartsModule,
     LayoutModule,
     GridModule,

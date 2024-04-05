@@ -1,5 +1,25 @@
-<kendo-chart style="width: 100%">
+<div style="display: flex; flex-direction: column; width: 100%;">
+  <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+      <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
+          [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
+          (customFilterOutput)="onCustomFilterValuesChange($event)">
+      </i2v-chart-header>
+  </div>
+
+  <kendo-chart style="width: 100%" [pannable]="{ lock: 'y' }" [zoomable]="{ mousewheel: { lock: 'y' } }">
     <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
+    <kendo-chart-tooltip>
+      <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+        {{ value }}
+      </ng-template>
+    </kendo-chart-tooltip>
+  <kendo-chart-legend
+  position="top"
+  orientation="horizontal"
+  background="#f4f5f8"
+  [spacing]="140"
+  [padding]="{ left: 80, right: 80 }"
+  ></kendo-chart-legend>
     <kendo-chart-series>
       <kendo-chart-series-item type="heatmap" color="#216e39" [data]="chartData.series" [labels]="{ visible: false }"
         [markers]="{ type: 'roundedRect', border: { width: 2 } }">
@@ -16,3 +36,5 @@
       </kendo-chart-y-axis-item>
     </kendo-chart-y-axis>
   </kendo-chart>
+</div>
+

@@ -65,26 +65,6 @@ export class I2vChartsComponent {
     return chartData;
   }
 
-  public series = [
-    {
-        name: 'Tiger Team',
-        data: [100, 450, 360, 125],
-        color: '#FF6358'
-    },
-    {
-        name: 'Lemon Team',
-        data: [200, 380, 300, 115],
-        color: '#F7C62F'
-    },
-    {
-        name: 'Organic Team',
-        data:[ 250, 450, 256, 456],
-        color: '#55AB1D'
-    },
-    {
-        name: 'Ocean Team',
-        data: [400],
-        color: '#28B4C8'
-    }];
+ 
 
 }

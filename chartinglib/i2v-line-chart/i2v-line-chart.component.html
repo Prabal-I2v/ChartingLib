@@ -5,6 +5,29 @@
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>
-  
+    <kendo-chart [pannable]="{ lock: 'y' }" [zoomable]="{ mousewheel: { lock: 'y' } }">
+        <kendo-chart-category-axis>
+            <kendo-chart-category-axis-item [max]="5" [categories]="chartData.chartCategories" [title]="{ text:  chartData.x_label }" >
+                <kendo-chart-category-axis-item-labels [rotation]="'auto'">
+                </kendo-chart-category-axis-item-labels>
+            </kendo-chart-category-axis-item>
+        </kendo-chart-category-axis>
+        <kendo-chart-tooltip>
+            <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+              {{ value }}
+            </ng-template>
+          </kendo-chart-tooltip>
+        <kendo-chart-legend
+        position="top"
+        orientation="horizontal"
+        background="#f4f5f8"
+        [spacing]="140"
+        [padding]="{ left: 80, right: 80 }"
+        ></kendo-chart-legend>
+        <kendo-chart-series>
+            <kendo-chart-series-item type="line" *ngFor="let data of chartData.series" [gap]="2" [spacing]="0.25" [data]="data.data" [name]="data.name">
+            </kendo-chart-series-item>
+        </kendo-chart-series>
+    </kendo-chart>
     
 </div>

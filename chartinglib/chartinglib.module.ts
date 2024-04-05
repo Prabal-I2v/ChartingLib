@@ -22,6 +22,7 @@ import { ChartsModule } from '@progress/kendo-angular-charts';
 import { LayoutModule } from '@progress/kendo-angular-layout';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
 import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
 import { I2vBarChartComponent } from './i2v-bar-chart/i2v-bar-chart.component';
 import { I2vChartHeaderComponent } from './i2v-chart-header/i2v-chart-header.component';
@@ -63,7 +64,7 @@ import { HttpClientModule } from '@angular/common/http';
     // FusionChartsModule,
     BrowserModule,
     PDFExportModule,
-
+    CalendarModule,
     ChartsModule,
     LayoutModule,
     GridModule,

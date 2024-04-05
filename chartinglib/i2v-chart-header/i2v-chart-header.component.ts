@@ -14,7 +14,9 @@ export class I2vChartHeaderComponent {
   @Output() daysFilterOutput : EventEmitter<string> = new EventEmitter<string>();
   @Output() customFilterOutput : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
   @ViewChild("multiselect") multiselectRef : any;
-  TimeFilter = ['hours', 'days', 'weeks', 'months', 'years']
+  TimeFilter = ['Hours', 'Days', 'Week', 'Month', 'Year','Custom'];
+  rangeDates: Date[] | undefined;
+
   selectedCustomFilter : ICustomFilter;
   CustomFilterKeys : string[];
   CustomFilterValues :  string[];

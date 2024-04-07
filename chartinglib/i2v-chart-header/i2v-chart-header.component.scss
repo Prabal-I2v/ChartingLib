@@ -1,0 +1,47 @@
+:host {
+  ::ng-deep .p-dropdown {
+      font-size: 13px;
+      font-weight: 400;
+      .p-dropdown-label{
+        font-size: 13px;
+        font-weight: 400;
+      }
+     .p-dropdown-item{
+      font-size: 13px;
+      font-weight: 400;
+     }
+    }}
+:host {
+    ::ng-deep  .p-calendar {
+      font-size: 13px;
+      font-weight: 400;
+      .p-inputtext{
+          font-size: 13px;
+          font-weight: 400;
+        }
+      .datepicker{
+        font-size: 13px;
+        font-weight: 400;
+        margin-right: 20%;
+      }
+      .p-datepicker-calendar{
+        font-size: 13px;
+        font-weight: 400;
+        width: 30%;
+        padding: 0px;
+        gap: 0px;
+        height: 30%;
+        z-index: 1200;
+        overflow: visible;
+      }
+      .p-datepicker-monthpicker{
+        font-size: 13px;
+        font-weight: 400;
+      }
+    }
+  }
+
+
+
+
+

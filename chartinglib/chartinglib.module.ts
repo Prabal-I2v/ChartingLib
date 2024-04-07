@@ -22,6 +22,7 @@ import { ChartsModule } from '@progress/kendo-angular-charts';
 import { LayoutModule } from '@progress/kendo-angular-layout';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
 import { I2vChartsComponent } from './i2v-charts/i2v-charts.component';
 import { I2vBarChartComponent } from './i2v-bar-chart/i2v-bar-chart.component';
 import { I2vChartHeaderComponent } from './i2v-chart-header/i2v-chart-header.component';
@@ -34,6 +35,7 @@ import { I2vStackedbarChartComponent } from './i2v-stackedbar-chart/i2v-stackedb
 import { I2vLineChartComponent } from './i2v-line-chart/i2v-line-chart.component';
 import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component';
 import { HttpClientModule } from '@angular/common/http';
+import { I2vKpiChartComponent } from './i2v-kpi-chart/i2v-kpi-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -49,6 +51,7 @@ import { HttpClientModule } from '@angular/common/http';
     I2vBarChartComponent,
     I2vPieChartComponent,
     I2vColumnChartComponent,
+    I2vKpiChartComponent,
     I2vStackedcolumnChartComponent,
     I2vHeatmapChartComponent,
     I2vStackedbarChartComponent,
@@ -63,7 +66,7 @@ import { HttpClientModule } from '@angular/common/http';
     // FusionChartsModule,
     BrowserModule,
     PDFExportModule,
-    
+    CalendarModule,
     ChartsModule,
     LayoutModule,
     GridModule,
@@ -81,6 +84,7 @@ import { HttpClientModule } from '@angular/common/http';
     I2vPieChartComponent,
     I2vColumnChartComponent,
     I2vStackedcolumnChartComponent,
+    I2vKpiChartComponent,
     I2vHeatmapChartComponent,
     I2vStackedbarChartComponent,
     I2vLineChartComponent,

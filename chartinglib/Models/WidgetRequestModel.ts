@@ -4,13 +4,16 @@ export class WidgetRequestModel {
     endTime: number;
     widgetType: Enum_WidgetType;
     entity: Enum_Entity;
+    joinableEntities : JoinableEntity[]
     method: Enum_Method;
     schemaName : Enum_Schema
     baseFilter: RuleSet;
     fieldName: { [key: string]: PropertyType };
     groupBy1: string;
     groupByOneIsTime: boolean;
+    groupBy1PropertyName : string;
     groupByTwoIsTime: boolean;
+    groupBy2PropertyName : string;
     groupBy2: string;
     isDistinct: boolean;
     ClubbingFieldName: string;
@@ -101,4 +104,18 @@ export enum PropertyType {
     FilePath,
     Array,
     Custom,
+}
+
+export class JoinableEntity
+{
+     entity : Enum_Entity
+     joinOn : string
+     joinWith : string
+     schema : Enum_Schema
+     properties : JoinableEntityProperty[]
+}
+
+export class JoinableEntityProperty{
+    name : string
+    DisplayName : string
 }

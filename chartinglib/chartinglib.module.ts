@@ -36,6 +36,7 @@ import { I2vLineChartComponent } from './i2v-line-chart/i2v-line-chart.component
 import { I2vAreaChartComponent } from './i2v-area-chart/i2v-area-chart.component';
 import { HttpClientModule } from '@angular/common/http';
 import { I2vKpiChartComponent } from './i2v-kpi-chart/i2v-kpi-chart.component';
+import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.component';
 
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -50,6 +51,7 @@ import { I2vKpiChartComponent } from './i2v-kpi-chart/i2v-kpi-chart.component';
     I2vChartHeaderComponent,
     I2vBarChartComponent,
     I2vPieChartComponent,
+    I2vDonutChartComponent,
     I2vColumnChartComponent,
     I2vKpiChartComponent,
     I2vStackedcolumnChartComponent,
@@ -82,6 +84,7 @@ import { I2vKpiChartComponent } from './i2v-kpi-chart/i2v-kpi-chart.component';
     I2vChartHeaderComponent,
     I2vBarChartComponent,
     I2vPieChartComponent,
+    I2vDonutChartComponent,
     I2vColumnChartComponent,
     I2vStackedcolumnChartComponent,
     I2vKpiChartComponent,

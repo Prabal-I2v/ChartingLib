@@ -3,16 +3,15 @@
     <h3 style="text-wrap: nowrap;">{{heading}}</h3>
     <span style="text-wrap: nowrap;" *ngIf="subHeading">({{subHeading}})</span>
 </span>
-<p-dropdown  [options]="CustomFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+<p-dropdown  *ngIf="customFilters" [options]="CustomFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
     [editable]="true" (onChange)="onCustomFilterKeyChange($event)"></p-dropdown>
 
-<p-multiSelect [options]="customFilters[selectedCustomFilterkey]" #multiselect
+<p-multiSelect *ngIf="customFilters"  [options]="customFilters[selectedCustomFilterkey]" #multiselect
     placeholder="Select {{selectedCustomFilterkey}}" display="chip" [showClear]="true"
     (onChange)="onCustomFilterValuesChange($event)"></p-multiSelect>
 
-<!-- <p-dropdown *ngIf="!disableTimeFilter" [options]="TimeFilter" [(ngModel)]="TimeFilterValue" placeholder="Select Time" [editable]="true"
-    (onChange)="onTimeChange($event)"></p-dropdown> -->
-<p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"  (onChange)="onTimeChange($event)" style="width:60%;" []></p-calendar>
-<!-- <p-calendar *ngIf="TimeFilterValue=='Custom'" [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true" (onChange)="onTimeChange($event)" style="width:60%;" ></p-calendar> -->
+<p-dropdown *ngIf="!disableTimeFilter" [options]="TimeFilter" [(ngModel)]="TimeFilterValue" placeholder="Select Time" [editable]="true"
+    (onChange)="onTimeChange($event)"></p-dropdown>
+<p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"  (onChange)="onTimeChange($event)" style="width:60%;"></p-calendar>
 
 </div>

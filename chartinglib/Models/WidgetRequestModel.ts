@@ -11,9 +11,9 @@ export class WidgetRequestModel {
     fieldName: { [key: string]: PropertyType };
     groupBy1: string;
     groupByOneIsTime: boolean;
-    groupBy1PropertyName : string;
-    groupByTwoIsTime: boolean;
-    groupBy2PropertyName : string;
+       groupByTwoIsTime: boolean;
+       showableProperties : string[]
+       showablePropertiesLabel : string[]
     groupBy2: string;
     isDistinct: boolean;
     ClubbingFieldName: string;

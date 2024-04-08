@@ -26,6 +26,7 @@ export class I2vChartsComponent {
   @Input() public heading: string = "";
   @Input() subHeading: string = "";
   @Input() customFilters: ICustomFilter;
+  @Input() disableTimeFilter:boolean=false;
   @Output() daysFilterOutput: EventEmitter<string> = new EventEmitter<string>();
   @Output() customFilterOutput: EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
 
@@ -61,7 +62,6 @@ export class I2vChartsComponent {
         return x.label
       })
     }
-
     return chartData;
   }
 

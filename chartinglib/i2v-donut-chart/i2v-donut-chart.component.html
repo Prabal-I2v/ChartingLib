@@ -1,0 +1,31 @@
+<div style="display: flex; flex-direction: column; width: 100%;">
+  <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+    <i2v-chart-header style="width: 100%;" [heading]="heading" [subHeading]="subHeading"
+    [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)"
+    (customFilterOutput)="onCustomFilterValuesChange($event)">
+</i2v-chart-header>
+  </div>
+
+  <kendo-chart [transitions]="true">
+    <ng-template kendoChartDonutCenterTemplate>
+      <div style="font-size: 12px;color: #5F6F94;display: flex;flex-direction: column;gap:0px">
+       <p style="padding: 0px;margin:0px">Total no. of vehicles</p>
+       <h1 style="padding: 0px;margin:0px">15,67,785</h1>
+    </div>
+    </ng-template>
+    <kendo-chart-tooltip>
+      <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+        {{ value }}
+      </ng-template>
+    </kendo-chart-tooltip>
+
+      <kendo-chart-series>
+        <kendo-chart-series-item type="donut"  categoryField="name"  field="data[0]"   [holeSize]="100" *ngFor="let data of chartData.series" [gap]="2" [spacing]="0.25" [data]="data.data"
+        [name]="data.name">
+
+        </kendo-chart-series-item>
+      </kendo-chart-series>
+      <kendo-chart-legend ></kendo-chart-legend>
+    </kendo-chart>
+
+</div>

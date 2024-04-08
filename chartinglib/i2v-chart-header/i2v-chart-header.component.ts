@@ -10,13 +10,13 @@ export class I2vChartHeaderComponent {
 
   @Input() heading : string = "";
   @Input() subHeading : string = "";
+  @Input()  disableTimeFilter:boolean=false;
   @Input() customFilters : ICustomFilter;
   @Output() daysFilterOutput : EventEmitter<string> = new EventEmitter<string>();
   @Output() customFilterOutput : EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
   @ViewChild("multiselect") multiselectRef : any;
   TimeFilter = ['Hours', 'Days', 'Week', 'Month', 'Year','Custom'];
   rangeDates: Date[] | undefined;
-
   selectedCustomFilter : ICustomFilter;
   CustomFilterKeys : string[];
   CustomFilterValues :  string[];

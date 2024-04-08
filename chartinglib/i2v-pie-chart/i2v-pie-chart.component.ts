@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
+import { ChartingDataService } from '../charting-data.service';
+import { Enum_Entity, Enum_Method, Enum_WidgetType, PropertyType, WidgetRequestModel } from '../Models/WidgetRequestModel';
 
 @Component({
   selector: 'i2v-pie-chart',
@@ -12,7 +14,7 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     return `${args.dataItem.category} years old`;
   }
 
-  constructor() {
+  constructor( private chartingDataService:ChartingDataService) {
     super();
   }
 
@@ -74,9 +76,10 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     widgetRequestModel.refreshInterval = 1
 
     this.chartingDataService.getChartingData(widgetRequestModel).subscribe((data)=>{
-    data.Labels.array.forEach((element,i) => {
-          this.chartData.push({element:data.Data[0][i]})
-        });
+      this.transformData(data);
+    // data.Labels.array.forEach((element,i) => {
+    //       this.chartData.push({element:data.Data[0][i]})
+    //     });
 
     //  this.chartData=  this.chartingDataService.tranformData( data);
     });

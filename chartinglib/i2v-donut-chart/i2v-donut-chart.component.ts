@@ -24,8 +24,9 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
   transformData(data: ChartsOutputModel) : ClientChartModel {
 
     var chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries(x.label, x.data);
+    chartData.series=[];
+      data.data[0].data.forEach((x:any,i) => {
+      chartData.series.push( new ChartSeries(data.labels[0].value[i], x));
     })
     // if (data.labels.length > 0) {
     //   chartData.chartCategories = data.labels[0].value;

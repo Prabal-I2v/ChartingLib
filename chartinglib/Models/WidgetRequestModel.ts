@@ -14,6 +14,7 @@ export class WidgetRequestModel {
        groupByTwoIsTime: boolean;
        showableProperties : string[]
        showablePropertiesLabel : string[]
+       MultiValuedColumn : Boolean = false
     groupBy2: string;
     isDistinct: boolean;
     ClubbingFieldName: string;

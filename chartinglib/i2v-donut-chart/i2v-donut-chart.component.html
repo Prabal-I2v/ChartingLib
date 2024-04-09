@@ -13,6 +13,7 @@
        <h1 style="padding: 0px;margin:0px">15,67,785</h1>
     </div>
     </ng-template>
+
     <kendo-chart-tooltip>
       <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
         {{ value }}
@@ -20,8 +21,8 @@
     </kendo-chart-tooltip>
 
       <kendo-chart-series>
-        <kendo-chart-series-item type="donut"  categoryField="name"  field="data[0]"   [holeSize]="100" *ngFor="let data of chartData.series" [gap]="2" [spacing]="0.25" [data]="data.data"
-        [name]="data.name">
+        <kendo-chart-series-item type="donut"  categoryField="name"  field="data[0]"   [holeSize]="100"  [data]="chartData.series"
+        >
 
         </kendo-chart-series-item>
       </kendo-chart-series>

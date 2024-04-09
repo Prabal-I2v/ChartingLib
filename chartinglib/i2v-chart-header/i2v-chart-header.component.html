@@ -12,6 +12,6 @@
 
 <p-dropdown *ngIf="!disableTimeFilter" [options]="TimeFilter" [(ngModel)]="TimeFilterValue" placeholder="Select Time" [editable]="true"
     (onChange)="onTimeChange($event)"></p-dropdown>
-<p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"  (onChange)="onTimeChange($event)" style="width:60%;"></p-calendar>
+<!-- <p-calendar [(ngModel)]="rangeDates" selectionMode="range" [readonlyInput]="true"  (onChange)="onTimeChange($event)" style="width:60%;"></p-calendar> -->
 
 </div>

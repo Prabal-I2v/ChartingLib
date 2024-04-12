@@ -51,7 +51,7 @@ export class I2vChartsComponent {
 
     var chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
-      return new ChartSeries(x.label, x.data);
+      return new ChartSeries({name:x.label, data:x.data});
     })
     if (data.labels.length > 0) {
       chartData.chartCategories = data.labels[0].value;

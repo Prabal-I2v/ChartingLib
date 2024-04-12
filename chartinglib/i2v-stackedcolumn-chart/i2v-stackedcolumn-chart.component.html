@@ -18,7 +18,7 @@
                 {{ value }}
             </ng-template>
         </kendo-chart-tooltip>
-        <kendo-chart-legend position="top" orientation="horizontal" background="#f4f5f8" [spacing]="140"
+        <kendo-chart-legend position="bottom" orientation="horizontal"  [spacing]="140"
             [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
         <kendo-chart-series>
             <kendo-chart-series-item type="column" [stack]="true" *ngFor="let data of chartData.series"

@@ -11,5 +11,19 @@ export class I2vAreaChartComponent extends I2vChartsComponent {
   constructor() {
     super();
   }
+  public seriesDefaults: any = {
+    type: "area",
+    area: {
+      line:{
+       opacity:1,
+       width:1.5
+      },
+      opacity:0.1// Customize area color
+    }
+  };
 
+  getDefaultLineColor(data: any): string {
+
+    return data.color;
+  }
 }

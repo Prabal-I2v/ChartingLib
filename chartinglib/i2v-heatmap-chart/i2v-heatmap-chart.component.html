@@ -9,7 +9,7 @@
   <kendo-chart style="width: 100%" [pannable]="{ lock: 'y' }" [zoomable]="{ mousewheel: { lock: 'y' } }">
     <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
     <kendo-chart-tooltip>
-      <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+      <ng-template kendoChartSeriesTooltipTemplate let-value="value.value" let-category="category">
         {{ value }}
       </ng-template>
     </kendo-chart-tooltip>
@@ -22,7 +22,10 @@
   ></kendo-chart-legend>
     <kendo-chart-series>
       <kendo-chart-series-item type="heatmap" color="#216e39" [data]="chartData.series" [labels]="{ visible: false }"
-        [markers]="{ type: 'roundedRect', border: { width: 2 } }">
+        [markers]="{ type: 'roundedRect', border: { width: 2 } }"
+        xField="name"
+        yField="yaxis"
+       valueField="value">
       </kendo-chart-series-item>
     </kendo-chart-series>
 
@@ -31,8 +34,8 @@
     </kendo-chart-x-axis>
 
     <kendo-chart-y-axis>
-      <kendo-chart-y-axis-item [reverse]="true" [line]="{ visible: false }"
-        [labels]="{ content: yAxisLabelContent }">
+      <kendo-chart-y-axis-item [reverse]="true" [line]="{ visible: false }">
+        <!-- [labels]="{ content: yAxisLabelContent }"> -->
       </kendo-chart-y-axis-item>
     </kendo-chart-y-axis>
   </kendo-chart>

@@ -15,7 +15,6 @@ import { GridModule, ExcelModule, PDFModule } from "@progress/kendo-angular-grid
 
 // import { FusionChartComponent } from './fusion-chart/fusion-chart.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { KendoChartComponent } from './kendo-chart/kendo-chart.component';
 import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
 import { BrowserModule } from '@angular/platform-browser';
 import { ChartsModule } from '@progress/kendo-angular-charts';
@@ -46,7 +45,6 @@ import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.compon
   declarations: [
     ChartingComponent,
     // FusionChartComponent,
-    KendoChartComponent,
     I2vChartsComponent,
     I2vChartHeaderComponent,
     I2vBarChartComponent,
@@ -80,7 +78,6 @@ import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.compon
   ],
   exports:[
     // FusionChartComponent,
-    KendoChartComponent,
     I2vChartHeaderComponent,
     I2vBarChartComponent,
     I2vPieChartComponent,

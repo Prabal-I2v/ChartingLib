@@ -8,7 +8,7 @@ export class WidgetRequestModel {
     method: Enum_Method;
     schemaName : Enum_Schema
     baseFilter: RuleSet;
-    fieldName: { [key: string]: PropertyType };
+    fieldName: { [key: string]: RulePropertyType };
     groupBy1: string;
     groupByOneIsTime: boolean;
        groupByTwoIsTime: boolean;
@@ -80,10 +80,10 @@ export class Rule {
     field: string;
     operator: string;
     value: string;
-    type: PropertyType;
+    type: RulePropertyType;
 }
 
-export enum PropertyType {
+export enum RulePropertyType {
     String,
     Number,
     SingleSelect,

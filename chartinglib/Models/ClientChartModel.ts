@@ -8,8 +8,8 @@ export class ClientChartModel{
 export class ChartSeries{
     name : string
     data : any[]
-    value:number
-    yaxis:string
+    value: number
+    yaxis: string
     color? : string
 
     constructor(params:{name?: string, data?: any[], yaxis?:string, value?:number,color?: string }) {

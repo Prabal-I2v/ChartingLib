@@ -61,10 +61,10 @@ import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.compon
   imports: [
     CommonModule,
     FormsModule,
-    BrowserAnimationsModule,
+    // BrowserAnimationsModule,
     // EchartsxModule,
     // FusionChartsModule,
-    BrowserModule,
+    // BrowserModule,
     PDFExportModule,
     CalendarModule,
     ChartsModule,

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { ChartingDataService } from '../charting-data.service';
-import { Enum_Entity, Enum_Method, Enum_WidgetType, PropertyType, WidgetRequestModel } from '../Models/WidgetRequestModel';
+import { Enum_Entity, Enum_Method, Enum_WidgetType, RulePropertyType, WidgetRequestModel } from '../Models/WidgetRequestModel';
 
 @Component({
   selector: 'i2v-pie-chart',
@@ -32,14 +32,14 @@ export class I2vPieChartComponent extends I2vChartsComponent {
           "field": "EventName",
           "operator": "Equal",
           "value": "Highway_ATCC",
-          "type": PropertyType.String
+          "type": RulePropertyType.String
         },
       ],
       "ruleSet": [],
       "condition": "and"
 
     },
-    widgetRequestModel.fieldName = {"bus" : PropertyType.Number, "truck" : PropertyType.Number, "motorbike" : PropertyType.Number, "car" : PropertyType.Number, "bicycle" : PropertyType.Number}
+    widgetRequestModel.fieldName = {"bus" : RulePropertyType.Number, "truck" : RulePropertyType.Number, "motorbike" : RulePropertyType.Number, "car" : RulePropertyType.Number, "bicycle" : RulePropertyType.Number}
     widgetRequestModel.groupBy1 = ""
     widgetRequestModel.groupByOneIsTime = false
     widgetRequestModel.groupBy2 = ""

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { ChartingDataService } from '../charting-data.service';
-import { Enum_Entity, Enum_Method, Enum_WidgetType, RulePropertyType, WidgetRequestModel } from '../Models/WidgetRequestModel';
+import { Enum_Entity, Enum_Method, Enum_WidgetType, RulePropertyType, Widget } from '../Models/WidgetRequestModel';
 
 @Component({
   selector: 'i2v-pie-chart',
@@ -19,8 +19,8 @@ export class I2vPieChartComponent extends I2vChartsComponent {
   }
 
   public getData() {
-    var widgetRequestModel = new WidgetRequestModel();
-    widgetRequestModel.id = 1;
+    var widgetRequestModel = new Widget();
+    
     widgetRequestModel.startTime = 1711521221084
     widgetRequestModel.endTime = 1711521243832
     widgetRequestModel.widgetType = Enum_WidgetType.PieChart

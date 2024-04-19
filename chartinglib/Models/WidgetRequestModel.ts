@@ -1,5 +1,10 @@
-export class WidgetRequestModel {
-    id: number;
+import { dashboard } from "./DashboardModel";
+
+export class Widget {
+    id: string;
+    analyticManagerId: string;
+    dashboardId: string;
+    dashboard: dashboard;
     startTime: number;
     endTime: number;
     widgetType: Enum_WidgetType;
@@ -11,10 +16,10 @@ export class WidgetRequestModel {
     fieldName: { [key: string]: RulePropertyType };
     groupBy1: string;
     groupByOneIsTime: boolean;
-       groupByTwoIsTime: boolean;
-       showableProperties : string[]
-       showablePropertiesLabel : string[]
-       MultiValuedColumn : Boolean = false
+    groupByTwoIsTime: boolean;
+    showableProperties : string[]
+    showablePropertiesLabel : string[]
+    MultiValuedColumn : Boolean = false
     groupBy2: string;
     isDistinct: boolean;
     ClubbingFieldName: string;

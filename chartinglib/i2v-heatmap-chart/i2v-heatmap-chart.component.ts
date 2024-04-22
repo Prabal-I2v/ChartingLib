@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 import { ChartSeries, ClientChartModel } from '../Models/ClientChartModel';
+import { ChartingDataService } from '../charting-data.service';
 
 @Component({
   selector: 'i2v-heatmap-chart',
@@ -11,10 +12,15 @@ import { ChartSeries, ClientChartModel } from '../Models/ClientChartModel';
 export class I2vHeatmapChartComponent extends I2vChartsComponent{
 
 
-  constructor() {
+  constructor(private chartingDataService : ChartingDataService) {
     super();
   }
 
+  ngOnInit(): void {
+    if(this.widgetRequestModel.allowRefresh){
+      this.init(this.chartingDataService);
+    }
+  }
   // public yAxisLabelContent = (e: { value: string }): string => {
   //   return this.chartData.chartCategories[e.value] || "";
   // };
@@ -22,11 +28,11 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent{
   transformData(data: ChartsOutputModel) : ClientChartModel {
 
     var chartData = new ClientChartModel();
-    chartData.series= [];
+    chartData.series[0].data= [];
       data.data.forEach((x,i) => {
       // return new ChartSeries(x.label, x.data);
        x.data.forEach((y,j)=>{
-        chartData.series.push(
+        chartData.series[0].data.push(
           new ChartSeries({name:x.label,value:parseInt(y),yaxis:data.labels[0].value[j]})
         //   {
         //   name:x.label,
@@ -35,11 +41,11 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent{
         // }
       );
        });
-       console.log(chartData.series);
+       console.log(chartData.series[0].data);
 
 
     })
-    console.log(chartData.series);
+    console.log(chartData.series[0].data);
     // if (data.labels.length > 0) {
     //   chartData.chartCategories = data.labels[0].value;
     //   chartData.x_label = data.labels[0].key

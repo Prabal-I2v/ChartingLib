@@ -2,17 +2,25 @@ import { dashboard } from "./DashboardModel";
 
 export class Widget {
     id: string;
-    analyticManagerId: string;
+    analyticManagerId?: string;
     dashboardId: string;
     dashboard: dashboard;
+    heading : string;
+    subHeading? : string;
+    isPannable : boolean;
+    isZoomable : boolean;
+    max : number;
+    customFilters? : { [key: string]: string[] };
+    disableTimeFilter : boolean;
     startTime: number;
     endTime: number;
     widgetType: Enum_WidgetType;
     entity: Enum_Entity;
-    joinableEntities : JoinableEntity[]
+    joinableEntities? : JoinableEntity[]
     method: Enum_Method;
     schemaName : Enum_Schema
-    baseFilter: RuleSet;
+    baseFilter?: RuleSet;
+    getColumnNameWithAggregationMethod : boolean = false;
     fieldName: { [key: string]: RulePropertyType };
     groupBy1: string;
     groupByOneIsTime: boolean;
@@ -29,7 +37,8 @@ export class Widget {
     ClubbingTime : boolean;
     identifierFieldName: string;
     multiplicationFactor: number;
-    propertyFilters: RuleSet;
+    propertyFilters?: RuleSet;
+    allowRefresh: boolean;
     refreshInterval: number;
     isPreview?: boolean | null;
 }
@@ -72,6 +81,10 @@ export enum Enum_WidgetType {
     KPI,
     Table
 }
+
+export class ICustomFilter {
+    [key: string]: string[];
+  }
 
 export class RuleSet {
     constructor() {

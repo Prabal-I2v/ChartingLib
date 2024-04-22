@@ -14,43 +14,48 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     return `${args.dataItem.category} years old`;
   }
 
-  constructor( private chartingDataService:ChartingDataService) {
+  constructor(private chartingDataService : ChartingDataService) {
     super();
   }
 
-  public getData() {
-    var widgetRequestModel = new Widget();
+  ngOnInit(): void {
+    if(this.widgetRequestModel.allowRefresh){
+      this.init(this.chartingDataService);
+    }
+  }
+  // public getData() {
+  //   var widgetRequestModel = new Widget();
     
-    widgetRequestModel.startTime = 1711521221084
-    widgetRequestModel.endTime = 1711521243832
-    widgetRequestModel.widgetType = Enum_WidgetType.PieChart
-    widgetRequestModel.entity = Enum_Entity.Highway_ATCC
-    widgetRequestModel.method = Enum_Method.Sum
-    widgetRequestModel.baseFilter = {
-      "rules": [
-        {
-          "field": "EventName",
-          "operator": "Equal",
-          "value": "Highway_ATCC",
-          "type": RulePropertyType.String
-        },
-      ],
-      "ruleSet": [],
-      "condition": "and"
+  //   widgetRequestModel.startTime = 1711521221084
+  //   widgetRequestModel.endTime = 1711521243832
+  //   widgetRequestModel.widgetType = Enum_WidgetType.PieChart
+  //   widgetRequestModel.entity = Enum_Entity.Highway_ATCC
+  //   widgetRequestModel.method = Enum_Method.Sum
+  //   widgetRequestModel.baseFilter = {
+  //     "rules": [
+  //       {
+  //         "field": "EventName",
+  //         "operator": "Equal",
+  //         "value": "Highway_ATCC",
+  //         "type": RulePropertyType.String
+  //       },
+  //     ],
+  //     "ruleSet": [],
+  //     "condition": "and"
 
-    },
-    widgetRequestModel.fieldName = {"bus" : RulePropertyType.Number, "truck" : RulePropertyType.Number, "motorbike" : RulePropertyType.Number, "car" : RulePropertyType.Number, "bicycle" : RulePropertyType.Number}
-    widgetRequestModel.groupBy1 = ""
-    widgetRequestModel.groupByOneIsTime = false
-    widgetRequestModel.groupBy2 = ""
-    widgetRequestModel.groupByTwoIsTime = false
-    widgetRequestModel.isDistinct = true
-    // widgetRequestModel.clubbingTime = false
-    widgetRequestModel.pagination = false
-    widgetRequestModel.pageNumber = 0
-    widgetRequestModel.pageLimit = 0
-    widgetRequestModel.identifierFieldName = ""
-    widgetRequestModel.multiplicationFactor = 0
+  //   },
+  //   widgetRequestModel.fieldName = {"bus" : RulePropertyType.Number, "truck" : RulePropertyType.Number, "motorbike" : RulePropertyType.Number, "car" : RulePropertyType.Number, "bicycle" : RulePropertyType.Number}
+  //   widgetRequestModel.groupBy1 = ""
+  //   widgetRequestModel.groupByOneIsTime = false
+  //   widgetRequestModel.groupBy2 = ""
+  //   widgetRequestModel.groupByTwoIsTime = false
+  //   widgetRequestModel.isDistinct = true
+  //   // widgetRequestModel.clubbingTime = false
+  //   widgetRequestModel.pagination = false
+  //   widgetRequestModel.pageNumber = 0
+  //   widgetRequestModel.pageLimit = 0
+  //   widgetRequestModel.identifierFieldName = ""
+  //   widgetRequestModel.multiplicationFactor = 0
   //   widgetRequestModel.propertyFilters = {
   //     "rules": [],
   //     "ruleSet": [
@@ -72,16 +77,51 @@ export class I2vPieChartComponent extends I2vChartsComponent {
   //         }
   //     ],
   //     "condition": "and"
-  // },
-    widgetRequestModel.refreshInterval = 1
 
-    this.chartingDataService.getChartingData(widgetRequestModel).subscribe((data)=>{
-      this.transformData(data);
-    // data.Labels.array.forEach((element,i) => {
-    //       this.chartData.push({element:data.Data[0][i]})
-    //     });
+  //   },
+  //   widgetRequestModel.fieldName = {"bus" : RulePropertyType.Number, "truck" : RulePropertyType.Number, "motorbike" : RulePropertyType.Number, "car" : RulePropertyType.Number, "bicycle" : RulePropertyType.Number}
+  //   widgetRequestModel.groupBy1 = ""
+  //   widgetRequestModel.groupByOneIsTime = false
+  //   widgetRequestModel.groupBy2 = ""
+  //   widgetRequestModel.groupByTwoIsTime = false
+  //   widgetRequestModel.isDistinct = true
+  //   // widgetRequestModel.clubbingTime = false
+  //   widgetRequestModel.pagination = false
+  //   widgetRequestModel.pageNumber = 0
+  //   widgetRequestModel.pageLimit = 0
+  //   widgetRequestModel.identifierFieldName = ""
+  //   widgetRequestModel.multiplicationFactor = 0
+  // //   widgetRequestModel.propertyFilters = {
+  // //     "rules": [],
+  // //     "ruleSet": [
+  // //         {
+  // //             "rules": [
+  // //                 {
+  // //                     "field": "Truck",
+  // //                     "operator": "NotEqual",
+  // //                     "value": "DASModule"
+  // //                 },
+  // //                 {
+  // //                     "field": "EventName",
+  // //                     "operator": "Equal",
+  // //                     "value": "Highway_ATCC"
+  // //                 }
+  // //             ],
+  // //             "ruleset": [],
+  // //             "condition": "and"
+  // //         }
+  // //     ],
+  // //     "condition": "and"
+  // // },
+  //   widgetRequestModel.refreshInterval = 1
 
-    //  this.chartData=  this.chartingDataService.tranformData( data);
-    });
-  }
+  //   this.chartingDataService.getChartingData(widgetRequestModel).subscribe((data)=>{
+  //     this.transformData(data);
+  //   // data.Labels.array.forEach((element,i) => {
+  //   //       this.chartData.push({element:data.Data[0][i]})
+  //   //     });
+
+  //   //  this.chartData=  this.chartingDataService.tranformData( data);
+  //   });
+  // }
 }

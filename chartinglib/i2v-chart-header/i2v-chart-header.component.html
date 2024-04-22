@@ -1,6 +1,6 @@
 <div style="display: flex; width: 100%; gap: 10px; justify-content: center;">
 <span style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
-    <h3 style="text-wrap: nowrap;">{{heading}}</h3>
+    <h3 style="text-wrap: nowrap; margin: 0px;">{{heading}}</h3>
     <span style="text-wrap: nowrap;" *ngIf="subHeading">({{subHeading}})</span>
 </span>
 <p-dropdown  *ngIf="customFilters" [options]="CustomFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"

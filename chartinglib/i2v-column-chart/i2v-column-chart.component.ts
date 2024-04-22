@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
+import { ChartingDataService } from '../charting-data.service';
 
 @Component({
   selector: 'i2v-column-chart',
@@ -9,8 +10,14 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 export class I2vColumnChartComponent extends I2vChartsComponent {
 
 
-  constructor() {
+  constructor(private chartingDataService : ChartingDataService) {
     super();
+  }
+
+  ngOnInit(): void {
+    if(this.widgetRequestModel.allowRefresh){
+      this.init(this.chartingDataService);
+    }
   }
 
 }

@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 import { ClientChartModel, ChartSeries } from '../Models/ClientChartModel';
+import { ChartingDataService } from '../charting-data.service';
 
 @Component({
   selector: 'i2v-stackedcolumn-chart',
@@ -11,14 +12,20 @@ import { ClientChartModel, ChartSeries } from '../Models/ClientChartModel';
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
 
 
-  constructor() {
+  constructor(private chartingDataService : ChartingDataService) {
     super();
+  }
+
+  ngOnInit(): void {
+    if(this.widgetRequestModel.allowRefresh){
+      this.init(this.chartingDataService);
+    }
   }
 
   transformData(data: ChartsOutputModel) : ClientChartModel {
 
     var chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
+    chartData.series[0].data = data.data.map((x) => {
       return new ChartSeries({name:x.label, data:x.data.map(str => parseInt(str, 10))});
     })
     if (data.labels.length > 0) {

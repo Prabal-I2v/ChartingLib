@@ -45,7 +45,7 @@ import { I2vDonutChartComponent } from './i2v-donut-chart/i2v-donut-chart.compon
   declarations: [
     ChartingComponent,
     // FusionChartComponent,
-    I2vChartsComponent,
+    // I2vChartsComponent,
     I2vChartHeaderComponent,
     I2vBarChartComponent,
     I2vPieChartComponent,

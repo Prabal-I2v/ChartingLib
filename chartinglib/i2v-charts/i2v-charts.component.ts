@@ -1,42 +1,51 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { ChartSeries, ClientChartModel } from '../Models/ClientChartModel';
-import { ChartsOutputModel } from '../Models/ChartsOutputModel';
-
-export class ICustomFilter {
-  [key: string]: string[];
-}
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from "@angular/core";
+import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
+import { ChartsOutputModel } from "../Models/ChartsOutputModel";
+import { Widget } from "../Models/WidgetRequestModel";
+import { ChartingDataService } from "../charting-data.service";
 
 @Component({
-  selector: 'i2v-charts',
-  templateUrl: './i2v-charts.component.html',
-  styleUrl: './i2v-charts.component.scss'
+  selector: "i2v-charts",
+  templateUrl: "./i2v-charts.component.html",
+  styleUrl: "./i2v-charts.component.scss",
 })
-
-export class I2vChartsComponent {
+export abstract class I2vChartsComponent {
   // @Input() chartCategories : chartCategories;
-  private _chartData : ClientChartModel
-  @Input()
-  set chartData(data : ChartsOutputModel){
-    this._chartData = this.transformData(data)
-  }
-  get chartData() : ClientChartModel{
-    return this._chartData
-  }
 
-  @Input() public heading: string = "";
-  @Input() subHeading: string = "";
-  @Input() customFilters: ICustomFilter;
-  @Input() disableTimeFilter:boolean=false;
+  @Input() widgetRequestModel  : Widget;
   @Output() daysFilterOutput: EventEmitter<string> = new EventEmitter<string>();
-  @Output() customFilterOutput: EventEmitter<string | number | string[] | number[]> = new EventEmitter<string | number | string[] | number[]>();
+  @Output() customFilterOutput: EventEmitter< string | number | string[] | number[] > = new EventEmitter<string | number | string[] | number[]>();
 
-
-  constructor() {
-
+  private _chartData: ClientChartModel;
+  @Input()
+  set chartData(data: ChartsOutputModel) {
+    this._chartData = this.transformData(data);
   }
+  get chartData(): ClientChartModel {
+    return this._chartData;
+  }
+
+  private baseChartingDataService : ChartingDataService;
+
+  constructor() {}
 
   ngOnInit() {
+    
+  }
 
+  init(chartingDataService: ChartingDataService = null){
+    if (chartingDataService != null && chartingDataService != undefined) {
+      this.baseChartingDataService = chartingDataService;
+      setTimeout(() => {
+        this.getDataFromServer(this.widgetRequestModel);
+      }, this.widgetRequestModel.refreshInterval * 1000);
+    }
   }
 
   onCustomFilterValuesChange(event) {
@@ -47,8 +56,17 @@ export class I2vChartsComponent {
     this.daysFilterOutput.emit(event);
   }
 
-  transformData(data: ChartsOutputModel) : ClientChartModel {
+  getDataFromServer(widgetRequestModel: Widget) {
+    if (widgetRequestModel != null) {
+      this.baseChartingDataService
+        .getChartingData(widgetRequestModel)
+        .subscribe((data: any) => {
+          this.chartData = data;
+        });
+    }
+  }
 
+  transformData(data: ChartsOutputModel): ClientChartModel {
     var chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({name:x.label, data:x.data});

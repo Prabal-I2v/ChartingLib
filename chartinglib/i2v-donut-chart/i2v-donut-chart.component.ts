@@ -3,6 +3,7 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { LegendItemVisualArgs, SeriesLabelsContentArgs } from '@progress/kendo-angular-charts';
 import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 import { ChartSeries, ClientChartModel } from '../Models/ClientChartModel';
+import { ChartingDataService } from '../charting-data.service';
 
 
 
@@ -17,16 +18,21 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     return e.category;
   }
 
-  constructor() {
+  constructor(private chartingDataService : ChartingDataService) {
     super();
   }
 
+  ngOnInit(): void {
+    if(this.widgetRequestModel.allowRefresh){
+      this.init(this.chartingDataService);
+    }
+  }
   transformData(data: ChartsOutputModel) : ClientChartModel {
 
     var chartData = new ClientChartModel();
-    chartData.series=[];
+    chartData.series[0].data=[];
       data.data[0].data.forEach((x:any,i) => {
-      chartData.series.push( new ChartSeries({name:data.labels[0].value[i],data: x}));
+      chartData.series[0].data.push( new ChartSeries({name:data.labels[0].value[i],data: x}));
     })
     // if (data.labels.length > 0) {
     //   chartData.chartCategories = data.labels[0].value;

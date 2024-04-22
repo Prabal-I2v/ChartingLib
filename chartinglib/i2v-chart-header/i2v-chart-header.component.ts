@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { ICustomFilter } from '../i2v-charts/i2v-charts.component';
+import { ICustomFilter } from '../Models/WidgetRequestModel';
 
 @Component({
   selector: 'i2v-chart-header',

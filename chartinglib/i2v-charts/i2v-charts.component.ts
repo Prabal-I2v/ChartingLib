@@ -42,7 +42,7 @@ export abstract class I2vChartsComponent {
   init(chartingDataService: ChartingDataService = null){
     if (chartingDataService != null && chartingDataService != undefined) {
       this.baseChartingDataService = chartingDataService;
-      setTimeout(() => {
+      setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
     }

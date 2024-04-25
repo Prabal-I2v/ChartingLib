@@ -1,6 +1,6 @@
 import { dashboard } from "./DashboardModel";
 
-export class Widget {
+export class Widget{
     id: string;
     analyticManagerId?: string;
     dashboardId: string;
@@ -9,38 +9,46 @@ export class Widget {
     subHeading? : string;
     isPannable : boolean;
     isZoomable : boolean;
-    max : number;
+    max : number = 10;
     customFilters? : { [key: string]: string[] };
-    disableTimeFilter : boolean;
+    disableTimeFilter : boolean = true;
     startTime: number;
     endTime: number;
     widgetType: Enum_WidgetType;
     entity: Enum_Entity;
-    joinableEntities? : JoinableEntity[]
+    joinableEntities : JoinableEntity[] = []
     method: Enum_Method;
     schemaName : Enum_Schema
     baseFilter?: RuleSet;
     getColumnNameWithAggregationMethod : boolean = false;
     fieldName: { [key: string]: RulePropertyType };
     groupBy1: string;
+    groupBy2: string;
     groupByOneIsTime: boolean;
     groupByTwoIsTime: boolean;
-    showableProperties : string[]
-    showablePropertiesLabel : string[]
-    MultiValuedColumn : Boolean = false
-    groupBy2: string;
-    isDistinct: boolean;
-    ClubbingFieldName: string;
-    pagination: boolean;
-    pageLimit: number;
-    pageNumber: number;
-    ClubbingTime : boolean;
-    identifierFieldName: string;
-    multiplicationFactor: number;
+    showableProperties : string[] = []
+    showablePropertiesLabel : string[] = []
+    ClubbingTime : boolean = false;
+    ClubbingFieldName?: Enum_Method_Aggregation;
+    isDistinct: boolean = false;
+    isMultiValuedColumn : Boolean = false
+    isSelfCount : Boolean = false
+    allowRefresh: boolean = false;
+    refreshInterval: number = 300;
     propertyFilters?: RuleSet;
-    allowRefresh: boolean;
-    refreshInterval: number;
+    pagination?: boolean;
+    pageLimit?: number;
+    pageNumber?: number;
+    identifierFieldName?: string;
+    multiplicationFactor?: number;
     isPreview?: boolean | null;
+}
+
+    
+export enum Enum_Method_Aggregation{
+    Total,
+    Greatest,
+    Lowest
 }
 
 export enum Enum_Entity {
@@ -53,7 +61,8 @@ export enum Enum_Entity {
     VIDS,
     Vehicle_Stopped,
     ANPR,
-    Wrong_Way_Detected
+    Wrong_Way_Detected,
+    Human_Crossing_Road
 }
 
 export enum Enum_Method {
@@ -84,6 +93,11 @@ export enum Enum_WidgetType {
 
 export class ICustomFilter {
     [key: string]: string[];
+  }
+
+export interface TimeRange {
+    startTime: number; // Unix timestamp in milliseconds
+    endTime: number; // Unix timestamp in milliseconds
   }
 
 export class RuleSet {

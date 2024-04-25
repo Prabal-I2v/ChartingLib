@@ -3,6 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
+import { Enum_Method_Aggregation } from "../Models/WidgetRequestModel";
 
 // export enum RiseLevel {
 //   Increase,
@@ -16,7 +17,9 @@ import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 })
 export class I2vKpiChartComponent extends I2vChartsComponent {
   percentValue: number = 0;
-//  RiseLevel: RiseLevel;
+  PropName: string = "";
+  PropIcon: string = "";
+  //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
 
   constructor(private chartingDataService: ChartingDataService) {
@@ -42,25 +45,77 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         return x.label;
       });
     }
-    if (chartData.series[0].data.length > 1) {
-      this.percentValue = 
-        ((Number(chartData.series[0].data[chartData.series[0].data.length - 1]) - Number(chartData.series[0].data[chartData.series[0].data.length - 2])) /
-          Number( chartData.series[0].data[chartData.series[0].data.length - 1])) * 100;
-        } 
-    else if (chartData.series[0].data.length > 0) {
-      this.percentValue = 100
-    } 
-    else {
-      this.percentValue = 0;
+
+    //if our data is created from a single column, we use IsMultivaluedcolumn = true because we cannot get series with greatest name
+    if (this.widgetRequestModel.isMultiValuedColumn && this.widgetRequestModel.isMultiValuedColumn == true) {
+      var maxValuesSeriesIndex = this.findMaxLastValue(chartData.series);
+      this.setData(chartData, maxValuesSeriesIndex);
+      this.PropName = chartData.series[maxValuesSeriesIndex].name;
     }
 
-    // if (this.percentValue > 0) {
-    //   this.RiseLevel = RiseLevel.Increase;
-    // } else if (this.percentValue < 0) {
-    //   this.RiseLevel = RiseLevel.Decrease;
-    // } else {
-    //   this.RiseLevel = RiseLevel.Neutral;
-    // }
+    //if we dont have multivaluedColumn then we used ClubbingFieldName property and we get series as Lowest/greatest/total
+    else if (this.widgetRequestModel.ClubbingFieldName != null && this.widgetRequestModel.ClubbingFieldName == Enum_Method_Aggregation.Greatest) {
+      var greatestSeries = chartData.series.find(x => {
+        return x.name == 'greatest'
+      })
+
+      var maxValuesSeriesLastValue = greatestSeries.data[greatestSeries.data.length - 1];
+      var maxValuesSeriesIndex = chartData.series.findIndex(x => {
+        return x.data[x.data.length - 1] == maxValuesSeriesLastValue
+      })
+
+      this.setData(chartData, maxValuesSeriesIndex);
+      this.PropName = chartData.series[maxValuesSeriesIndex].name;
+    }
+    else if (this.widgetRequestModel.ClubbingFieldName != null && this.widgetRequestModel.ClubbingFieldName == Enum_Method_Aggregation.Lowest) {
+
+      var greatestSeries = chartData.series.find(x => {
+        return x.name == 'lowest'
+      })
+
+      var maxValuesSeriesLastValue = greatestSeries.data[greatestSeries.data.length - 1];
+      var maxValuesSeriesIndex = chartData.series.findIndex(x => {
+        return x.data[x.data.length - 1] == maxValuesSeriesLastValue
+      })
+
+      this.setData(chartData);
+      this.PropName = chartData.series[maxValuesSeriesIndex].name;
+      this.PropIcon = ""
+    }
+    else {
+      this.setData(chartData);
+    }
+
     return chartData;
   }
+
+  setData(chartData: ClientChartModel, index: number = 0) {
+    if (chartData.series[index].data.length > 1) {
+      this.percentValue = ((Number(
+        chartData.series[index].data[chartData.series[index].data.length - 1]) -
+        Number(
+          chartData.series[index].data[chartData.series[index].data.length - 2])) /
+        Number(
+          chartData.series[index].data[chartData.series[index].data.length - 1])) * 100;
+    } else if (chartData.series[index].data.length > 0) {
+      this.percentValue = 100;
+    } else {
+      this.percentValue = 0;
+    }
+  }
+
+  findMaxLastValue(arr: ChartSeries[]): number {
+    let maxLastValue = -Infinity;
+    let maxIndex = -1;
+
+    arr.forEach((subArray, index) => {
+        const lastValue = Number(subArray.data[subArray.data.length - 1]);
+        if (lastValue > maxLastValue) {
+            maxLastValue = lastValue;
+            maxIndex = index;
+        }
+    });
+
+    return maxIndex ;
+}
 }

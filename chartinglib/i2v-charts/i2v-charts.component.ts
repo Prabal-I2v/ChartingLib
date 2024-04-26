@@ -107,7 +107,7 @@ export abstract class I2vChartsComponent {
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
       this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: any) => {
-        if (!data) {
+        if (data) {
           this.chartData = data;
           this.dataExists = true;
         } else {

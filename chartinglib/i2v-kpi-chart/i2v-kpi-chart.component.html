@@ -19,10 +19,10 @@
       <div class="number-grp">
         <div class="minorheader" *ngIf="widgetRequestModel.heading">{{ widgetRequestModel.heading }}</div>
         <div *ngIf="PropName">{{PropName}}</div>
-        <div class="digits" *ngIf="chartData.series[0].data[0]">{{ chartData.series[0].data[0] }}</div>
+        <div class="digits" *ngIf="chartData && chartData.series">{{ chartData.series[0].data[0] }}</div>
       </div>
       <!-- <div class="sparkline"> -->
-      <kendo-sparkline *ngIf="chartData.series[0].data"
+      <kendo-sparkline *ngIf="chartData && chartData.series"
         class="sparkline"
         [data]="chartData.series[0].data"
         [type]="'line'"

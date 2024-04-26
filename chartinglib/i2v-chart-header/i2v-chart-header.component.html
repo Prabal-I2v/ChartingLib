@@ -7,11 +7,11 @@
     </div>
     <div style="display: flex; flex-grow: 1; gap: 15px; justify-content: flex-end;">
         <p-dropdown *ngIf="customFilters" [options]="CustomFilterKeys"
-            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true"
+            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true"  #keySelect
             (onChange)="onCustomFilterKeyChange($event)"></p-dropdown>
 
-        <p-multiSelect *ngIf="customFilters" [options]="customFilters[selectedCustomFilterkey]" #multiselect
-            placeholder="Select {{selectedCustomFilterkey}}" display="chip" [showClear]="true"
+        <p-multiSelect [options]="customFilters[selectedCustomFilterkey]" optionLabel="displayName" optionValue="returnValue" #multiselect
+            placeholder="Select {{selectedCustomFilterkey}}" display="chip" [showClear]="true" (onClear)="onCustomFilterValuesChange($event)"
             (onChange)="onCustomFilterValuesChange($event)"></p-multiSelect>
 
         <p-dropdown *ngIf="!disableTimeFilter" [options]="TimeFilter"

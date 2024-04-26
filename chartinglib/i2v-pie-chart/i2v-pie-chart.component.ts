@@ -21,8 +21,13 @@ export class I2vPieChartComponent extends I2vChartsComponent {
   }
 
   ngOnInit(): void {
-    if(this.widgetRequestModel.allowRefresh){
-      this.init(this.chartingDataService);
+    if (this.widgetRequestModel) {
+      this.isModel = true;
+      if(this.widgetRequestModel.allowRefresh){
+        this.init(this.chartingDataService);
+      }
+    } else {
+      this.isModel = false;
     }
   }
   

@@ -1,11 +1,31 @@
 <div style="display: flex; flex-direction: column; width: 100%;">
   <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
-    <i2v-chart-header style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
+    <div *ngIf = "!isModel" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
+      <div class="nowatchlistexist">
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+              libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
+          </div>
+          <span class="major-heading">No Configurations found</span>
+      </div>
+  </div>
+  <i2v-chart-header *ngIf = "isModel" style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
             [customFilters]="widgetRequestModel.customFilters" (daysFilterOutput)="onTimeChange($event)"
             (customFilterOutput)="onCustomFilterValuesChange($event)"></i2v-chart-header>
   </div>
-
-  <kendo-chart [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false">    <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
+  <ng-container *ngIf="isModel && isLoading">
+    <div style="display: flex; width: 360px; flex-direction: column; justify-content: center; align-items: center; gap: 20px; flex: 1; height: 100%; width: 100%;">
+        <span style="width: 150px; height: 150px; background: url(assets/gifs/enrollment-progress.gif) no-repeat center;"></span>
+    </div>
+  </ng-container>
+  <div *ngIf = "isModel && !isLoading && !dataExists" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
+      <div class="nowatchlistexist">
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+              libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
+          </div>
+          <span class="major-heading">No Data found</span>
+      </div>
+  </div>
+  <kendo-chart *ngIf = "isModel && !isLoading && dataExists" [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false">    <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
     <kendo-chart-tooltip>
       <ng-template kendoChartSeriesTooltipTemplate let-value="value.value" let-category="category">
         {{ value }}

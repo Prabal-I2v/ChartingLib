@@ -18,7 +18,10 @@ import { ChartingDataService } from "../charting-data.service";
 export abstract class I2vChartsComponent {
   // @Input() chartCategories : chartCategories;
 
-  @Input() widgetRequestModel  : Widget;
+  @Input() widgetRequestModel: Widget;
+  @Input() isModel: boolean;
+  @Input() isLoading: boolean;
+  @Input() dataExists: boolean;
   @Output() daysFilterOutput: EventEmitter<string> = new EventEmitter<string>();
   @Output() customFilterOutput: EventEmitter< string | number | string[] | number[] > = new EventEmitter<string | number | string[] | number[]>();
 
@@ -36,11 +39,12 @@ export abstract class I2vChartsComponent {
   constructor() {}
 
   ngOnInit() {
-    
+
   }
 
   init(chartingDataService: ChartingDataService = null){
     if (chartingDataService != null && chartingDataService != undefined) {
+      this.isLoading = true;
       this.baseChartingDataService = chartingDataService;
       setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
@@ -58,11 +62,15 @@ export abstract class I2vChartsComponent {
 
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
-      this.baseChartingDataService
-        .getChartingData(widgetRequestModel)
-        .subscribe((data: any) => {
+      this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: any) => {
+        if (!data) {
           this.chartData = data;
-        });
+          this.dataExists = true;
+        } else {
+          this.dataExists = false;
+        }
+      });
+      this.isLoading = false;
     }
   }
 

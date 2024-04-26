@@ -10,7 +10,7 @@ export class Widget{
     isPannable : boolean;
     isZoomable : boolean;
     max : number = 10;
-    customFilters? : { [key: string]: string[] };
+    customFilters : { [key: string]: CustomFilterValueModel[] } = {};
     disableTimeFilter : boolean = true;
     startTime: number;
     endTime: number;
@@ -62,7 +62,13 @@ export enum Enum_Entity {
     Vehicle_Stopped,
     ANPR,
     Wrong_Way_Detected,
-    Human_Crossing_Road
+    Human_Crossing_Road,
+    Reverse_Traffic_Detected,
+    Lane_Changed,
+    Illegal_Vehicle,
+    Safe_Distance_Violated,
+    Intrusion_Detected,
+    Human_Detected
 }
 
 export enum Enum_Method {
@@ -92,10 +98,24 @@ export enum Enum_WidgetType {
 }
 
 export class ICustomFilter {
-    [key: string]: string[];
+    [key: string]: CustomFilterValueModel[];
   }
 
-export interface TimeRange {
+export interface ICustomFilterKeyModel{
+    displayName : string
+    returnValue : string
+}
+
+export class CustomFilterValueModel{
+    displayName : string
+    returnValue : string | ITimeRange
+}
+
+export interface ICustomFilterOutputEmittorModel{
+    key : string;
+    value : string[]
+}
+export interface ITimeRange {
     startTime: number; // Unix timestamp in milliseconds
     endTime: number; // Unix timestamp in milliseconds
   }

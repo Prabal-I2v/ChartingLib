@@ -9,7 +9,7 @@
             </div>
         </div>
         <i2v-chart-header *ngIf = "isModel" style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
-            [customFilters]="widgetRequestModel.customFilters" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="widgetRequestModel.customFilters"
+            [customFilters]="customFilter" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="widgetRequestModel.customFilters"
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>

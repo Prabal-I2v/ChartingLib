@@ -11,6 +11,7 @@ import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEm
 import { ChartingDataService } from "../charting-data.service";
 import { equal } from "assert";
 import { ruleSet } from "src/app/Models/ruleSet.model";
+import { error } from "console";
 
 
 export enum CustomFilterEnum {
@@ -57,12 +58,17 @@ export abstract class I2vChartsComponent {
     if (chartingDataService != null && chartingDataService != undefined) {
       this.isLoading = true;
       this.baseChartingDataService = chartingDataService;
-      setInterval(() => {
-        this.getDataFromServer(this.widgetRequestModel);
-      }, this.widgetRequestModel.refreshInterval * 1000);
     }
   }
 
+  ngAfterViewInit()
+  {
+    if(this.baseChartingDataService != undefined && this.baseChartingDataService != null)
+    setInterval(() => {
+      this.getDataFromServer(this.widgetRequestModel);
+    }, this.widgetRequestModel.refreshInterval * 1000);
+  }
+  
   onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel) {
     console.log(event)
     switch (event.key) {
@@ -80,7 +86,7 @@ export abstract class I2vChartsComponent {
 
         var index = this.isRuleSetAlreadyPresent(this.widgetRequestModel.propertyFilters, "VideoSourceId");
         if (index != -1) {
-          if (event.value && event.value.length > 1) {
+          if (event.value && event.value.length > 0) {
             this.setAlreadyPresentRuleSetValue(this.widgetRequestModel.propertyFilters, "VideoSourceId", event.value, index);
           }
           else {
@@ -88,7 +94,9 @@ export abstract class I2vChartsComponent {
           }
         }
         else {
-          this.widgetRequestModel.propertyFilters.ruleSet.push(this.createRule(event, "VideoSourceId"))
+          if (event.value && event.value.length > 0) {
+            this.widgetRequestModel.propertyFilters.ruleSet.push(this.createRule(event, "VideoSourceId"))
+          }
         }
         break;
     }
@@ -96,7 +104,7 @@ export abstract class I2vChartsComponent {
     this.customFilterOutput.emit(event);
   }
 
-  onTimeChange(event : ITimeRange) {
+  onTimeChange(event: ITimeRange) {
     console.log(event);
     this.widgetRequestModel.startTime = event.startTime;
     this.widgetRequestModel.endTime = event.endTime;
@@ -106,13 +114,16 @@ export abstract class I2vChartsComponent {
 
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
-      this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: any) => {
-        if (data) {
+      this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
+        if (data && this.checkIfAnySeriesExists(data)) {
           this.chartData = data;
           this.dataExists = true;
         } else {
           this.dataExists = false;
         }
+      },
+      (error)=>{
+        this.dataExists = false;
       });
       this.isLoading = false;
     }
@@ -165,7 +176,13 @@ export abstract class I2vChartsComponent {
     propertyFilters.ruleSet.splice(ruleSetIndex, 1);
   }
 
+  checkIfAnySeriesExists(data : ChartsOutputModel): boolean{
+     var index = data.data.findIndex(x=>{
+        return x.data.length>0;
+      })
 
+    return index!=-1 ? true : false;
+  }
 
 
 }

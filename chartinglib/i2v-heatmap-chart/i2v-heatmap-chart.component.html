@@ -25,7 +25,7 @@
           <span class="major-heading">No Data found</span>
       </div>
   </div>
-  <kendo-chart *ngIf = "isModel && !isLoading && dataExists" [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false">    <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
+  <kendo-chart style="min-height: 400px; height: 100%;" *ngIf = "isModel && !isLoading && dataExists" [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false">    <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
     <kendo-chart-tooltip>
       <ng-template kendoChartSeriesTooltipTemplate let-value="value.value" let-category="category">
         {{ value }}

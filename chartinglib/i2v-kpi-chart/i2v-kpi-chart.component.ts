@@ -21,6 +21,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   PropIcon: string = "";
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
+  @Input() showChart: boolean = false;
 
   constructor(private chartingDataService: ChartingDataService) {
     super();

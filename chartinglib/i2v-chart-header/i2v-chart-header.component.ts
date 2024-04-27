@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ICustomFilter, ITimeRange, ICustomFilterOutputEmittorModel, CustomFilterValueModel } from '../Models/WidgetRequestModel';
 import * as moment from 'moment';
 
@@ -41,12 +41,13 @@ export class I2vChartHeaderComponent {
   );
   private endDate: Date = new Date($.now());
   enableCustomTime: boolean = false;
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     this.rangeDates[0] = this.startDate
     this.rangeDates[1] = this.endDate
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    this.cdr.detectChanges();
     if (changes.customFilters && changes.customFilters.currentValue != changes.customFilters.previousValue) {
       this.setFilterValueFromPassedAndSelectedValue()
     }
@@ -61,8 +62,12 @@ export class I2vChartHeaderComponent {
   }
 
   private setFilterValueFromPassedAndSelectedValue() {
-    this.selectedCustomFilterkey = "";
-    if (this.widgetCustomFiltersValue && Object.keys(this.widgetCustomFiltersValue).length>0) {
+    if (this.customFilters) {
+      this.CustomFilterKeys = Object.keys(this.customFilters);
+      this.selectedCustomFilterkey = this.CustomFilterKeys[0];
+      this.selectedCustomFilterValue = []
+    }
+    if (this.widgetCustomFiltersValue && Object.keys(this.widgetCustomFiltersValue).length > 0 && this.customFilters) {
       for (const key of Object.keys(this.customFilters)) {
         if (key in this.widgetCustomFiltersValue) {
           this.selectedCustomFilterkey = key;
@@ -73,24 +78,20 @@ export class I2vChartHeaderComponent {
       this.customFilterOutput.emit({ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue })
       if ("Time" in this.widgetCustomFiltersValue) {
         this.TimeFilterValue = this.widgetCustomFiltersValue["Time"][0].displayName;
-        if(this.TimeFilterValue == 'Custom'){
-            this.enableCustomTime = true;
+        if (this.TimeFilterValue == 'Custom') {
+          this.enableCustomTime = true;
         }
         this.rangeDates[0] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         this.rangeDates[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
         this.daysFilterOutput.emit((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue));
       }
+
+    }  
+    
+    if (this.keySelectRef && this.multiselectRef) {
       this.keySelectRef.updateModel(this.selectedCustomFilterkey);
       this.multiselectRef.updateModel(this.selectedCustomFilterValue);
     }
-    // else {
-    //   this.selectedCustomFilterValue = [];
-    // }
-    // this.selectedCustomFilterValue = this.customFilters[this.selectedCustomFilterkey].map(x=> { return x.returnValue});
-    if (this.customFilters) {
-      this.CustomFilterKeys = Object.keys(this.customFilters);
-    }
-   
   }
 
   onCustomFilterKeyChange(event) {
@@ -179,7 +180,7 @@ export class I2vChartHeaderComponent {
     if (this.startDate != this.rangeDates[0] && this.endDate != this.rangeDates[1]) {
       this.startDate = this.rangeDates[0]
       this.endDate = this.rangeDates[1];
-      var timeObj = {startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf()}
+      var timeObj = { startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf() }
       console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
       this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: timeObj }];
 

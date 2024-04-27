@@ -22,7 +22,7 @@
         <div class="digits" *ngIf="chartData && chartData.series">{{ chartData.series[0].data[0] }}</div>
       </div>
       <!-- <div class="sparkline"> -->
-      <kendo-sparkline *ngIf="chartData && chartData.series"
+      <kendo-sparkline *ngIf="showChart && chartData && chartData.series"
         class="sparkline"
         [data]="chartData.series[0].data"
         [type]="'line'"
@@ -38,7 +38,7 @@
 
       <!-- </div> -->
     </div>
-    <div class="bottom">
+    <div class="bottom" *ngIf="widgetRequestModel.ClubbingTime && (widgetRequestModel.groupByOneIsTime || widgetRequestModel.groupByTwoIsTime)">
       {{ percentValue | number : '.1-2'  }}% {{percentValue==0 ? 'rise' : ''}}
       <svg *ngIf="percentValue > 0 || percentValue < 0"
         width="20"
@@ -61,7 +61,7 @@
           fill="red"
         />
       </svg>
-      in last 30 days
+      in last {{widgetRequestModel.groupByOneIsTime ? widgetRequestModel.groupBy1 : widgetRequestModel.groupBy2}}
     </div>
   </div>
 </div>

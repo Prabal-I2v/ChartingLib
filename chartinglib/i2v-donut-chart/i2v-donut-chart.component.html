@@ -25,7 +25,7 @@
           <span class="major-heading">No Data found</span>
       </div>
   </div>
-  <kendo-chart *ngIf = "isModel && !isLoading && dataExists" [transitions]="true">
+  <kendo-chart style="min-height: 400px; height: 100%;" *ngIf = "isModel && !isLoading && dataExists" [transitions]="true">
     <ng-template kendoChartDonutCenterTemplate>
       <div
         style="

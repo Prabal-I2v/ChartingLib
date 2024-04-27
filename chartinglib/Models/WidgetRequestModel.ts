@@ -7,8 +7,8 @@ export class Widget{
     dashboard: dashboard;
     heading : string;
     subHeading? : string;
-    isPannable : boolean;
-    isZoomable : boolean;
+    isPannable : boolean = false;
+    isZoomable : boolean = false;
     max : number = 10;
     customFilters : { [key: string]: CustomFilterValueModel[] } = {};
     disableTimeFilter : boolean = true;
@@ -21,11 +21,11 @@ export class Widget{
     schemaName : Enum_Schema
     baseFilter?: RuleSet;
     getColumnNameWithAggregationMethod : boolean = false;
-    fieldName: { [key: string]: RulePropertyType };
-    groupBy1: string;
-    groupBy2: string;
-    groupByOneIsTime: boolean;
-    groupByTwoIsTime: boolean;
+    fieldName: { [key: string]: RulePropertyType } = {};
+    groupBy1: string = "";
+    groupBy2: string = "";
+    groupByOneIsTime: boolean = false;
+    groupByTwoIsTime: boolean = false;
     showableProperties : string[] = []
     showablePropertiesLabel : string[] = []
     ClubbingTime : boolean = false;
@@ -68,7 +68,10 @@ export enum Enum_Entity {
     Illegal_Vehicle,
     Safe_Distance_Violated,
     Intrusion_Detected,
-    Human_Detected
+    Human_Detected,
+    Deacceleration_Detected,
+    Vehicle_Accelerated,
+    Vehicle_Occupancy
 }
 
 export enum Enum_Method {

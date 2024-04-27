@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column; width: 100%;">
+<div style="display: flex; flex-direction: column; width: 100%; height: 100%;">
     <div style="display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
       <div *ngIf = "!isModel" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
         <div class="nowatchlistexist">
@@ -8,7 +8,7 @@
             <span class="major-heading">No Configurations found</span>
         </div>
     </div>
-    <i2v-chart-header *ngIf = "isModel" style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
+    <i2v-chart-header *ngIf="isModel" style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
       [customFilters]="customFilter" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="widgetRequestModel.customFilters"
       (customFilterOutput)="onCustomFilterValuesChange($event)"></i2v-chart-header>
     </div>
@@ -26,7 +26,7 @@
             <span class="major-heading">No Data found</span>
         </div>
     </div>
-    <kendo-chart *ngIf = "isModel && !isLoading && dataExists" title="Pie Chart">
+    <kendo-chart style="min-height: 400px; height: 100%;" *ngIf = "isModel && !isLoading && dataExists" title="Pie Chart">
         <kendo-chart-legend position="bottom"></kendo-chart-legend>
         <kendo-chart-series>
           <kendo-chart-series-item type="pie" [data]="chartData.series" field="value" categoryField="category"

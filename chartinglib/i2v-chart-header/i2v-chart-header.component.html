@@ -1,13 +1,13 @@
 <div style="display: flex; gap: 10px; width: 100%; justify-content: space-between; align-items: center;">
     <div style="display: flex; width: 25%; flex-wrap: wrap;">
         <h3 style="margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
-            [title]="heading">{{heading}}</h3>
+            [title]="heading" *ngIf="heading">{{heading}}</h3>
         <span style="margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"
             [title]="subHeading" *ngIf="subHeading">({{subHeading}})</span>
     </div>
-    <div *ngIf = "customFilters" style="display: flex; flex-grow: 1; gap: 15px; justify-content: flex-end;">
-        <p-dropdown *ngIf="customFilters" [options]="CustomFilterKeys"
-            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true"  #keySelect
+    <div *ngIf = "customFilters" style="display: flex; flex-grow: 1; gap: 15px; justify-content: flex-end; align-items: center;">
+        <p-dropdown [options]="CustomFilterKeys"
+            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true" #keySelect
             (onChange)="onCustomFilterKeyChange($event)"></p-dropdown>
 
         <p-multiSelect [options]="customFilters[selectedCustomFilterkey]" optionLabel="displayName" optionValue="returnValue" #multiselect

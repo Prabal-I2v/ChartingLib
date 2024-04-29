@@ -95,7 +95,10 @@ import { i2vUtilityModule } from '@i2v-systems/i2v-utility';
     LayoutModule,
     GridModule,
     ExcelModule,
-    PDFModule
+    PDFModule,
+    CalendarModule,
+    DropdownModule,
+    MultiSelectModule
   ],
 
 })

@@ -18,7 +18,7 @@
             [(ngModel)]="TimeFilterValue" placeholder="Select Time" [editable]="true"
             (onChange)="onTimeChange($event)"></p-dropdown>
 
-        <p-calendar *ngIf="enableCustomTime" [(ngModel)]="rangeDates" selectionMode="range"
+        <p-calendar *ngIf="enableCustomTime" [(ngModel)]="DateRange" selectionMode="range"
             (onClose)="onCustomTimeSelected()"></p-calendar>
     </div>
 </div>

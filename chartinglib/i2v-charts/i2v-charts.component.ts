@@ -1,17 +1,16 @@
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   Output,
-  ViewChild,
+  SimpleChanges
 } from "@angular/core";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
-import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEmittorModel, ITimeRange } from "../Models/WidgetRequestModel";
+import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEmittorModel, ITimeRange, IDateTimeFilterOutputEmittorModel } from "../Models/WidgetRequestModel";
 import { ChartingDataService } from "../charting-data.service";
-import { equal } from "assert";
-import { ruleSet } from "src/app/Models/ruleSet.model";
-import { error } from "console";
+import { dashboard } from "../Models/DashboardModel";
 
 
 export enum CustomFilterEnum {
@@ -30,8 +29,10 @@ export abstract class I2vChartsComponent {
   @Input() isModel: boolean;
   @Input() isLoading: boolean;
   @Input() dataExists: boolean;
-  @Input() customFilter: ICustomFilter;
-  @Output() daysFilterOutput: EventEmitter<ITimeRange> = new EventEmitter<ITimeRange>();
+  @Input() customFilters: ICustomFilter;
+
+  @Input() dashboardCustomFilterValue : ICustomFilter = {};
+  @Output() daysFilterOutput: EventEmitter<IDateTimeFilterOutputEmittorModel> = new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> = new EventEmitter<ICustomFilterOutputEmittorModel>();
 
   private _chartData: ClientChartModel;
@@ -43,36 +44,66 @@ export abstract class I2vChartsComponent {
     return this._chartData;
   }
 
+  get getDefinedFilterValue(){
+    // if(Object.keys(this.widgetRequestModel.customFilters).length == 0 && Object.keys(this.dashboardCustomFilterValue).length == 0)
+    //   {
+    //     return this.widgetRequestModel.customFilters;
+    //   }
+    // else if(Object.keys(this.widgetRequestModel.customFilters).length > 0)
+    //   {
+    //     return this.widgetRequestModel.customFilters;
+    //   }
+    //   else{
+        return this.dashboardCustomFilterValue 
+      // }
+  }
   private baseChartingDataService: ChartingDataService;
+  private cdr: ChangeDetectorRef;
 
   constructor() { }
 
   ngOnInit() {
+    if(Object.keys(this.widgetRequestModel.customFilters).length == 0)
+      {
+        this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue
+      }
   }
 
-  ngOnChanges() {
-
+  ngOnChanges(changes: SimpleChanges) {
+    console.log(changes)
+    //because chart header is not detecting chnages
+    this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+    if(changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue)
+    {
+      this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue; 
+    }
   }
 
-  init(chartingDataService: ChartingDataService = null) {
+  init(cdr: ChangeDetectorRef, chartingDataService: ChartingDataService = null) {
     if (chartingDataService != null && chartingDataService != undefined) {
       this.isLoading = true;
       this.baseChartingDataService = chartingDataService;
     }
+    if (cdr != null && cdr != undefined) {
+      this.cdr = cdr;
+    }
   }
 
-  ngAfterViewInit()
-  {
-    if(this.baseChartingDataService != undefined && this.baseChartingDataService != null)
-    setInterval(() => {
-      this.getDataFromServer(this.widgetRequestModel);
-    }, this.widgetRequestModel.refreshInterval * 1000);
+
+
+  ngAfterViewInit() {
+    if (this.baseChartingDataService != undefined && this.baseChartingDataService != null)
+      setInterval(() => {
+        this.getDataFromServer(this.widgetRequestModel);
+      }, this.widgetRequestModel.refreshInterval * 1000);
   }
-  
+
   onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel) {
     console.log(event)
     switch (event.key) {
       case "Video Sources":
+        this.widgetRequestModel.customFilters[event.key] = this.customFilters[event.key].filter(x => event.value.includes(String(x.returnValue)));
+
         if (this.widgetRequestModel.propertyFilters == null) {
           this.widgetRequestModel.propertyFilters = new RuleSet();
         }
@@ -104,10 +135,11 @@ export abstract class I2vChartsComponent {
     this.customFilterOutput.emit(event);
   }
 
-  onTimeChange(event: ITimeRange) {
+  onTimeChange(event: IDateTimeFilterOutputEmittorModel) {
     console.log(event);
-    this.widgetRequestModel.startTime = event.startTime;
-    this.widgetRequestModel.endTime = event.endTime;
+    this.widgetRequestModel.customFilters['Time'] = [{ displayName: event.key, returnValue: event.value }];
+    this.widgetRequestModel.startTime = event.value.startTime;
+    this.widgetRequestModel.endTime = event.value.endTime;
     this.getDataFromServer(this.widgetRequestModel);
     this.daysFilterOutput.emit(event);
   }
@@ -122,9 +154,9 @@ export abstract class I2vChartsComponent {
           this.dataExists = false;
         }
       },
-      (error)=>{
-        this.dataExists = false;
-      });
+        (error) => {
+          this.dataExists = false;
+        });
       this.isLoading = false;
     }
   }
@@ -176,12 +208,12 @@ export abstract class I2vChartsComponent {
     propertyFilters.ruleSet.splice(ruleSetIndex, 1);
   }
 
-  checkIfAnySeriesExists(data : ChartsOutputModel): boolean{
-     var index = data.data.findIndex(x=>{
-        return x.data.length>0;
-      })
+  checkIfAnySeriesExists(data: ChartsOutputModel): boolean {
+    var index = data.data.findIndex(x => {
+      return x.data.length > 0;
+    })
 
-    return index!=-1 ? true : false;
+    return index != -1 ? true : false;
   }
 
 

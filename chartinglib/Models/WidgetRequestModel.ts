@@ -1,3 +1,4 @@
+import { Signal } from "@angular/core";
 import { dashboard } from "./DashboardModel";
 
 export class Widget{
@@ -114,9 +115,13 @@ export class CustomFilterValueModel{
     returnValue : string | ITimeRange
 }
 
+export interface IDateTimeFilterOutputEmittorModel{
+    key : string;
+    value : ITimeRange;
+}
 export interface ICustomFilterOutputEmittorModel{
     key : string;
-    value : string[]
+    value : string[];
 }
 export interface ITimeRange {
     startTime: number; // Unix timestamp in milliseconds

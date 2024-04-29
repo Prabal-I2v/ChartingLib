@@ -9,7 +9,7 @@
             </div>
         </div>
         <i2v-chart-header  style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
-            [customFilters]="customFilter" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="widgetRequestModel.customFilters"
+            [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="getDefinedFilterValue"
             (customFilterOutput)="onCustomFilterValuesChange($event)">
         </i2v-chart-header>
     </div>

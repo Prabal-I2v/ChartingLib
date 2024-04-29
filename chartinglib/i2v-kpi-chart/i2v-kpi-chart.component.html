@@ -1,5 +1,5 @@
 <div style="display: flex; flex-direction: column; width: 100%; height:100%">
-  <!-- <div
+<!-- <div
     style="
       display: flex;
       justify-items: center;
@@ -9,13 +9,32 @@
       height: 100%;
     "
   > -->
-    <!-- <i2v-chart-header style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
-            [customFilters]="widgetRequestModel.customFilter" (daysFilterOutput)="onTimeChange($event)"
-            (customFilterOutput)="onCustomFilterValuesChange($event)"><i2v-chart-header-->
+  <i2v-chart-header  style="width: 100%; display: none;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading" [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="getDefinedFilterValue" (customFilterOutput)="onCustomFilterValuesChange($event)"> </i2v-chart-header>
   <!-- </div> -->
   
   <div class="card">
-    <div class="top">
+    <div *ngIf = "!isModel" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
+      <div class="nowatchlistexist">
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
+        </div>
+        <span class="major-heading">No Configurations found</span>
+      </div>
+    </div>
+    <ng-container *ngIf="isModel && isLoading">
+      <div style="display: flex; width: 360px; flex-direction: column; justify-content: center; align-items: center; gap: 20px; flex: 1; height: 100%; width: 100%;">
+          <span style="width: 150px; height: 150px; background: url(assets/gifs/enrollment-progress.gif) no-repeat center;"></span>
+      </div>
+    </ng-container>
+    <div *ngIf = "isModel && !isLoading && !dataExists" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
+        <div class="nowatchlistexist">
+            <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+                libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
+            </div>
+            <span class="major-heading">No Data found</span>
+        </div>
+    </div>
+    <div *ngIf = "isModel && !isLoading && dataExists" class="top">
       <div class="number-grp">
         <div class="minorheader" *ngIf="widgetRequestModel.heading">{{ widgetRequestModel.heading }}</div>
         <div *ngIf="PropName">{{PropName}}</div>
@@ -38,7 +57,7 @@
 
       <!-- </div> -->
     </div>
-    <div class="bottom" *ngIf="widgetRequestModel.ClubbingTime && (widgetRequestModel.groupByOneIsTime || widgetRequestModel.groupByTwoIsTime)">
+    <div *ngIf = "isModel && !isLoading && dataExists && widgetRequestModel.ClubbingTime && (widgetRequestModel.groupByOneIsTime || widgetRequestModel.groupByTwoIsTime)" class="bottom">
       {{ percentValue | number : '.1-2'  }}% {{percentValue==0 ? 'rise' : ''}}
       <svg *ngIf="percentValue > 0 || percentValue < 0"
         width="20"

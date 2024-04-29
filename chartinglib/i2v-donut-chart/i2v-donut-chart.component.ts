@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { LegendItemVisualArgs, SeriesLabelsContentArgs } from '@progress/kendo-angular-charts';
 import { ChartsOutputModel } from '../Models/ChartsOutputModel';
@@ -18,7 +18,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     return e.category;
   }
 
-  constructor(private chartingDataService : ChartingDataService) {
+  constructor(private chartingDataService : ChartingDataService, private cd : ChangeDetectorRef) {
     super();
   }
 
@@ -26,7 +26,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     if (this.widgetRequestModel) {
       this.isModel = true;
       if(this.widgetRequestModel.allowRefresh){
-        this.init(this.chartingDataService);
+        this.init(this.cd, this.chartingDataService);
       }
     } else {
       this.isModel = false;

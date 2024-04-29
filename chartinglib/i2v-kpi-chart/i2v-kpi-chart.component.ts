@@ -1,4 +1,4 @@
-import { Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
@@ -23,7 +23,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
 
-  constructor(private chartingDataService: ChartingDataService) {
+  constructor(private chartingDataService : ChartingDataService, private cd : ChangeDetectorRef) {
     super();
   }
 
@@ -31,7 +31,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     if (this.widgetRequestModel) {
       this.isModel = true;
       if(this.widgetRequestModel.allowRefresh){
-        this.init(this.chartingDataService);
+        this.init(this.cd, this.chartingDataService);
       }
     } else {
       this.isModel = false;

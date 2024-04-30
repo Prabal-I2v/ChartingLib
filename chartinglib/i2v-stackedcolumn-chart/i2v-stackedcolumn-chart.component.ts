@@ -29,8 +29,22 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
 
   transformData(data: ChartsOutputModel) : ClientChartModel {
 
+    // var chartData = new ClientChartModel();
+    // chartData.series[0].data = data.data.map((x) => {
+    //   return new ChartSeries({name:x.label, data:x.data.map(str => parseInt(str, 10))});
+    // })
+    // if (data.labels.length > 0) {
+    //   chartData.chartCategories = data.labels[0].value;
+    //   chartData.x_label = data.labels[0].key
+    // }
+    // else{
+    //   chartData.chartCategories = data.data.map((x) => {
+    //     return x.label
+    //   })
+    // }
+    // return chartData;
     var chartData = new ClientChartModel();
-    chartData.series[0].data = data.data.map((x) => {
+    chartData.series = data.data.map((x) => {
       return new ChartSeries({name:x.label, data:x.data.map(str => parseInt(str, 10))});
     })
     if (data.labels.length > 0) {

@@ -20,6 +20,7 @@ export class I2vChartHeaderComponent {
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> = new EventEmitter<ICustomFilterOutputEmittorModel>();
   @ViewChild("multiselect") multiselectRef: any;
   @ViewChild("keySelect") keySelectRef: any;
+  @ViewChild("customTimeFilter") customTimeFilter: any
 
   CustomFilterKeys: string[];
   CustomFilterValues: string[];
@@ -44,6 +45,7 @@ export class I2vChartHeaderComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+   
     this.cdr.detectChanges();
     if (changes.customFilters && changes.customFilters.currentValue != changes.customFilters.previousValue) {
       this.setFilterValueAsPerCustomFiltersAndWidgetCustomFilter();
@@ -52,6 +54,8 @@ export class I2vChartHeaderComponent {
     if (changes.widgetCustomFiltersValue && changes.widgetCustomFiltersValue.currentValue != changes.widgetCustomFiltersValue.previousValue) {
       this.SetValueAsPerWidgetCustomFiltersValue();
     }
+    this.cdr.detectChanges();
+
   }
   ngOnInit() {
     // this.setFilterValueFromPassedAndSelectedValue();
@@ -78,9 +82,10 @@ export class I2vChartHeaderComponent {
   }
 
   private UpdateUIFilterModelValues() {
-    if (this.keySelectRef && this.multiselectRef) {
+    if (this.keySelectRef && this.multiselectRef && this.customTimeFilter) {
       this.keySelectRef.updateModel(this.selectedCustomFilterkey);
       this.multiselectRef.updateModel(this.selectedCustomFilterValue);
+      this.customTimeFilter.updateInputfield(this.DateRange);
     }
   }
 
@@ -100,6 +105,9 @@ export class I2vChartHeaderComponent {
         this.TimeFilterValue = this.widgetCustomFiltersValue["Time"][0].displayName;
         if (this.TimeFilterValue == 'Custom') {
           this.enableCustomTime = true;
+        }
+        else{
+          this.enableCustomTime = false;
         }
         this.DateRange[0] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);

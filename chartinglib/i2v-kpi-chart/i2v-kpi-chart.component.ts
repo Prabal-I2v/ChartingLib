@@ -19,6 +19,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   percentValue: number = 0;
   PropName: string = "";
   PropIcon: string = "";
+  PropValue: number = 0;
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
@@ -97,6 +98,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
   setData(chartData: ClientChartModel, index: number = 0) {
     if (chartData.series[index].data.length > 1) {
+      this.PropValue = Number(chartData.series[index].data[chartData.series[index].data.length - 1])
       this.percentValue = ((Number(
         chartData.series[index].data[chartData.series[index].data.length - 1]) -
         Number(
@@ -104,8 +106,10 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         Number(
           chartData.series[index].data[chartData.series[index].data.length - 1])) * 100;
     } else if (chartData.series[index].data.length > 0) {
+      this.PropValue = Number(chartData.series[index].data[chartData.series[index].data.length - 1])
       this.percentValue = 100;
     } else {
+      this.PropValue = 0
       this.percentValue = 0;
     }
   }

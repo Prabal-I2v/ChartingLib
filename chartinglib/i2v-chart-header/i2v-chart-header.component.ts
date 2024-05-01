@@ -82,9 +82,11 @@ export class I2vChartHeaderComponent {
   }
 
   private UpdateUIFilterModelValues() {
-    if (this.keySelectRef && this.multiselectRef && this.customTimeFilter) {
+    if (this.keySelectRef && this.multiselectRef) {
       this.keySelectRef.updateModel(this.selectedCustomFilterkey);
       this.multiselectRef.updateModel(this.selectedCustomFilterValue);
+    }
+    if(this.customTimeFilter){
       this.customTimeFilter.updateInputfield(this.DateRange);
     }
   }

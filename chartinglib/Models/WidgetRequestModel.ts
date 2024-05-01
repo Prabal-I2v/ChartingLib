@@ -72,7 +72,10 @@ export enum Enum_Entity {
     Human_Detected,
     Deacceleration_Detected,
     Vehicle_Accelerated,
-    Vehicle_Occupancy
+    Vehicle_Occupancy,
+    Fire_Detected,
+    Smoke_Detected,
+    Abandoned_Object_Detected
 }
 
 export enum Enum_Method {

@@ -13,7 +13,7 @@ import { ChartingDataService } from '../charting-data.service';
   styleUrl: './i2v-donut-chart.component.scss'
 })
 export class I2vDonutChartComponent extends I2vChartsComponent {
-
+  totaldata:number;
   public labelContent(e: SeriesLabelsContentArgs): string {
     return e.category;
   }
@@ -52,9 +52,10 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
   // }
 
   transformData(data: ChartsOutputModel) : ClientChartModel {
-
+  this.totaldata=0;
     var chartData = new ClientChartModel();
     chartData.series = data.data.map(x=> {
+      this.totaldata+=Number(x.data[0]);
       return new ChartSeries({value : Number(x.data[0]), name : x.label})
     })
 

@@ -8,9 +8,10 @@ import {
 } from "@angular/core";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
-import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEmittorModel, ITimeRange, IDateTimeFilterOutputEmittorModel } from "../Models/WidgetRequestModel";
+import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEmittorModel, ITimeRange, IDateTimeFilterOutputEmittorModel, ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel } from "../Models/WidgetRequestModel";
 import { ChartingDataService } from "../charting-data.service";
 import { dashboard } from "../Models/DashboardModel";
+import { Subscription } from "rxjs";
 
 
 export enum CustomFilterEnum {
@@ -31,9 +32,12 @@ export abstract class I2vChartsComponent {
   @Input() dataExists: boolean;
   @Input() customFilters: ICustomFilter;
 
-  @Input() dashboardCustomFilterValue : ICustomFilter = {};
+  @Input() dashboardCustomFilterValue: ICustomFilter = {};
+  @Output() refreshIntervalFilterOutput: EventEmitter<IRefreshIntervalFilterOutputEmittorModel> = new EventEmitter<IRefreshIntervalFilterOutputEmittorModel>();
   @Output() daysFilterOutput: EventEmitter<IDateTimeFilterOutputEmittorModel> = new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> = new EventEmitter<ICustomFilterOutputEmittorModel>();
+
+  private interval: NodeJS.Timeout;
 
   private _chartData: ClientChartModel;
   @Input()
@@ -44,7 +48,7 @@ export abstract class I2vChartsComponent {
     return this._chartData;
   }
 
-  get getDefinedFilterValue(){
+  get getDefinedFilterValue() {
     // if(Object.keys(this.widgetRequestModel.customFilters).length == 0 && Object.keys(this.dashboardCustomFilterValue).length == 0)
     //   {
     //     return this.widgetRequestModel.customFilters;
@@ -54,8 +58,8 @@ export abstract class I2vChartsComponent {
     //     return this.widgetRequestModel.customFilters;
     //   }
     //   else{
-        return this.dashboardCustomFilterValue 
-      // }
+    return this.dashboardCustomFilterValue
+    // }
   }
   private baseChartingDataService: ChartingDataService;
   private cdr: ChangeDetectorRef;
@@ -63,19 +67,17 @@ export abstract class I2vChartsComponent {
   constructor() { }
 
   ngOnInit() {
-    if(Object.keys(this.widgetRequestModel.customFilters).length == 0)
-      {
-        this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue
-      }
+    if (Object.keys(this.widgetRequestModel.customFilters).length == 0) {
+      this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     console.log(changes)
     //because chart header is not detecting chnages
     this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
-    if(changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue)
-    {
-      this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue; 
+    if (changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue) {
+      this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue;
     }
   }
 
@@ -93,7 +95,7 @@ export abstract class I2vChartsComponent {
 
   ngAfterViewInit() {
     if (this.baseChartingDataService != undefined && this.baseChartingDataService != null)
-      setInterval(() => {
+      this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
   }
@@ -142,6 +144,14 @@ export abstract class I2vChartsComponent {
     this.widgetRequestModel.endTime = event.value.endTime;
     this.getDataFromServer(this.widgetRequestModel);
     this.daysFilterOutput.emit(event);
+  }
+
+  onRefreshIntervalChange(event: IRefreshIntervalFilterOutputEmittorModel) {
+    console.log(event);
+    this.widgetRequestModel.customFilters['RefreshInterval'] = [{ displayName: event.key, returnValue: event.value }];
+    this.widgetRequestModel.refreshInterval = event.value
+    this.setRefreshInterval()
+    this.refreshIntervalFilterOutput.emit(event);
   }
 
   getDataFromServer(widgetRequestModel: Widget) {
@@ -216,5 +226,19 @@ export abstract class I2vChartsComponent {
     return index != -1 ? true : false;
   }
 
+  setRefreshInterval() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    this.interval = setInterval(() => {
+      this.getDataFromServer(this.widgetRequestModel);
+    }, this.widgetRequestModel.refreshInterval * 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+  }
 
 }

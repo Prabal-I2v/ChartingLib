@@ -6,11 +6,14 @@
             [title]="subHeading" *ngIf="subHeading">({{subHeading}})</span>
     </div>
     <div *ngIf = "customFilters" style="display: flex; flex-grow: 1; gap: 15px; justify-content: flex-end; align-items: center;">
+        <p-dropdown [options]="refreshInterval" [(ngModel)]="refreshIntervalValue" placeholder="Select Interval Time" optionLabel="displayName"  #refreshIntervalRef
+        optionValue="returnValue" (onChange)="setIntervalTime($event)"></p-dropdown>
+
         <p-dropdown [options]="CustomFilterKeys"
-            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true" #keySelect
+            [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity" [editable]="true" #keySelectRef
             (onChange)="onCustomFilterKeyChange($event)"></p-dropdown>
 
-        <p-multiSelect [options]="customFilters[selectedCustomFilterkey]" optionLabel="displayName" optionValue="returnValue" #multiselect
+        <p-multiSelect [options]="customFilters[selectedCustomFilterkey]" optionLabel="displayName" optionValue="returnValue" #multiselectRef
             placeholder="Select {{selectedCustomFilterkey}}" display="chip" [showClear]="true" (onClear)="onCustomFilterValuesChange($event)"
             (onChange)="onCustomFilterValuesChange($event)"></p-multiSelect>
 
@@ -18,7 +21,7 @@
             [(ngModel)]="TimeFilterValue" placeholder="Select Time" [editable]="true"
             (onChange)="onTimeChange($event)"></p-dropdown>
 
-        <p-calendar *ngIf="enableCustomTime" [(ngModel)]="DateRange" selectionMode="range" #customTimeFilter
+        <p-calendar *ngIf="enableCustomTime" [(ngModel)]="DateRange" selectionMode="range" #customTimeFilterRef
             (onClose)="onCustomTimeSelected()"></p-calendar>
     </div>
 </div>

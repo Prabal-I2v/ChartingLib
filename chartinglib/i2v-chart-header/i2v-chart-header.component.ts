@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { ICustomFilter, ITimeRange, ICustomFilterOutputEmittorModel, CustomFilterValueModel, IDateTimeFilterOutputEmittorModel } from '../Models/WidgetRequestModel';
+import { ICustomFilter, ITimeRange, ICustomFilterOutputEmittorModel, CustomFilterValueModel, IDateTimeFilterOutputEmittorModel, ISetIntervalFilterOutputEmittorModel } from '../Models/WidgetRequestModel';
 import * as moment from 'moment';
 
 declare var $: any;
@@ -16,11 +16,13 @@ export class I2vChartHeaderComponent {
   @Input() disableTimeFilter: boolean = false;
   @Input() customFilters: ICustomFilter;
   @Input() widgetCustomFiltersValue: ICustomFilter;
+  @Output() refreshIntervalFilterOutput: EventEmitter<ISetIntervalFilterOutputEmittorModel> = new EventEmitter<ISetIntervalFilterOutputEmittorModel>();
   @Output() daysFilterOutput: EventEmitter<IDateTimeFilterOutputEmittorModel> = new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> = new EventEmitter<ICustomFilterOutputEmittorModel>();
-  @ViewChild("multiselect") multiselectRef: any;
-  @ViewChild("keySelect") keySelectRef: any;
-  @ViewChild("customTimeFilter") customTimeFilter: any
+  @ViewChild("multiselectRef") multiselectRef: any;
+  @ViewChild("keySelectRef") keySelectRef: any;
+  @ViewChild("customTimeFilterRef") customTimeFilterRef: any
+  @ViewChild("refreshIntervalRef") refreshIntervalRef: any
 
   CustomFilterKeys: string[];
   CustomFilterValues: string[];
@@ -28,6 +30,10 @@ export class I2vChartHeaderComponent {
   //properties for customFilter
   selectedCustomFilterkey: string;
   selectedCustomFilterValue: string[]
+
+  //refresh Interval 
+  refreshInterval : CustomFilterValueModel[] = [{displayName : '30sec', returnValue : 30}, {displayName : '1min', returnValue : 60}, {displayName : '2min', returnValue : 120}, {displayName : '5min', returnValue : 300}, {displayName : '10min', returnValue : 600}]
+  refreshIntervalValue : number = 60;
 
   //properties for time filter
   TimeFilterValue: string;
@@ -57,6 +63,7 @@ export class I2vChartHeaderComponent {
     this.cdr.detectChanges();
 
   }
+
   ngOnInit() {
     // this.setFilterValueFromPassedAndSelectedValue();
 
@@ -82,12 +89,17 @@ export class I2vChartHeaderComponent {
   }
 
   private UpdateUIFilterModelValues() {
-    if (this.keySelectRef && this.multiselectRef) {
+    if (this.keySelectRef) {
       this.keySelectRef.updateModel(this.selectedCustomFilterkey);
+    }
+    if(this.multiselectRef){
       this.multiselectRef.updateModel(this.selectedCustomFilterValue);
     }
-    if(this.customTimeFilter){
-      this.customTimeFilter.updateInputfield(this.DateRange);
+    if(this.customTimeFilterRef){
+      this.customTimeFilterRef.updateInputfield(this.DateRange);
+    }
+    if(this.refreshIntervalRef){
+      this.refreshIntervalRef.updateModel(this.refreshIntervalValue);
     }
   }
 
@@ -114,6 +126,10 @@ export class I2vChartHeaderComponent {
         this.DateRange[0] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
         this.daysFilterOutput.emit({key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue)});
+      }
+      if("RefreshInterval" in this.widgetCustomFiltersValue){
+        this.refreshIntervalValue = Number(this.widgetCustomFiltersValue['RefreshInterval'][0].returnValue)
+        this.refreshIntervalFilterOutput.emit({key: "RefreshInterval", value : this.refreshIntervalValue});
       }
     }
     this.UpdateUIFilterModelValues();
@@ -222,4 +238,12 @@ export class I2vChartHeaderComponent {
     }
   }
 
+  setIntervalTime(event){
+    this.refreshIntervalValue = event.value
+    // this.widgetCustomFiltersValue['IntervalTime'] =  this.refreshIntervalFilter.filter(x => x.returnValue == this.refreshIntervalValue);
+    this.refreshIntervalFilterOutput.emit({key : this.TimeFilterValue, value : this.refreshIntervalValue});
+    console.log(this.refreshIntervalValue);
+  }
+
+  
 }

@@ -35,7 +35,7 @@ export class Widget{
     isMultiValuedColumn : Boolean = false
     isSelfCount : Boolean = false
     allowRefresh: boolean = false;
-    refreshInterval: number = 300;
+    refreshInterval: number = 60;
     propertyFilters?: RuleSet;
     pagination?: boolean;
     pageLimit?: number;
@@ -115,9 +115,13 @@ export interface ICustomFilterKeyModel{
 
 export class CustomFilterValueModel{
     displayName : string
-    returnValue : string | ITimeRange
+    returnValue : string | ITimeRange | number
 }
 
+export interface ISetIntervalFilterOutputEmittorModel{
+    key: string;
+    value : number;
+}
 export interface IDateTimeFilterOutputEmittorModel{
     key : string;
     value : ITimeRange;

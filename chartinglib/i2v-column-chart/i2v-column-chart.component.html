@@ -45,7 +45,7 @@
         [padding]="{ left: 80, right: 80 }"
         ></kendo-chart-legend>
         <kendo-chart-series>
-            <kendo-chart-series-item type="column" *ngFor="let data of chartData.series" [gap]="2" [spacing]="0.25" [data]="data.data"
+            <kendo-chart-series-item type="column" *ngFor="let data of chartData.series" [gap]="2" [spacing]="0.25" [data]="data.data" [color]="widgetRequestModel.color"
             [name]="data.name">
             </kendo-chart-series-item>
         </kendo-chart-series>

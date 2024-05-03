@@ -12,6 +12,7 @@ import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEm
 import { ChartingDataService } from "../charting-data.service";
 import { dashboard } from "../Models/DashboardModel";
 import { Subscription } from "rxjs";
+import { month } from "../Models/vehicle-icon-mapping";
 
 
 export enum CustomFilterEnum {
@@ -172,12 +173,29 @@ export abstract class I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
+    var isMonthData=false;
+    if(data.labels[0].key=="month")
+      isMonthData=true;
+
     var chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
+
+
       return new ChartSeries({ name: x.label, data: x.data });
     })
     if (data.labels.length > 0) {
-      chartData.chartCategories = data.labels[0].value;
+      if(isMonthData)
+        { var  monthData:any[]=[];
+          data.labels[0].value.forEach((x)=>{
+            monthData.push(month[parseInt(x)-1])
+          })
+
+        chartData.chartCategories = monthData;
+        }
+        else{
+          chartData.chartCategories = data.labels[0].value;
+        }
+
       chartData.x_label = data.labels[0].key
     }
     else {

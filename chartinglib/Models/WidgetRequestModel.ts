@@ -3,6 +3,7 @@ import { dashboard } from "./DashboardModel";
 
 export class Widget{
     id: string;
+    color:string;
     analyticManagerId?: string;
     dashboardId: string;
     dashboard: dashboard;
@@ -43,9 +44,11 @@ export class Widget{
     identifierFieldName?: string;
     multiplicationFactor?: number;
     isPreview?: boolean | null;
+    svgIcon?:string;
+    FindResultSvgIcon?:boolean;
 }
 
-    
+
 export enum Enum_Method_Aggregation{
     Total,
     Greatest,

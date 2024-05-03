@@ -1,5 +1,5 @@
-<div style="display: flex; flex-direction: column; width: 100%; height:100%">
-<!-- <div
+<div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+  <!-- <div
     style="
       display: flex;
       justify-items: center;
@@ -9,39 +9,129 @@
       height: 100%;
     "
   > -->
-  <i2v-chart-header  style="width: 100%; display: none;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading" [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="getDefinedFilterValue"(customFilterOutput)="onCustomFilterValuesChange($event)" (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"> </i2v-chart-header>
+  <i2v-chart-header
+    style="width: 100%; display: none"
+    [heading]="widgetRequestModel.heading"
+    [subHeading]="widgetRequestModel.subHeading"
+    [customFilters]="customFilters"
+    (daysFilterOutput)="onTimeChange($event)"
+    [widgetCustomFiltersValue]="getDefinedFilterValue"
+    (customFilterOutput)="onCustomFilterValuesChange($event)"
+    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+  >
+  </i2v-chart-header>
   <!-- </div> -->
-  
+
   <div class="card">
-    <div *ngIf = "!isModel" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
+    <div
+      *ngIf="!isModel"
+      class="watchlist-data-container"
+      style="
+        overflow-x: hidden;
+        height: 100%;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px 15px;
+        background-color: #fff;
+      "
+    >
       <div class="nowatchlistexist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
-          libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
-        </div>
+        <div
+          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement
+          [appSvg]="'assets/Outline/table.svg'"
+          [size]="'48'"
+          [fill-color]="'white'"
+        ></div>
         <span class="major-heading">No Configurations found</span>
       </div>
     </div>
     <ng-container *ngIf="isModel && isLoading">
-      <div style="display: flex; height : 360px; width: 360px; flex-direction: column; justify-content: center; align-items: center; gap: 20px; flex: 1;">
-          <span style="width: 50px; height: 50px; background: url(assets/gifs/horizontal-loader.gif) no-repeat center; background-size: 100% 100%;"></span>
+      <div
+        style="
+          display: flex;
+          height: 360px;
+          width: 360px;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+          flex: 1;
+        "
+      >
+        <span
+          style="
+            width: 50px;
+            height: 50px;
+            background: url(assets/gifs/horizontal-loader.gif) no-repeat center;
+            background-size: 100% 100%;
+          "
+        ></span>
       </div>
     </ng-container>
-    <div *ngIf = "isModel && !isLoading && !dataExists" class="watchlist-data-container" style="overflow-x: hidden; height: 100%; flex: 1; display: flex; flex-direction: column; padding: 10px 15px; background-color: #fff;">
-        <div class="nowatchlistexist">
-            <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
-                libSvgElement [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'">
-            </div>
-            <span class="major-heading">No Data found</span>
-        </div>
-    </div>
-    <div *ngIf = "isModel && !isLoading && dataExists" class="top">
-      <div class="number-grp">
-        <div class="minorheader" *ngIf="widgetRequestModel.heading">{{ widgetRequestModel.heading }}</div>
-        <div *ngIf="PropName">{{PropName}}</div>
-        <div class="digits" *ngIf="chartData && chartData.series">{{ PropValue }}</div>
+    <div
+      *ngIf="isModel && !isLoading && !dataExists"
+      class="watchlist-data-container"
+      style="
+        overflow-x: hidden;
+        height: 100%;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px 15px;
+        background-color: #fff;
+      "
+    >
+      <div class="nowatchlistexist">
+        <div
+          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement
+          [appSvg]="'assets/Outline/table.svg'"
+          [size]="'48'"
+          [fill-color]="'white'"
+        ></div>
+        <span class="major-heading">No Data found</span>
       </div>
+    </div>
+    <div *ngIf="isModel && !isLoading && dataExists" class="top">
+      <div class="data-box">
+        <div *ngIf="svgIcon" class="icon-box">
+          <div
+            libSvgElement
+            [appSvg]="svgIcon"
+            [size]="'20'"
+            [fill-color]="'var(--secondary-default-active-bg-color)'"
+          ></div>
+        </div>
+        <div class="number-grp" style="align-items: flex-start">
+          <div class="minorheader" *ngIf="widgetRequestModel.heading">
+            {{ widgetRequestModel.heading }}
+          </div>
+          <div
+            style="display: flex; flex-direction: row; gap: 8px; justify-content: center;align-items: center;"
+          >
+            <div *ngIf="widgetRequestModel.FindResultSvgIcon" class="icon-box"  style="height: 80%;width:29%;justify-content: center;align-items: center; display: flex;">
+              <div
+                libSvgElement
+                [appSvg]="ResSvgIcon"
+                [size]="'24'"
+                [fill-color]="'var(--secondary-default-active-bg-color)'"
+              ></div>
+            </div>
+            <div class="number-grp" >
+              <div *ngIf="PropName">{{ PropName }}</div>
+              <div class="digits" *ngIf="chartData && chartData.series">
+                {{ PropValue }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- <div class="sparkline"> -->
-      <kendo-sparkline *ngIf="showChart && chartData && chartData.series"
+      <kendo-sparkline
+        *ngIf="showChart && chartData && chartData.series"
         class="sparkline"
         [data]="chartData.series[0].data"
         [type]="'line'"
@@ -52,35 +142,54 @@
             width:2,
             style:'smooth',
           },
-        }">
+        }"
+      >
       </kendo-sparkline>
 
       <!-- </div> -->
     </div>
-    <div *ngIf = "isModel && !isLoading && dataExists && widgetRequestModel.ClubbingTime && (widgetRequestModel.groupByOneIsTime || widgetRequestModel.groupByTwoIsTime)" class="bottom">
-      {{ percentValue | number : '.1-2'  }}% {{percentValue==0 ? 'rise' : ''}}
-      <svg *ngIf="percentValue > 0 || percentValue < 0"
+    <div
+      *ngIf="
+        isModel &&
+        !isLoading &&
+        dataExists &&
+        widgetRequestModel.ClubbingTime &&
+        (widgetRequestModel.groupByOneIsTime ||
+          widgetRequestModel.groupByTwoIsTime)
+      "
+      class="bottom"
+    >
+      {{ percentValue | number : ".1-2" }}%
+      {{ percentValue == 0 ? "rise" : "" }}
+      <svg
+        *ngIf="percentValue > 0 || percentValue < 0"
         width="20"
         height="20"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-      
-        <path *ngIf = "percentValue > 0"
+        <path
+          *ngIf="percentValue > 0"
           fill-rule="evenodd"
           clip-rule="evenodd"
           d="M12 7C11.4477 7 11 6.55228 11 6C11 5.44772 11.4477 5 12 5H17C17.5523 5 18 5.44772 18 6V11C18 11.5523 17.5523 12 17 12C16.4477 12 16 11.5523 16 11V8.41421L11.7071 12.7071C11.3166 13.0976 10.6834 13.0976 10.2929 12.7071L8 10.4142L3.70711 14.7071C3.31658 15.0976 2.68342 15.0976 2.29289 14.7071C1.90237 14.3166 1.90237 13.6834 2.29289 13.2929L7.29289 8.29289C7.68342 7.90237 8.31658 7.90237 8.70711 8.29289L11 10.5858L14.5858 7H12Z"
           fill="green"
         />
-        <path *ngIf = "percentValue < 0"
+        <path
+          *ngIf="percentValue < 0"
           fill-rule="evenodd"
           clip-rule="evenodd"
           d="M12 7C11.4477 7 11 6.55228 11 6C11 5.44772 11.4477 5 12 5H17C17.5523 5 18 5.44772 18 6V11C18 11.5523 17.5523 12 17 12C16.4477 12 16 11.5523 16 11V8.41421L11.7071 12.7071C11.3166 13.0976 10.6834 13.0976 10.2929 12.7071L8 10.4142L3.70711 14.7071C3.31658 15.0976 2.68342 15.0976 2.29289 14.7071C1.90237 14.3166 1.90237 13.6834 2.29289 13.2929L7.29289 8.29289C7.68342 7.90237 8.31658 7.90237 8.70711 8.29289L11 10.5858L14.5858 7H12Z"
           fill="red"
         />
       </svg>
-      in last {{widgetRequestModel.groupByOneIsTime ? widgetRequestModel.groupBy1 : widgetRequestModel.groupBy2}}
+      in last
+      {{
+        widgetRequestModel.groupByOneIsTime
+          ? widgetRequestModel.groupBy1
+          : widgetRequestModel.groupBy2
+      }}
     </div>
   </div>
 </div>

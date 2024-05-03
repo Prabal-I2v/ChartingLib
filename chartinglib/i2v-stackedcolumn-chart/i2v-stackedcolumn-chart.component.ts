@@ -3,6 +3,7 @@ import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 import { ClientChartModel, ChartSeries } from '../Models/ClientChartModel';
 import { ChartingDataService } from '../charting-data.service';
+import { month } from '../Models/vehicle-icon-mapping';
 
 @Component({
   selector: 'i2v-stackedcolumn-chart',
@@ -28,14 +29,26 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel) : ClientChartModel {
-
+    var isMonthData=false;
+    if(data.labels[0].key=="month")
+      isMonthData=true;
     var chartData = new ClientChartModel();
 
     chartData.series =  data.data.map((x) => {
       return new ChartSeries({name:x.label, data:x.data.map(str => parseInt(str, 10))});
     })
     if (data.labels.length > 0) {
-      chartData.chartCategories = data.labels[0].value;
+      if(isMonthData)
+        { var  monthData:any[]=[];
+          data.labels[0].value.forEach((x)=>{
+            monthData.push(month[parseInt(x)-1])
+          })
+
+        chartData.chartCategories = monthData;
+        }
+        else{
+          chartData.chartCategories = data.labels[0].value;
+        }
       chartData.x_label = data.labels[0].key
     }
     else{

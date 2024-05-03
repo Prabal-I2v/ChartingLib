@@ -4,6 +4,7 @@ import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { Enum_Method_Aggregation } from "../Models/WidgetRequestModel";
+import { eventIconMapping } from "../Models/vehicle-icon-mapping";
 
 // export enum RiseLevel {
 //   Increase,
@@ -20,6 +21,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   PropName: string = "";
   PropIcon: string = "";
   PropValue: number = 0;
+  svgIcon:string ="";
+  ResSvgIcon:string="";
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
@@ -29,7 +32,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   }
 
   ngOnInit(): void {
+
     if (this.widgetRequestModel) {
+      this.svgIcon= this.widgetRequestModel.svgIcon;
       this.isModel = true;
       if(this.widgetRequestModel.allowRefresh){
         this.init(this.cd, this.chartingDataService);
@@ -92,7 +97,11 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     else {
       this.setData(chartData);
     }
-
+    if(this.widgetRequestModel.FindResultSvgIcon==true)
+  {//svg icon as per result
+    var uppercaseRes=chartData.series[0].name.toUpperCase();
+     this.ResSvgIcon= eventIconMapping[uppercaseRes];
+  }
     return chartData;
   }
 

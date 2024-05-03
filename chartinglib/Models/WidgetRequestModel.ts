@@ -23,7 +23,7 @@ export class Widget{
     baseFilter?: RuleSet;
     getColumnNameWithAggregationMethod : boolean = false;
     fieldName: { [key: string]: RulePropertyType } = {};
-    groupBy1: string = "";
+    groupBy1: string | Enum_TimePeriod = "";
     groupBy2: string = "";
     groupByOneIsTime: boolean = false;
     groupByTwoIsTime: boolean = false;
@@ -89,6 +89,15 @@ export enum Enum_Schema
 {
     Public,
     Events
+}
+
+export enum Enum_TimePeriod
+{
+    hour = "hour",
+    date = "date",
+    month = "month",
+    year = "year",
+    week = "week"
 }
 
 export enum Enum_WidgetType {

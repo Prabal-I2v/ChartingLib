@@ -99,7 +99,13 @@ export class I2vChartHeaderComponent {
       this.customTimeFilterRef.updateInputfield(this.DateRange);
     }
     if(this.refreshIntervalRef){
-      this.refreshIntervalRef.updateModel(this.refreshIntervalValue);
+      setTimeout(()=>{
+        this.refreshIntervalRef.updateModel(this.refreshIntervalValue);
+      },1000)
+     
+    }
+    else{
+      console.log("Value not Initialized")
     }
   }
 

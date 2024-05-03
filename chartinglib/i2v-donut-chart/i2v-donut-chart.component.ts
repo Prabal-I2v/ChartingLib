@@ -13,19 +13,20 @@ import { ChartingDataService } from '../charting-data.service';
   styleUrl: './i2v-donut-chart.component.scss'
 })
 export class I2vDonutChartComponent extends I2vChartsComponent {
-  totaldata:number;
+  totalDataArray = [];
+  totaldata: number = 0;
   public labelContent(e: SeriesLabelsContentArgs): string {
     return e.category;
   }
 
-  constructor(private chartingDataService : ChartingDataService, private cd : ChangeDetectorRef) {
+  constructor(private chartingDataService: ChartingDataService, private cd: ChangeDetectorRef) {
     super();
   }
 
   ngOnInit(): void {
     if (this.widgetRequestModel) {
       this.isModel = true;
-      if(this.widgetRequestModel.allowRefresh){
+      if (this.widgetRequestModel.allowRefresh) {
         this.init(this.cd, this.chartingDataService);
       }
     } else {
@@ -51,12 +52,15 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
   //   return chartData;
   // }
 
-  transformData(data: ChartsOutputModel) : ClientChartModel {
-  this.totaldata=0;
+  transformData(data: ChartsOutputModel): ClientChartModel {
+    this.dataExists = false;
+    this.totaldata = 0;
+    this.totalDataArray = []
     var chartData = new ClientChartModel();
-    chartData.series = data.data.map(x=> {
-      this.totaldata+=Number(x.data[0]);
-      return new ChartSeries({value : Number(x.data[0]), name : x.label})
+    chartData.series = data.data.map(x => {
+      this.totaldata += Number(x.data[0]);
+      this.totalDataArray.push(Number(x.data[0]));
+      return new ChartSeries({ value: Number(x.data[0]), name: x.label })
     })
 
     chartData.chartCategories = data.data.map((x) => {
@@ -71,7 +75,29 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     //     return x.label
     //   })
     // }
+    if(this.totaldata > 0){
+      this.dataExists = true;
+    }
     return chartData;
+  }
+
+  onLegendItemClick(event) {
+    var index = this.chartData.series.findIndex(x => {
+      return x.name == event.text;
+    })
+    if (index != -1) {
+      if (this.totalDataArray[index] == 0) {
+        this.totalDataArray[index] = this.chartData.series[index].value
+      }
+      else {
+        this.totalDataArray[index] = 0;
+      }
+    }
+      var count = this.totalDataArray.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+      this.totaldata = count;
+      // return count;
+    
+    console.log(count);
   }
 
 }

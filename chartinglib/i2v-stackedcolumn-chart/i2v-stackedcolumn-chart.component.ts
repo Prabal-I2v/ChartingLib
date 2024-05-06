@@ -4,6 +4,7 @@ import { ChartsOutputModel } from '../Models/ChartsOutputModel';
 import { ClientChartModel, ChartSeries } from '../Models/ClientChartModel';
 import { ChartingDataService } from '../charting-data.service';
 import { month } from '../Models/vehicle-icon-mapping';
+import { Enum_TimePeriod } from '../Models/WidgetRequestModel';
 
 @Component({
   selector: 'i2v-stackedcolumn-chart',
@@ -30,7 +31,7 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
 
   transformData(data: ChartsOutputModel) : ClientChartModel {
     var isMonthData=false;
-    if(data.labels[0].key=="month")
+    if(data.labels[0].key==Enum_TimePeriod.month)
       isMonthData=true;
     var chartData = new ClientChartModel();
 

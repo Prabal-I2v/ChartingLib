@@ -1,4 +1,5 @@
 export class ChartsOutputModel {
+    widgetQuery? :string;
     labels: ChartsLabelModel[];
     data: ChartsDataModel[];
 }

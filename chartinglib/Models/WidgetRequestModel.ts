@@ -36,7 +36,7 @@ export class Widget{
     isMultiValuedColumn : Boolean = false
     isSelfCount : Boolean = false
     allowRefresh: boolean = false;
-    refreshInterval: number = 60;
+    refreshInterval: number = 240;
     propertyFilters?: RuleSet;
     pagination?: boolean;
     pageLimit?: number;

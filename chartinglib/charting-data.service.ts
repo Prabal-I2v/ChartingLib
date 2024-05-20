@@ -11,6 +11,10 @@ export class ChartingDataService {
   constructor(private http: HttpClient) { }
 
   public getChartingData(requestModel : Widget): Observable<any> {
-    return this.http.post("http://localhost:5012/dashboard/GetWidgetOutputModel", requestModel);
+    const url = window.location.href;
+    const parsedUrl = new URL(url);
+    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:5012`;
+    
+    return this.http.post(`${baseUrl}/dashboard/GetWidgetOutputModel`, requestModel);
   }
 }

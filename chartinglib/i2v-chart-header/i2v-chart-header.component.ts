@@ -4,6 +4,11 @@ import * as moment from 'moment';
 
 declare var $: any;
 declare var _: any;
+
+type DateRange = {
+  startTime: Date;
+  endTime: Date;
+};
 @Component({
   selector: 'i2v-chart-header',
   templateUrl: './i2v-chart-header.component.html',
@@ -40,6 +45,7 @@ export class I2vChartHeaderComponent {
   timeObj: ITimeRange
   TimeFilter = ['Today', 'Last Week', 'Last Month', 'Custom'];
   DateRange: Date[] | undefined = [];
+  // DateRange: DateRange;
   private startDate: Date = new Date(new Date($.now()).getFullYear(), new Date($.now()).getMonth(), new Date($.now()).getDate() - 1, 0, 0, 0);
   private endDate: Date = new Date($.now());
   enableCustomTime: boolean = false;
@@ -48,6 +54,7 @@ export class I2vChartHeaderComponent {
   constructor(private cdr: ChangeDetectorRef) {
     this.DateRange[0] = this.startDate
     this.DateRange[1] = this.endDate
+    // this.DateRange = {startTime : this.startDate, endTime : this.endDate};
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -97,6 +104,11 @@ export class I2vChartHeaderComponent {
     }
     if(this.customTimeFilterRef){
       this.customTimeFilterRef.updateInputfield(this.DateRange);
+    //   var newDateRange : DateRange = {
+    //     startTime: this.DateRange.startTime,
+    //     endTime: this.DateRange.endTime
+    // };
+    //   this.DateRange = newDateRange
     }
     if(this.refreshIntervalRef){
       setTimeout(()=>{
@@ -131,6 +143,8 @@ export class I2vChartHeaderComponent {
         }
         this.DateRange[0] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
+        // this.DateRange.startTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
+        // this.DateRange.endTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
         this.daysFilterOutput.emit({key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue)});
       }
       if("RefreshInterval" in this.widgetCustomFiltersValue){
@@ -225,6 +239,8 @@ export class I2vChartHeaderComponent {
           }
           this.DateRange[0] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
           this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
+          // this.DateRange.startTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
+          // this.DateRange.endTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
           this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
         }
         return null
@@ -243,6 +259,23 @@ export class I2vChartHeaderComponent {
       this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
     }
   }
+
+  // onCustomTimeSelected(event) {
+  //   // console.log(event);
+  //   if(event && event.startTime?.$d != null && event.endTime?.$d != null)
+  //     {
+  //       this.DateRange.startTime = new Date(event.startTime.$d.valueOf() - (5.5 * 60 * 60 * 1000));
+  //       this.DateRange.endTime = new Date(event.endTime.$d.valueOf() - (5.5 * 60 * 60 * 1000));
+  //     }
+  //   if (this.startDate != this.DateRange.startTime && this.endDate != this.DateRange.endTime) {
+  //     this.startDate = this.DateRange.startTime
+  //     this.endDate = this.DateRange.endTime
+  //     this.timeObj = { startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf() }
+  //     console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
+  //     // this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: this.timeObj }];
+  //     this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
+  //   }
+  // }
 
   setIntervalTime(event){
     this.refreshIntervalValue = event.value

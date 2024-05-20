@@ -10,8 +10,7 @@ import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ICustomFilter, RulePropertyType, RuleSet, Widget, ICustomFilterOutputEmittorModel, ITimeRange, IDateTimeFilterOutputEmittorModel, ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel } from "../Models/WidgetRequestModel";
 import { ChartingDataService } from "../charting-data.service";
-import { dashboard } from "../Models/DashboardModel";
-import { Subscription } from "rxjs";
+import { Subject, Subscription } from "rxjs";
 import { month } from "../Models/vehicle-icon-mapping";
 
 
@@ -32,13 +31,14 @@ export abstract class I2vChartsComponent {
   @Input() isLoading: boolean;
   @Input() dataExists: boolean;
   @Input() customFilters: ICustomFilter;
-
+  @Input() refreshCallSubject: Subject<any> = new Subject<any>();
   @Input() dashboardCustomFilterValue: ICustomFilter = {};
   @Output() refreshIntervalFilterOutput: EventEmitter<IRefreshIntervalFilterOutputEmittorModel> = new EventEmitter<IRefreshIntervalFilterOutputEmittorModel>();
   @Output() daysFilterOutput: EventEmitter<IDateTimeFilterOutputEmittorModel> = new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> = new EventEmitter<ICustomFilterOutputEmittorModel>();
 
   private interval: NodeJS.Timeout;
+  private apiSubscription: any;
 
   private _chartData: ClientChartModel;
   @Input()
@@ -90,15 +90,20 @@ export abstract class I2vChartsComponent {
     if (cdr != null && cdr != undefined) {
       this.cdr = cdr;
     }
+    this.refreshCallSubject.subscribe(()=>{
+      this.getDataFromServer(this.widgetRequestModel);
+    })
   }
 
 
 
   ngAfterViewInit() {
-    if (this.baseChartingDataService != undefined && this.baseChartingDataService != null)
+    if (this.baseChartingDataService != undefined && this.baseChartingDataService != null){
       this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
+      this.getDataFromServer(this.widgetRequestModel);
+    }
   }
 
   onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel) {
@@ -157,7 +162,7 @@ export abstract class I2vChartsComponent {
 
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
-      this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
+      this.apiSubscription = this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
         if (data && this.checkIfAnySeriesExists(data)) {
           this.chartData = data;
           this.dataExists = true;
@@ -254,6 +259,11 @@ export abstract class I2vChartsComponent {
   }
 
   ngOnDestroy() {
+    if(this.apiSubscription)
+      {
+        this.apiSubscription.unsubscribe();
+      }
+    
     if (this.interval) {
       clearInterval(this.interval);
     }

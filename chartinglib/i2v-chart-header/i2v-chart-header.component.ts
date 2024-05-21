@@ -131,7 +131,7 @@ export class I2vChartHeaderComponent {
       }
       if (this.selectedCustomFilterkey in this.widgetCustomFiltersValue) {
         this.selectedCustomFilterValue = this.widgetCustomFiltersValue[this.selectedCustomFilterkey].map(x => { return String(x.returnValue); });
-        this.customFilterOutput.emit({ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue });
+        this.customFilterOutput.emit(<ICustomFilterOutputEmittorModel>{ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue, initialDataFill : true });
       }
       if ("Time" in this.widgetCustomFiltersValue) {
         this.TimeFilterValue = this.widgetCustomFiltersValue["Time"][0].displayName;
@@ -145,11 +145,11 @@ export class I2vChartHeaderComponent {
         this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
         // this.DateRange.startTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         // this.DateRange.endTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
-        this.daysFilterOutput.emit({key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue)});
+        this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue), initialDataFill : true});
       }
       if("RefreshInterval" in this.widgetCustomFiltersValue){
         this.refreshIntervalValue = Number(this.widgetCustomFiltersValue['RefreshInterval'][0].returnValue)
-        this.refreshIntervalFilterOutput.emit({key: "RefreshInterval", value : this.refreshIntervalValue});
+        this.refreshIntervalFilterOutput.emit(<ISetIntervalFilterOutputEmittorModel>{key: "RefreshInterval", value : this.refreshIntervalValue, initialDataFill : true});
       }
     }
     this.UpdateUIFilterModelValues();
@@ -174,7 +174,7 @@ export class I2vChartHeaderComponent {
       this.selectedCustomFilterValue = event.value;
     }
     // this.widgetCustomFiltersValue[this.selectedCustomFilterkey] = this.customFilters[this.selectedCustomFilterkey].filter(x => this.selectedCustomFilterValue.includes(String(x.returnValue)));
-    this.customFilterOutput.emit({ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue });
+    this.customFilterOutput.emit(<ICustomFilterOutputEmittorModel>{ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue });
   }
 
 
@@ -184,7 +184,7 @@ export class I2vChartHeaderComponent {
       this.TimeFilterValue = event.value;
       this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: this.timeObj }];
       console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
-      this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
+      this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.timeObj});
     }
   }
 
@@ -241,7 +241,7 @@ export class I2vChartHeaderComponent {
           this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
           // this.DateRange.startTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
           // this.DateRange.endTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
-          this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
+          this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.timeObj});
         }
         return null
 
@@ -256,7 +256,7 @@ export class I2vChartHeaderComponent {
       this.timeObj = { startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf() }
       console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
       // this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: this.timeObj }];
-      this.daysFilterOutput.emit({key : this.TimeFilterValue, value : this.timeObj});
+      this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.timeObj});
     }
   }
 
@@ -280,7 +280,7 @@ export class I2vChartHeaderComponent {
   setIntervalTime(event){
     this.refreshIntervalValue = event.value
     // this.widgetCustomFiltersValue['IntervalTime'] =  this.refreshIntervalFilter.filter(x => x.returnValue == this.refreshIntervalValue);
-    this.refreshIntervalFilterOutput.emit({key : this.TimeFilterValue, value : this.refreshIntervalValue});
+    this.refreshIntervalFilterOutput.emit(<ISetIntervalFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.refreshIntervalValue});
     console.log(this.refreshIntervalValue);
   }
 

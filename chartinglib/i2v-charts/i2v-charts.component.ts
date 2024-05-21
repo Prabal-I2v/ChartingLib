@@ -139,7 +139,10 @@ export abstract class I2vChartsComponent {
         }
         break;
     }
-    this.getDataFromServer(this.widgetRequestModel);
+    if(!event.initialDataFill)
+    {
+      this.getDataFromServer(this.widgetRequestModel);
+    }
     this.customFilterOutput.emit(event);
   }
 
@@ -148,7 +151,10 @@ export abstract class I2vChartsComponent {
     this.widgetRequestModel.customFilters['Time'] = [{ displayName: event.key, returnValue: event.value }];
     this.widgetRequestModel.startTime = event.value.startTime;
     this.widgetRequestModel.endTime = event.value.endTime;
-    this.getDataFromServer(this.widgetRequestModel);
+    if(!event.initialDataFill)
+      {
+        this.getDataFromServer(this.widgetRequestModel);
+      }
     this.daysFilterOutput.emit(event);
   }
 
@@ -263,7 +269,7 @@ export abstract class I2vChartsComponent {
       {
         this.apiSubscription.unsubscribe();
       }
-    
+
     if (this.interval) {
       clearInterval(this.interval);
     }

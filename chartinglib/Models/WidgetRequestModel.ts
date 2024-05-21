@@ -1,6 +1,8 @@
 import { Signal } from "@angular/core";
 import { dashboard } from "./DashboardModel";
+import * as moment from 'moment';
 
+declare var $: any;
 export class Widget{
     id: string;
     color:string;
@@ -14,8 +16,15 @@ export class Widget{
     max : number = 10;
     customFilters : { [key: string]: CustomFilterValueModel[] } = {};
     disableTimeFilter : boolean = true;
-    startTime: number;
-    endTime: number;
+    startTime: number = moment(new Date(
+      new Date($.now()).getFullYear(),
+      new Date($.now()).getMonth(),
+      new Date($.now()).getDate(),
+      0,
+      0,
+      0
+    )).valueOf();
+    endTime: number = moment(new Date($.now())).valueOf();
     widgetType: Enum_WidgetType;
     entity: Enum_Entity;
     joinableEntities : JoinableEntity[] = []
@@ -130,17 +139,20 @@ export class CustomFilterValueModel{
     returnValue : string | ITimeRange | number
 }
 
-export interface ISetIntervalFilterOutputEmittorModel{
+export class ISetIntervalFilterOutputEmittorModel{
     key: string;
     value : number;
+    initialDataFill : Boolean = false;
 }
-export interface IDateTimeFilterOutputEmittorModel{
+export class IDateTimeFilterOutputEmittorModel{
     key : string;
     value : ITimeRange;
+    initialDataFill: Boolean = false;
 }
-export interface ICustomFilterOutputEmittorModel{
+export class ICustomFilterOutputEmittorModel{
     key : string;
     value : string[];
+    initialDataFill: Boolean = false;
 }
 export interface ITimeRange {
     startTime: number; // Unix timestamp in milliseconds

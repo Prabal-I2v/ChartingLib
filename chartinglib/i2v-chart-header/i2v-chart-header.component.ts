@@ -78,7 +78,7 @@ export class I2vChartHeaderComponent {
 
   printWidgetModelValue()
   {
-    console.log(this.widgetCustomFiltersValue);
+    // console.log(this.widgetCustomFiltersValue);
   }
 
   ngAfterViewInit() {
@@ -117,7 +117,7 @@ export class I2vChartHeaderComponent {
      
     }
     else{
-      console.log("Value not Initialized")
+      // console.log("Value not Initialized")
     }
   }
 
@@ -183,7 +183,7 @@ export class I2vChartHeaderComponent {
     if (this.timeObj != null) {
       this.TimeFilterValue = event.value;
       this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: this.timeObj }];
-      console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
+      // console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
       this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.timeObj});
     }
   }
@@ -254,7 +254,7 @@ export class I2vChartHeaderComponent {
       this.startDate = this.DateRange[0]
       this.endDate = this.DateRange[1];
       this.timeObj = { startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf() }
-      console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
+      // console.log("Start Time : " + this.startDate + " - " + " End Time : " + this.endDate);
       // this.widgetCustomFiltersValue['Time'] = [{ displayName: this.TimeFilterValue, returnValue: this.timeObj }];
       this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.timeObj});
     }
@@ -281,7 +281,7 @@ export class I2vChartHeaderComponent {
     this.refreshIntervalValue = event.value
     // this.widgetCustomFiltersValue['IntervalTime'] =  this.refreshIntervalFilter.filter(x => x.returnValue == this.refreshIntervalValue);
     this.refreshIntervalFilterOutput.emit(<ISetIntervalFilterOutputEmittorModel>{key : this.TimeFilterValue, value : this.refreshIntervalValue});
-    console.log(this.refreshIntervalValue);
+    // console.log(this.refreshIntervalValue);
   }
 
   

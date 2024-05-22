@@ -74,7 +74,7 @@ export abstract class I2vChartsComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(changes)
+    // console.log(changes)
     //because chart header is not detecting chnages
     this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
     if (changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue) {
@@ -107,7 +107,7 @@ export abstract class I2vChartsComponent {
   }
 
   onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel) {
-    console.log(event)
+    // console.log(event)
     switch (event.key) {
       case "Video Sources":
         this.widgetRequestModel.customFilters[event.key] = this.customFilters[event.key].filter(x => event.value.includes(String(x.returnValue)));
@@ -147,7 +147,7 @@ export abstract class I2vChartsComponent {
   }
 
   onTimeChange(event: IDateTimeFilterOutputEmittorModel) {
-    console.log(event);
+    // console.log(event);
     this.widgetRequestModel.customFilters['Time'] = [{ displayName: event.key, returnValue: event.value }];
     this.widgetRequestModel.startTime = event.value.startTime;
     this.widgetRequestModel.endTime = event.value.endTime;
@@ -159,7 +159,7 @@ export abstract class I2vChartsComponent {
   }
 
   onRefreshIntervalChange(event: IRefreshIntervalFilterOutputEmittorModel) {
-    console.log(event);
+    // console.log(event);
     this.widgetRequestModel.customFilters['RefreshInterval'] = [{ displayName: event.key, returnValue: event.value }];
     this.widgetRequestModel.refreshInterval = event.value
     this.setRefreshInterval()

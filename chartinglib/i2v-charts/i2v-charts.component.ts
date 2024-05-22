@@ -102,7 +102,7 @@ export abstract class I2vChartsComponent {
       this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
-      this.getDataFromServer(this.widgetRequestModel);
+      // this.getDataFromServer(this.widgetRequestModel);
     }
   }
 
@@ -168,6 +168,7 @@ export abstract class I2vChartsComponent {
 
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
+      this.isLoading = true
       this.apiSubscription = this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
         if (data && this.checkIfAnySeriesExists(data)) {
           this.chartData = data;
@@ -175,11 +176,12 @@ export abstract class I2vChartsComponent {
         } else {
           this.dataExists = false;
         }
+        this.isLoading = false;
       },
         (error) => {
           this.dataExists = false;
+          this.isLoading = false;
         });
-      this.isLoading = false;
     }
   }
 

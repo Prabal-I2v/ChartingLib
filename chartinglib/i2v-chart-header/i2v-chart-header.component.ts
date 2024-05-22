@@ -82,16 +82,16 @@ export class I2vChartHeaderComponent {
   }
 
   ngAfterViewInit() {
-    this.setFilterValueAsPerCustomFiltersAndWidgetCustomFilter();
+    this.setFilterValueAsPerCustomFiltersAndWidgetCustomFilter(true);
   }
 
-  private setFilterValueAsPerCustomFiltersAndWidgetCustomFilter() {
+  private setFilterValueAsPerCustomFiltersAndWidgetCustomFilter(initialValue : Boolean = false) {
     if (this.customFilters) {
       this.CustomFilterKeys = Object.keys(this.customFilters);
       this.selectedCustomFilterkey = this.CustomFilterKeys[0];
       this.selectedCustomFilterValue = []
     }
-    this.SetValueAsPerWidgetCustomFiltersValue();
+    this.SetValueAsPerWidgetCustomFiltersValue(initialValue);
 
   }
 
@@ -121,7 +121,7 @@ export class I2vChartHeaderComponent {
     }
   }
 
-  private SetValueAsPerWidgetCustomFiltersValue() {
+  private SetValueAsPerWidgetCustomFiltersValue(initialValue : Boolean = false) {
     if (this.widgetCustomFiltersValue && Object.keys(this.widgetCustomFiltersValue).length > 0 && this.customFilters) {
       for (const key of Object.keys(this.customFilters)) {
         if (key in this.widgetCustomFiltersValue) {
@@ -131,7 +131,7 @@ export class I2vChartHeaderComponent {
       }
       if (this.selectedCustomFilterkey in this.widgetCustomFiltersValue) {
         this.selectedCustomFilterValue = this.widgetCustomFiltersValue[this.selectedCustomFilterkey].map(x => { return String(x.returnValue); });
-        this.customFilterOutput.emit(<ICustomFilterOutputEmittorModel>{ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue, initialDataFill : true });
+        this.customFilterOutput.emit(<ICustomFilterOutputEmittorModel>{ key: this.selectedCustomFilterkey, value: this.selectedCustomFilterValue, initialDataFill : initialValue });
       }
       if ("Time" in this.widgetCustomFiltersValue) {
         this.TimeFilterValue = this.widgetCustomFiltersValue["Time"][0].displayName;
@@ -145,11 +145,11 @@ export class I2vChartHeaderComponent {
         this.DateRange[1] = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
         // this.DateRange.startTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).startTime);
         // this.DateRange.endTime = new Date((<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue).endTime);
-        this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue), initialDataFill : true});
+        this.daysFilterOutput.emit(<IDateTimeFilterOutputEmittorModel>{key : this.TimeFilterValue, value : (<ITimeRange>this.widgetCustomFiltersValue["Time"][0].returnValue), initialDataFill : initialValue});
       }
       if("RefreshInterval" in this.widgetCustomFiltersValue){
         this.refreshIntervalValue = Number(this.widgetCustomFiltersValue['RefreshInterval'][0].returnValue)
-        this.refreshIntervalFilterOutput.emit(<ISetIntervalFilterOutputEmittorModel>{key: "RefreshInterval", value : this.refreshIntervalValue, initialDataFill : true});
+        this.refreshIntervalFilterOutput.emit(<ISetIntervalFilterOutputEmittorModel>{key: "RefreshInterval", value : this.refreshIntervalValue, initialDataFill : initialValue});
       }
     }
     this.UpdateUIFilterModelValues();

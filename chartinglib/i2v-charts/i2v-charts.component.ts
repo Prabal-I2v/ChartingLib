@@ -59,7 +59,7 @@ export abstract class I2vChartsComponent {
     //     return this.widgetRequestModel.customFilters;
     //   }
     //   else{
-    return this.dashboardCustomFilterValue
+    return this.widgetRequestModel.customFilters
     // }
   }
   private baseChartingDataService: ChartingDataService;
@@ -106,7 +106,25 @@ export abstract class I2vChartsComponent {
     }
   }
 
-  onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel) {
+  onCombineFilterOutputEmittor(changeEvents){
+    Object.keys(changeEvents).forEach((key:string)=>{
+      switch(key){
+        case "RefreshIntervalEmitModel":
+          this.onRefreshIntervalChange(changeEvents[key]);
+          break;
+        case "DateFilterEmitModel":
+          this.onTimeChange(changeEvents[key], true);
+          break;
+        case "CustomFilterEmitModel":
+          this.onCustomFilterValuesChange(changeEvents[key], true);
+          break;
+      }
+      });
+
+      this.getDataFromServer(this.widgetRequestModel);
+  }
+
+  onCustomFilterValuesChange(event: ICustomFilterOutputEmittorModel, commonCall : Boolean = false) {
     // console.log(event)
     switch (event.key) {
       case "Video Sources":
@@ -139,22 +157,23 @@ export abstract class I2vChartsComponent {
         }
         break;
     }
-    if(!event.initialDataFill)
-    {
+    if(!commonCall){
       this.getDataFromServer(this.widgetRequestModel);
     }
+
     this.customFilterOutput.emit(event);
   }
 
-  onTimeChange(event: IDateTimeFilterOutputEmittorModel) {
+  onTimeChange(event: IDateTimeFilterOutputEmittorModel, commonCall : Boolean = false) {
     // console.log(event);
     this.widgetRequestModel.customFilters['Time'] = [{ displayName: event.key, returnValue: event.value }];
     this.widgetRequestModel.startTime = event.value.startTime;
     this.widgetRequestModel.endTime = event.value.endTime;
-    if(!event.initialDataFill)
-      {
-        this.getDataFromServer(this.widgetRequestModel);
-      }
+
+    if(!commonCall){
+      this.getDataFromServer(this.widgetRequestModel);
+    }
+      
     this.daysFilterOutput.emit(event);
   }
 

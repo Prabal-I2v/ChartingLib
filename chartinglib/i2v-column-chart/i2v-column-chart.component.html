@@ -10,7 +10,8 @@
         </div>
         <i2v-chart-header  style="width: 100%;" [heading]="widgetRequestModel.heading" [subHeading]="widgetRequestModel.subHeading"
             [customFilters]="customFilters" (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="getDefinedFilterValue"
-           (customFilterOutput)="onCustomFilterValuesChange($event)" (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)">
+           (customFilterOutput)="onCustomFilterValuesChange($event)" (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+           (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)">
         </i2v-chart-header>
     </div>
     <ng-container *ngIf="isModel && isLoading">

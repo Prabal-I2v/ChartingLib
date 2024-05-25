@@ -13,7 +13,8 @@
     [subHeading]="widgetRequestModel.subHeading" [customFilters]="customFilters"
     (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="getDefinedFilterValue"
     (customFilterOutput)="onCustomFilterValuesChange($event)"
-    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)">
+    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+    (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)">
   </i2v-chart-header>
   <!-- </div> -->
 

@@ -139,21 +139,26 @@ export class CustomFilterValueModel{
     returnValue : string | ITimeRange | number
 }
 
-export class ISetIntervalFilterOutputEmittorModel{
+export interface ISetIntervalFilterOutputEmittorModel{
     key: string;
     value : number;
-    initialDataFill : Boolean = false;
 }
-export class IDateTimeFilterOutputEmittorModel{
+export interface IDateTimeFilterOutputEmittorModel{
     key : string;
     value : ITimeRange;
-    initialDataFill: Boolean = false;
 }
-export class ICustomFilterOutputEmittorModel{
+export interface ICustomFilterOutputEmittorModel{
     key : string;
     value : string[];
-    initialDataFill: Boolean = false;
 }
+
+export interface ICommonFilterOutputEmittorModel {
+    [key: string]: 
+        ISetIntervalFilterOutputEmittorModel | 
+        IDateTimeFilterOutputEmittorModel | 
+        ICustomFilterOutputEmittorModel;
+}
+
 export interface ITimeRange {
     startTime: number; // Unix timestamp in milliseconds
     endTime: number; // Unix timestamp in milliseconds

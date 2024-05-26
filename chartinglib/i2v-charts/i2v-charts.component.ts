@@ -188,6 +188,7 @@ export abstract class I2vChartsComponent {
   getDataFromServer(widgetRequestModel: Widget) {
     if (widgetRequestModel != null) {
       this.isLoading = true
+      this.cdr.detectChanges()
       this.apiSubscription = this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
         if (data && this.checkIfAnySeriesExists(data)) {
           this.chartData = data;
@@ -196,10 +197,12 @@ export abstract class I2vChartsComponent {
           this.dataExists = false;
         }
         this.isLoading = false;
+        this.cdr.detectChanges()
       },
         (error) => {
           this.dataExists = false;
           this.isLoading = false;
+          this.cdr.detectChanges()
         });
     }
   }

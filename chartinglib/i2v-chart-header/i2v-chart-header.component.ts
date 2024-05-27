@@ -259,7 +259,7 @@ date_selected(interval ?): ITimeRange {
 
 onCustomTimeSelected() {
   // console.log(event);
-  if (this.startDate != this.DateRange[0] && this.endDate != this.DateRange[1]) {
+  if (this.startDate != this.DateRange[0] || this.endDate != this.DateRange[1]) {
     this.startDate = this.DateRange[0]
     this.endDate = this.DateRange[1];
     this.timeObj = { startTime: moment(this.startDate).valueOf(), endTime: moment(this.endDate).valueOf() }

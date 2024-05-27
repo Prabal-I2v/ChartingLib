@@ -189,6 +189,8 @@ export abstract class I2vChartsComponent {
     if (widgetRequestModel != null) {
       this.isLoading = true
       this.cdr.detectChanges()
+      // console.log("Start Time : " + this.formatUnixTimestamp(widgetRequestModel.startTime));
+      // console.log("End TIme : " + this.formatUnixTimestamp(widgetRequestModel.endTime))
       this.apiSubscription = this.baseChartingDataService.getChartingData(widgetRequestModel).subscribe((data: ChartsOutputModel) => {
         if (data && this.checkIfAnySeriesExists(data)) {
           this.chartData = data;
@@ -297,6 +299,26 @@ export abstract class I2vChartsComponent {
     if (this.interval) {
       clearInterval(this.interval);
     }
+  }
+
+  formatUnixTimestamp(unix_timestamp) {
+    // Create a new Date object using the Unix timestamp (in milliseconds)
+    var date = new Date(unix_timestamp);
+
+    // Extract date components
+    var year = date.getFullYear();
+    var month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    var day = date.getDate().toString().padStart(2, '0');
+
+    // Extract time components
+    var hours = date.getHours().toString().padStart(2, '0');
+    var minutes = date.getMinutes().toString().padStart(2, '0');
+    var seconds = date.getSeconds().toString().padStart(2, '0');
+
+    // Format the date and time string in YYYY-MM-DD HH:MM:SS format
+    var formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+
+    return formattedDateTime;
   }
 
 }

@@ -2,7 +2,7 @@ import { Signal } from "@angular/core";
 import { dashboard } from "./DashboardModel";
 import * as moment from "moment";
 
-declare var $: any;
+declare let $: any;
 export class Widget {
   id: string;
   color: string;
@@ -44,8 +44,8 @@ export class Widget {
   ClubbingTime: boolean = false;
   ClubbingFieldName?: Enum_Method_Aggregation;
   isDistinct: boolean = false;
-  isMultiValuedColumn: Boolean = false;
-  isSelfCount: Boolean = false;
+  isMultiValuedColumn: boolean = false;
+  isSelfCount: boolean = false;
   allowRefresh: boolean = false;
   refreshInterval: number = 240;
   propertyFilters?: RuleSet;

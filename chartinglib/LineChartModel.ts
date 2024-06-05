@@ -13,7 +13,7 @@ class LineChartModel extends BaseChartClassModel {
     yAxisLabel = "",
   ): (source: IChartDataModel) => EChartsOption {
     return (source: IChartDataModel) => {
-      let options: EChartsOption = {
+      const options: EChartsOption = {
         tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
         grid: { left: "3%", right: "4%", bottom: "3%", containLabel: true },
         title: { text: title, show: true },

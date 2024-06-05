@@ -60,7 +60,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     this.dataExists = false;
     this.totaldata = 0;
     this.totalDataArray = [];
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       this.totaldata += Number(x.data[0]);
       this.totalDataArray.push(Number(x.data[0]));
@@ -86,7 +86,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
   }
 
   onLegendItemClick(event) {
-    var index = this.chartData.series.findIndex((x) => {
+    const index = this.chartData.series.findIndex((x) => {
       return x.name == event.text;
     });
     if (index != -1) {
@@ -96,7 +96,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
         this.totalDataArray[index] = 0;
       }
     }
-    var count = this.totalDataArray.reduce(
+    const count = this.totalDataArray.reduce(
       (accumulator, currentValue) => accumulator + currentValue,
       0,
     );

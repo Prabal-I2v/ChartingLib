@@ -47,7 +47,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ name: x.label, data: x.data });
     });
@@ -65,7 +65,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.widgetRequestModel.isMultiValuedColumn &&
       this.widgetRequestModel.isMultiValuedColumn == true
     ) {
-      var maxValuesSeriesIndex = this.findMaxLastValue(chartData.series);
+      const maxValuesSeriesIndex = this.findMaxLastValue(chartData.series);
       this.setData(chartData, maxValuesSeriesIndex);
       this.PropName = chartData.series[maxValuesSeriesIndex].name;
     }
@@ -76,13 +76,13 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.widgetRequestModel.ClubbingFieldName ==
         Enum_Method_Aggregation.Greatest
     ) {
-      var greatestSeries = chartData.series.find((x) => {
+      const greatestSeries = chartData.series.find((x) => {
         return x.name == "greatest";
       });
 
-      var maxValuesSeriesLastValue =
+      const maxValuesSeriesLastValue =
         greatestSeries.data[greatestSeries.data.length - 1];
-      var maxValuesSeriesIndex = chartData.series.findIndex((x) => {
+      const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
         return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
       });
 
@@ -93,13 +93,13 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.widgetRequestModel.ClubbingFieldName ==
         Enum_Method_Aggregation.Lowest
     ) {
-      var greatestSeries = chartData.series.find((x) => {
+      const greatestSeries = chartData.series.find((x) => {
         return x.name == "lowest";
       });
 
-      var maxValuesSeriesLastValue =
+      const maxValuesSeriesLastValue =
         greatestSeries.data[greatestSeries.data.length - 1];
-      var maxValuesSeriesIndex = chartData.series.findIndex((x) => {
+      const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
         return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
       });
 
@@ -111,7 +111,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
     if (this.widgetRequestModel.FindResultSvgIcon == true) {
       //svg icon as per result
-      var uppercaseRes = chartData.series[0].name.toUpperCase();
+      const uppercaseRes = chartData.series[0].name.toUpperCase();
       this.ResSvgIcon = eventIconMapping[uppercaseRes];
     }
     return chartData;

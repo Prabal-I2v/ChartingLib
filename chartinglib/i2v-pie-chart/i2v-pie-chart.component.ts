@@ -40,7 +40,7 @@ export class I2vPieChartComponent extends I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ value: Number(x.data[0]), name: x.label });
     });

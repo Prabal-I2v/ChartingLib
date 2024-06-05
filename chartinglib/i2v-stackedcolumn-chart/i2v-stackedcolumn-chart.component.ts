@@ -31,9 +31,9 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var isMonthData = false;
+    let isMonthData = false;
     if (data.labels[0].key == Enum_TimePeriod.month) isMonthData = true;
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
 
     chartData.series = data.data.map((x) => {
       return new ChartSeries({
@@ -43,7 +43,7 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
     });
     if (data.labels.length > 0) {
       if (isMonthData) {
-        var monthData: any[] = [];
+        const monthData: any[] = [];
         data.labels[0].value.forEach((x) => {
           monthData.push(month[parseInt(x) - 1]);
         });

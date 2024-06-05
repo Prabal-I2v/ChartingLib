@@ -32,7 +32,7 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
   // };
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
     chartData.series[0].data = [];
     data.data.forEach((x, i) => {
       // return new ChartSeries(x.label, x.data);

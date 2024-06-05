@@ -148,11 +148,11 @@ export abstract class I2vChartsComponent {
 
   onCustomFilterValuesChange(
     event: ICustomFilterOutputEmittorModel,
-    commonCall: Boolean = false,
+    commonCall: boolean = false,
   ) {
     // console.log(event)
     switch (event.key) {
-      case "Video Sources":
+      case "Video Sources": {
         this.widgetRequestModel.customFilters[event.key] = this.customFilters[
           event.key
         ].filter((x) => event.value.includes(String(x.returnValue)));
@@ -167,7 +167,7 @@ export abstract class I2vChartsComponent {
           this.widgetRequestModel.propertyFilters.condition = "and";
         }
 
-        var index = this.isRuleSetAlreadyPresent(
+        const index = this.isRuleSetAlreadyPresent(
           this.widgetRequestModel.propertyFilters,
           "VideoSourceId",
         );
@@ -194,6 +194,7 @@ export abstract class I2vChartsComponent {
           }
         }
         break;
+      }
     }
     if (!commonCall) {
       this.getDataFromServer(this.widgetRequestModel);
@@ -204,7 +205,7 @@ export abstract class I2vChartsComponent {
 
   onTimeChange(
     event: IDateTimeFilterOutputEmittorModel,
-    commonCall: Boolean = false,
+    commonCall: boolean = false,
   ) {
     // console.log(event);
     this.widgetRequestModel.customFilters["Time"] = [
@@ -259,16 +260,16 @@ export abstract class I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var isMonthData = false;
+    let isMonthData = false;
     if (data.labels[0].key == "month") isMonthData = true;
 
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ name: x.label, data: x.data });
     });
     if (data.labels.length > 0) {
       if (isMonthData) {
-        var monthData: any[] = [];
+        const monthData: any[] = [];
         data.labels[0].value.forEach((x) => {
           monthData.push(month[parseInt(x) - 1]);
         });
@@ -291,7 +292,7 @@ export abstract class I2vChartsComponent {
     data: ICustomFilterOutputEmittorModel,
     fieldName: string,
   ): RuleSet {
-    var ruleSet = new RuleSet();
+    const ruleSet = new RuleSet();
     ruleSet.condition = "and";
     ruleSet.ruleSet = [];
     ruleSet.rules = [];
@@ -330,7 +331,7 @@ export abstract class I2vChartsComponent {
   }
 
   checkIfAnySeriesExists(data: ChartsOutputModel): boolean {
-    var index = data.data.findIndex((x) => {
+    const index = data.data.findIndex((x) => {
       return x.data.length > 0;
     });
 
@@ -358,20 +359,20 @@ export abstract class I2vChartsComponent {
 
   formatUnixTimestamp(unix_timestamp) {
     // Create a new Date object using the Unix timestamp (in milliseconds)
-    var date = new Date(unix_timestamp);
+    const date = new Date(unix_timestamp);
 
     // Extract date components
-    var year = date.getFullYear();
-    var month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-based
-    var day = date.getDate().toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are zero-based
+    const day = date.getDate().toString().padStart(2, "0");
 
     // Extract time components
-    var hours = date.getHours().toString().padStart(2, "0");
-    var minutes = date.getMinutes().toString().padStart(2, "0");
-    var seconds = date.getSeconds().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
 
     // Format the date and time string in YYYY-MM-DD HH:MM:SS format
-    var formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    const formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
     return formattedDateTime;
   }

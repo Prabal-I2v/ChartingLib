@@ -29,7 +29,7 @@ export class I2vStackedbarChartComponent extends I2vChartsComponent {
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
-    var chartData = new ClientChartModel();
+    const chartData = new ClientChartModel();
 
     chartData.series = data.data.map((x) => {
       return new ChartSeries({

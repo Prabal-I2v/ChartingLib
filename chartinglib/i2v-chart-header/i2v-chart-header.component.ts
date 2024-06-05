@@ -18,8 +18,8 @@ import {
 } from "../Models/WidgetRequestModel";
 import * as moment from "moment";
 
-declare var $: any;
-declare var _: any;
+declare let $: any;
+declare let _: any;
 
 type DateRange = {
   startTime: Date;
@@ -93,7 +93,7 @@ export class I2vChartHeaderComponent {
 
   ngOnChanges(changes: SimpleChanges) {
     this.cdr.detectChanges();
-    var alreadyDone = false;
+    let alreadyDone = false;
     if (
       changes.customFilters &&
       changes.customFilters.currentValue != changes.customFilters.previousValue
@@ -127,7 +127,7 @@ export class I2vChartHeaderComponent {
   }
 
   private setFilterValueAsPerCustomFiltersAndWidgetCustomFilter(
-    initialValue: Boolean = false,
+    initialValue: boolean = false,
   ) {
     if (this.customFilters) {
       this.CustomFilterKeys = Object.keys(this.customFilters);
@@ -161,13 +161,13 @@ export class I2vChartHeaderComponent {
     }
   }
 
-  private SetValueAsPerWidgetCustomFiltersValue(initialValue: Boolean = false) {
+  private SetValueAsPerWidgetCustomFiltersValue(initialValue: boolean = false) {
     if (
       this.widgetCustomFiltersValue &&
       Object.keys(this.widgetCustomFiltersValue).length > 0 &&
       this.customFilters
     ) {
-      var CombineFilterOutputEmittorEmitModel = {};
+      const CombineFilterOutputEmittorEmitModel = {};
       for (const key of Object.keys(this.customFilters)) {
         if (key in this.widgetCustomFiltersValue) {
           this.selectedCustomFilterkey = key;
@@ -273,19 +273,18 @@ export class I2vChartHeaderComponent {
   }
 
   date_selected(interval?): ITimeRange {
-    var SelectedInterval = "";
+    let SelectedInterval = "";
     if (interval) {
       SelectedInterval = interval;
     }
-    var today = new Date($.now());
+    const today = new Date($.now());
     switch (SelectedInterval) {
       case "Last Week":
         this.enableCustomTime = false;
-        var temp = today.getDate() - 7;
         this.startDate = new Date(
           today.getFullYear(),
           today.getMonth(),
-          temp,
+          today.getDate() - 7,
           0,
           0,
           0,
@@ -310,10 +309,10 @@ export class I2vChartHeaderComponent {
         };
       case "Last Month":
         this.enableCustomTime = false;
-        var temp = today.getMonth() - 1;
+
         this.startDate = new Date(
           today.getFullYear(),
-          temp,
+          today.getMonth() - 1,
           today.getDate(),
           0,
           0,

@@ -1,0 +1,53 @@
+# Specify the minimum version of pre-commit required
+# minimum_pre_commit_version: '2.18.0'
+
+# Default installation hook types
+# default_install_hook_types: [pre-commit]
+
+# Default language versions for hooks
+# default_language_version:
+#   python: python3.7
+#   node: system  # Assuming the use of the system's Node.js version
+
+# Default stages where hooks should be run
+# default_stages: [pre-commit, pre-push]
+
+# Global file include pattern
+files: ''
+
+# Global file exclude pattern (example: exclude node_modules and binary files)
+exclude: ^(node_modules|\.git|\.venv|bin|obj)/
+
+# Stop running hooks after the first failure
+fail_fast: true
+
+repos:
+  # Generic hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=40000]
+
+  # Hooks for the Angular frontend
+
+  # If You need to Ignore some files or folders, create a .prettierignore file in the root of your project.
+  # `.prettierignore` uses gitignore syntax.
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: 'v4.0.0-alpha.8'  # Use the sha / tag you want to point at
+    hooks:
+      - id: prettier
+        files: \.(ts|js|json|css|scss|html)$
+
+
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: 'v9.4.0'  # Use the sha / tag you want to point at
+  #   hooks:
+  #     - id: eslint
+  #       files: \.[jt]sx?$  # *.js, *.jsx, *.ts and *.tsx
+  #       types: [file]
+  #       args: [--config=../../../../eslint.config.mjs, --fix]
+  #       working_dir: Analytic/ClientApp

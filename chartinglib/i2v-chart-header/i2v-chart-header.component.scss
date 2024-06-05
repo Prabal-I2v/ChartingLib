@@ -1,58 +1,54 @@
 :host {
   ::ng-deep .p-dropdown {
+    font-size: 13px;
+    font-weight: 400;
+    .p-dropdown-label {
       font-size: 13px;
       font-weight: 400;
-      .p-dropdown-label{
-        font-size: 13px;
-        font-weight: 400;
-      }
-     .p-dropdown-item{
+    }
+    .p-dropdown-item {
       font-size: 13px;
       font-weight: 400;
-     }
-    }}
-:host {
-    ::ng-deep  .p-calendar {
-      font-size: 13px;
-      font-weight: 400;
-      .p-inputtext{
-          font-size: 13px;
-          font-weight: 400;
-          width: 240px;
-        }
-      .datepicker{
-        font-size: 13px;
-        font-weight: 400;
-        margin-right: 20%;
-      }
-      .p-datepicker-calendar{
-        font-size: 13px;
-        font-weight: 400;
-        width: 25%;
-        padding: 0px;
-        gap: 0px;
-        height: 25%;
-        z-index: 1200;
-        overflow: visible;
-      }
-      .p-datepicker-monthpicker{
-        font-size: 13px;
-        font-weight: 400;
-      }
     }
   }
+}
+:host {
+  ::ng-deep .p-calendar {
+    font-size: 13px;
+    font-weight: 400;
+    .p-inputtext {
+      font-size: 13px;
+      font-weight: 400;
+      width: 240px;
+    }
+    .datepicker {
+      font-size: 13px;
+      font-weight: 400;
+      margin-right: 20%;
+    }
+    .p-datepicker-calendar {
+      font-size: 13px;
+      font-weight: 400;
+      width: 25%;
+      padding: 0px;
+      gap: 0px;
+      height: 25%;
+      z-index: 1200;
+      overflow: visible;
+    }
+    .p-datepicker-monthpicker {
+      font-size: 13px;
+      font-weight: 400;
+    }
+  }
+}
 
-  // .dateInput{
-  //   width: 248px;
-  //   border-radius: 6px;
-  //   border: 1px solid #d1d5db;
-  // }
+// .dateInput{
+//   width: 248px;
+//   border-radius: 6px;
+//   border: 1px solid #d1d5db;
+// }
 
-  // .dateInput:hover{
-  //   border: 1px solid #3b82f6;
-  // }
-
-
-
-
-
+// .dateInput:hover{
+//   border: 1px solid #3b82f6;
+// }

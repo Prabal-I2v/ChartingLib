@@ -1,19 +1,18 @@
 export const eventIconMapping = {
-'CAR':"assets/fill/va/low-speed.svg",
-'BUS':"assets/fill/va/low-speed.svg",
-"TRUCK":"",
-"MOTORBIKE":"",
-"BICYCLE":"",
-"TRAIN":"",
-"E_RICKSHAW":"",
-"MINI_BUS":"",
-"MINI_TRUCK":"",
-"AUTO_RICKSHAW":"",
-"VAN":"",
-"TRACTOR":""
-
-}
-export enum month{
+  CAR: "assets/fill/va/low-speed.svg",
+  BUS: "assets/fill/va/low-speed.svg",
+  TRUCK: "",
+  MOTORBIKE: "",
+  BICYCLE: "",
+  TRAIN: "",
+  E_RICKSHAW: "",
+  MINI_BUS: "",
+  MINI_TRUCK: "",
+  AUTO_RICKSHAW: "",
+  VAN: "",
+  TRACTOR: "",
+};
+export enum month {
   Jan,
   Feb,
   Mar,
@@ -25,7 +24,5 @@ export enum month{
   Sep,
   Oct,
   Nov,
-  Dec
-
+  Dec,
 }
-

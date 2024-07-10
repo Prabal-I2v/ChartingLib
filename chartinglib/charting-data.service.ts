@@ -12,7 +12,7 @@ export class ChartingDataService {
   public getChartingData(requestModel: Widget): Observable<any> {
     const url = window.location.href;
     const parsedUrl = new URL(url);
-    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:5012`;
+    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
 
     return this.http.post(
       `${baseUrl}/dashboard/GetWidgetOutputModel`,

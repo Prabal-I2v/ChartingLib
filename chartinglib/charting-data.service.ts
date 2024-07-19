@@ -11,12 +11,11 @@ export class ChartingDataService {
 
   public getChartingData(requestModel: Widget): Observable<any> {
     const url = window.location.href;
-    let parsedUrl = new URL(url);
-    parsedUrl.port = "5012"
+    const parsedUrl = new URL(url);
     const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
 
     return this.http.post(
-      `${baseUrl}/dashboard/GetWidgetOutputModel`,
+      `${baseUrl}/api/dashboard/GetWidgetOutputModel`,
       requestModel,
     );
   }

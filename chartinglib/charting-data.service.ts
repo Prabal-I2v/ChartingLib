@@ -11,7 +11,8 @@ export class ChartingDataService {
 
   public getChartingData(requestModel: Widget): Observable<any> {
     const url = window.location.href;
-    const parsedUrl = new URL(url);
+    let parsedUrl = new URL(url);
+    parsedUrl.port = "5012"
     const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
 
     return this.http.post(

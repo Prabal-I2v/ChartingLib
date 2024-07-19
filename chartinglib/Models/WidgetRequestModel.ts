@@ -105,7 +105,7 @@ export enum Enum_Schema {
 
 export enum Enum_TimePeriod {
   hour = "hour",
-  date = "date",
+  day = "day",
   month = "month",
   year = "year",
   week = "week",

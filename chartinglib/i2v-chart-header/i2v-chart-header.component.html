@@ -1,41 +1,18 @@
 <div
-  style="
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-  "
+  class="custom-class-i2v-chart-header-component-0"
 >
   <div
-    style="
-      display: flex;
-      width: 25%;
-      flex-wrap: wrap;
-      align-self: start;
-      gap: 5px;
-      align-items: center;
-    "
+    class="custom-class-i2v-chart-header-component-1"
   >
     <h3
-      style="
-        margin: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      "
+      class="custom-class-i2v-chart-header-component-2"
       [title]="heading"
       *ngIf="heading"
     >
       {{ heading }}
     </h3>
     <span
-      style="
-        margin: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      "
+      class="custom-class-i2v-chart-header-component-3"
       [title]="subHeading"
       *ngIf="subHeading"
       >({{ subHeading }})</span
@@ -44,13 +21,7 @@
 
   <div
     *ngIf="customFilters"
-    style="
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-      align-self: start;
-    "
+    class="custom-class-i2v-chart-header-component-4"
   >
     <p-calendar
       *ngIf="enableCustomTime"
@@ -82,7 +53,7 @@
       (onChange)="onTimeChange($event)"
     >
     </p-dropdown>
-    <span style="display: none">
+    <span class="custom-class-i2v-chart-header-component-5">
       <p-dropdown
         *ngIf="refreshIntervalValue"
         [options]="refreshInterval"

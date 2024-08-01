@@ -1,25 +1,11 @@
-<div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+<div class="custom-class-i2v-donut-chart-component-0">
   <div
-    style="
-      display: flex;
-      justify-items: center;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-    "
+    class="custom-class-i2v-donut-chart-component-1"
   >
     <div
       *ngIf="!isModel"
-      class="watchlist-data-container"
-      style="
-        overflow-x: hidden;
-        height: 100%;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 10px 15px;
-        background-color: #fff;
-      "
+      class="watchlist-data-container custom-class-i2v-donut-chart-component-2"
+     
     >
       <div class="nowatchlistexist">
         <div
@@ -34,7 +20,7 @@
     </div>
     <i2v-chart-header
       *ngIf="isModel"
-      style="width: 100%"
+      class="custom-class-i2v-donut-chart-component-3"
       [heading]="widgetRequestModel.heading"
       [subHeading]="widgetRequestModel.subHeading"
       [customFilters]="customFilters"
@@ -48,40 +34,17 @@
   </div>
   <ng-container *ngIf="isModel && isLoading">
     <div
-      style="
-        display: flex;
-        width: 360px;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        flex: 1;
-        height: 100%;
-        width: 100%;
-      "
+      class="custom-class-i2v-donut-chart-component-4"
     >
       <span
-        style="
-          width: 50px;
-          height: 50px;
-          background: url(assets/gifs/horizontal-loader.gif) no-repeat center;
-          background-size: 100% 100%;
-        "
+        class="custom-class-i2v-donut-chart-component-5"
       ></span>
     </div>
   </ng-container>
   <div
     *ngIf="isModel && !isLoading && !dataExists"
-    class="watchlist-data-container"
-    style="
-      overflow-x: hidden;
-      height: 100%;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 10px 15px;
-      background-color: #fff;
-    "
+    class="watchlist-data-container custom-class-i2v-donut-chart-component-6"
+   
   >
     <div class="nowatchlistexist">
       <div
@@ -95,25 +58,19 @@
     </div>
   </div>
   <kendo-chart
-    style="min-height: 400px; height: 100%"
+    class="custom-class-i2v-donut-chart-component-7"
     *ngIf="isModel && !isLoading && dataExists"
     [transitions]="true"
     (legendItemClick)="onLegendItemClick($event)"
   >
     <ng-template kendoChartDonutCenterTemplate>
       <div
-        style="
-          font-size: 12px;
-          color: #5f6f94;
-          display: flex;
-          flex-direction: column;
-          gap: 0px;
-        "
+        class="custom-class-i2v-donut-chart-component-8"
       >
-        <p style="padding: 0px; margin: 0px">
+        <p class="custom-class-i2v-donut-chart-component-9">
           Total no. of {{ widgetRequestModel.subHeading }}
         </p>
-        <h1 style="padding: 0px; margin: 0px">{{ totaldata }}</h1>
+        <h1 class="custom-class-i2v-donut-chart-component-10">{{ totaldata }}</h1>
       </div>
     </ng-template>
 

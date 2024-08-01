@@ -1,0 +1,36 @@
+.custom-class-i2v-kpi-chart-component-0 { display: flex; flex-direction: column; width: 100%; height: 100% }
+.custom-class-i2v-kpi-chart-component-1 { display: flex;
+      justify-items: center;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%; }
+.custom-class-i2v-kpi-chart-component-2 { width: 100%; display: none }
+.custom-class-i2v-kpi-chart-component-3 { overflow-x: hidden;
+        height: 100%;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px 15px;
+        background-color: #fff; }
+.custom-class-i2v-kpi-chart-component-4 { align-items: flex-start }
+.custom-class-i2v-kpi-chart-component-5 { display: flex;
+                align-items: center;
+                justify-content: center; }
+.custom-class-i2v-kpi-chart-component-6 { width: 50px;
+                  height: 50px;
+                  background: url(assets/gifs/horizontal-loader.gif) no-repeat
+                    center;
+                  background-size: 100% 100%; }
+.custom-class-i2v-kpi-chart-component-7 { align-items: flex-start; width: 100%; gap: 30px }
+.custom-class-i2v-kpi-chart-component-8 { align-items: flex-start }
+.custom-class-i2v-kpi-chart-component-9 { display: flex;
+              flex-direction: row;
+              gap: 8px;
+              justify-content: center;
+              align-items: center; }
+.custom-class-i2v-kpi-chart-component-10 { height: 80%;
+                width: 29%;
+                justify-content: center;
+                align-items: center;
+                display: flex; }

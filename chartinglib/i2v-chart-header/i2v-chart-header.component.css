@@ -1,0 +1,25 @@
+.custom-class-i2v-chart-header-component-0 { display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center; }
+.custom-class-i2v-chart-header-component-1 { display: flex;
+      width: 25%;
+      flex-wrap: wrap;
+      align-self: start;
+      gap: 5px;
+      align-items: center; }
+.custom-class-i2v-chart-header-component-2 { margin: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis; }
+.custom-class-i2v-chart-header-component-3 { margin: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis; }
+.custom-class-i2v-chart-header-component-4 { display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      align-self: start; }
+.custom-class-i2v-chart-header-component-5 { display: none }

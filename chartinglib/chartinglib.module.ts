@@ -41,6 +41,7 @@ import { HttpClientModule } from "@angular/common/http";
 import { I2vKpiChartComponent } from "./i2v-kpi-chart/i2v-kpi-chart.component";
 import { I2vDonutChartComponent } from "./i2v-donut-chart/i2v-donut-chart.component";
 import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
+import { CommonComponentsModule } from "@i2v-systems/common-components";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -62,6 +63,7 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     I2vAreaChartComponent,
   ],
   imports: [
+    CommonComponentsModule,
     CommonModule,
     FormsModule,
     // BrowserAnimationsModule,

@@ -71,7 +71,7 @@ export class I2vChartHeaderComponent {
   //properties for time filter
   TimeFilterValue: string;
   timeObj: ITimeRange;
-  TimeFilter = ["Today", "Last Week", "Last Month", "Custom"];
+  TimeFilter = ["Today", "Last week", "Last month", "Custom"];
   DateRange: Date[] | undefined = [];
   // DateRange: DateRange;
   private startDate: Date = new Date(
@@ -279,7 +279,7 @@ export class I2vChartHeaderComponent {
     }
     const today = new Date($.now());
     switch (SelectedInterval) {
-      case "Last Week":
+      case "Last week":
         this.enableCustomTime = false;
         this.startDate = new Date(
           today.getFullYear(),
@@ -307,7 +307,7 @@ export class I2vChartHeaderComponent {
           startTime: moment(this.startDate).valueOf(),
           endTime: moment(this.endDate).valueOf(),
         };
-      case "Last Month":
+      case "Last month":
         this.enableCustomTime = false;
 
         this.startDate = new Date(

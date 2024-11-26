@@ -27,7 +27,7 @@
       [title]="heading"
       *ngIf="heading"
     >
-      {{ heading }}
+      {{ heading |humanize }}
     </h3>
     <span
       style="
@@ -38,7 +38,7 @@
       "
       [title]="subHeading"
       *ngIf="subHeading"
-      >({{ subHeading }})</span
+      >({{ subHeading |humanize }})</span
     >
   </div>
 

@@ -65,7 +65,7 @@
           </div>
           <div class="number-grp" style="align-items: flex-start">
             <div class="minorheader" *ngIf="widgetRequestModel.heading">
-              {{ widgetRequestModel.heading }}
+              {{ widgetRequestModel.heading | humanize}}
             </div>
             <div
               style="
@@ -107,7 +107,7 @@
           style="align-items: flex-start; width: 100%; gap: 30px"
         >
           <div class="minorheader" *ngIf="widgetRequestModel.heading">
-            {{ widgetRequestModel.heading }}
+            {{ widgetRequestModel.heading | humanize}}
           </div>
           <div class="nowatchlistexist">
             <div
@@ -134,7 +134,7 @@
         </div>
         <div class="number-grp" style="align-items: flex-start">
           <div class="minorheader" *ngIf="widgetRequestModel.heading">
-            {{ widgetRequestModel.heading }}
+            {{ widgetRequestModel.heading | humanize}}
           </div>
           <div
             style="
@@ -164,7 +164,7 @@
               ></div>
             </div>
             <div class="number-grp">
-              <div *ngIf="PropName">{{ PropName }}</div>
+              <div *ngIf="PropName">{{ PropName  | humanize}}</div>
               <div class="digits" *ngIf="chartData && chartData.series">
                 {{ PropValue }}
               </div>

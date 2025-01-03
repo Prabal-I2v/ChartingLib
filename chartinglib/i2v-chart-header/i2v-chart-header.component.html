@@ -59,6 +59,7 @@
       [showTime]="true"
       #customTimeFilterRef
       (onClose)="onCustomTimeSelected()"
+      [appendTo]="'body'"
     >
     </p-calendar>
     <!-- <input  *ngIf="enableCustomTime" type="text" #customTimeFilterRef class="dateInput"
@@ -80,6 +81,7 @@
       placeholder="Select Time"
       [editable]="false"
       (onChange)="onTimeChange($event)"
+      [appendTo]="'body'"
     >
     </p-dropdown>
     <span style="display: none">
@@ -92,6 +94,7 @@
         #refreshIntervalRef
         optionValue="returnValue"
         (onChange)="setIntervalTime($event)"
+        [appendTo]="'body'"
       >
       </p-dropdown>
     </span>
@@ -102,6 +105,7 @@
       [editable]="false"
       #keySelectRef
       (onChange)="onCustomFilterKeyChange($event)"
+      [appendTo]="'body'"
     >
     </p-dropdown>
     <p-multiSelect
@@ -113,6 +117,7 @@
       [showClear]="true"
       (onClear)="onCustomFilterValuesChange($event)"
       (onChange)="onCustomFilterValuesChange($event)"
+      [appendTo]="'body'"
     >
     </p-multiSelect>
   </div>

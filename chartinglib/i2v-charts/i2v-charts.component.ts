@@ -10,17 +10,17 @@ import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import {
   ICustomFilter,
-  RulePropertyType,
   RuleSet,
   Widget,
   ICustomFilterOutputEmittorModel,
   ITimeRange,
   IDateTimeFilterOutputEmittorModel,
   ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
-} from "../Models/WidgetRequestModel";
+} from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription } from "rxjs";
 import { month } from "../Models/vehicle-icon-mapping";
+import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 
 export enum CustomFilterEnum {
   "Video Sources" = "videoSourceId",
@@ -300,7 +300,7 @@ export abstract class I2vChartsComponent {
       field: fieldName,
       operator: "Contains",
       value: data.value.join(","),
-      type: RulePropertyType.StringArray,
+      type: EventPropertyType.StringArray,
     });
     return ruleSet;
   }

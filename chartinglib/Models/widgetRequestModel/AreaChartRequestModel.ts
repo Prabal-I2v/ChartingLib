@@ -1,8 +1,11 @@
-import { Enum_WidgetType, Widget } from "../WidgetRequestModel";
+import { Enum_WidgetType, Widget, WidgetConstructorProps } from "../Widget";
 
-export class AreaCharttWidget extends Widget {
-    constructor() {
-        super();
-        this.widgetType = Enum_WidgetType.AreaChart; // Set widget type to ColumnChart
-    }
+export class AreaChartWidget extends Widget {
+    constructor(params: WidgetConstructorProps) {
+        // Call the parent constructor with the params
+        super({
+          widgetType: Enum_WidgetType.AreaChart,  // Set default widget type
+          ...params  // Allow overriding any properties
+        });
+      }
 }

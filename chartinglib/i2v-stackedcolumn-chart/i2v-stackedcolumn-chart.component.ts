@@ -4,7 +4,7 @@ import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
 import { month } from "../Models/vehicle-icon-mapping";
-import { Enum_TimePeriod } from "../Models/WidgetRequestModel";
+import { Enum_TimePeriod } from "../Models/Widget";
 
 @Component({
   selector: "i2v-stackedcolumn-chart",

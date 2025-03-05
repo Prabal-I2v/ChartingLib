@@ -15,7 +15,7 @@ import {
   IDateTimeFilterOutputEmittorModel,
   ISetIntervalFilterOutputEmittorModel,
   ICommonFilterOutputEmittorModel,
-} from "../Models/WidgetRequestModel";
+} from "../Models/Widget";
 import * as moment from "moment";
 
 declare let $: any;

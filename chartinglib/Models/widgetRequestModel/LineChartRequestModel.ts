@@ -1,8 +1,11 @@
-import { Enum_WidgetType, Widget } from "../WidgetRequestModel";
+import { Enum_WidgetType, Widget, WidgetConstructorProps } from "../Widget";
 
 export class LineChartWidget extends Widget {
-    constructor() {
-        super();
-        this.widgetType = Enum_WidgetType.LineChart; // Set widget type to ColumnChart
-    }
+    constructor(params: WidgetConstructorProps) {
+        // Call the parent constructor with the params
+        super({
+          widgetType: Enum_WidgetType.LineChart,  // Set default widget type
+          ...params  // Allow overriding any properties
+        });
+      }
 }

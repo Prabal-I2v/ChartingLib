@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { Widget } from "./Models/WidgetRequestModel";
+import { Widget } from "./Models/Widget";
 
 @Injectable({
   providedIn: "root",

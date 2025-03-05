@@ -3,7 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
-import { Enum_Method_Aggregation } from "../Models/WidgetRequestModel";
+import { Enum_Method_Aggregation } from "../Models/Widget";
 import { eventIconMapping } from "../Models/vehicle-icon-mapping";
 
 // export enum RiseLevel {
@@ -25,7 +25,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   ResSvgIcon: string = "";
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
-  @Input() showChart: boolean = false;
+  @Input() showChart: boolean = true;
 
   constructor(
     private chartingDataService: ChartingDataService,
@@ -61,19 +61,16 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
 
     //if our data is created from a single column, we use IsMultivaluedcolumn = true because we cannot get series with greatest name
-    if (
-      this.widgetRequestModel.isMultiValuedColumn &&
-      this.widgetRequestModel.isMultiValuedColumn == true
-    ) {
+    if (this.widgetRequestModel.isMultiValuedColumn) {
       const maxValuesSeriesIndex = this.findMaxLastValue(chartData.series);
       this.setData(chartData, maxValuesSeriesIndex);
       this.PropName = chartData.series[maxValuesSeriesIndex].name;
     }
 
-    //if we dont have multivaluedColumn then we used ClubbingFieldName property and we get series as Lowest/greatest/total
+    //if we dont have multivaluedColumn then we used clubbingFieldName property and we get series as Lowest/greatest/total
     else if (
-      this.widgetRequestModel.ClubbingFieldName != null &&
-      this.widgetRequestModel.ClubbingFieldName ==
+      this.widgetRequestModel.clubbingFieldName != null &&
+      this.widgetRequestModel.clubbingFieldName ==
         Enum_Method_Aggregation.Greatest
     ) {
       const greatestSeries = chartData.series.find((x) => {
@@ -89,8 +86,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.setData(chartData, maxValuesSeriesIndex);
       this.PropName = chartData.series[maxValuesSeriesIndex].name;
     } else if (
-      this.widgetRequestModel.ClubbingFieldName != null &&
-      this.widgetRequestModel.ClubbingFieldName ==
+      this.widgetRequestModel.clubbingFieldName != null &&
+      this.widgetRequestModel.clubbingFieldName ==
         Enum_Method_Aggregation.Lowest
     ) {
       const greatestSeries = chartData.series.find((x) => {
@@ -109,7 +106,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     } else {
       this.setData(chartData);
     }
-    if (this.widgetRequestModel.FindResultSvgIcon == true) {
+    if (this.widgetRequestModel.findResultSvgIcon == true) {
       //svg icon as per result
       const uppercaseRes = chartData.series[0].name.toUpperCase();
       this.ResSvgIcon = eventIconMapping[uppercaseRes];

@@ -1,13 +1,6 @@
 import { ChangeDetectorRef, Component, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
-import {
-  Enum_Entity,
-  Enum_Method,
-  Enum_WidgetType,
-  RulePropertyType,
-  Widget,
-} from "../Models/WidgetRequestModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 

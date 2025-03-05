@@ -146,7 +146,7 @@
             "
           >
             <div
-              *ngIf="widgetRequestModel.FindResultSvgIcon"
+              *ngIf="widgetRequestModel.findResultSvgIcon"
               class="icon-box"
               style="
                 height: 80%;
@@ -172,8 +172,8 @@
           </div>
         </div>
       </div>
-
       <!-- <div class="sparkline"> -->
+        {{chartData.series | json}}
       <kendo-sparkline
         *ngIf="showChart && chartData && chartData.series"
         class="sparkline"
@@ -197,7 +197,7 @@
         isModel &&
         !isLoading &&
         dataExists &&
-        widgetRequestModel.ClubbingTime &&
+        widgetRequestModel.clubbingTime &&
         (widgetRequestModel.groupByOneIsTime ||
           widgetRequestModel.groupByTwoIsTime)
       "

@@ -1,4 +1,4 @@
-import { Widget } from "./WidgetRequestModel";
+import { Widget } from "./Widget";
 
 export class dashboard {
   id: string;

@@ -32,8 +32,6 @@ export enum CustomFilterEnum {
   styleUrl: "./i2v-charts.component.scss",
 })
 export abstract class I2vChartsComponent {
-  // @Input() chartCategories : chartCategories;
-
   @Input() widgetRequestModel: Widget;
   @Input() isModel: boolean;
   @Input() isLoading: boolean;

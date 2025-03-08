@@ -5,6 +5,7 @@ import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { Enum_Method_Aggregation } from "../Models/Widget";
 import { eventIconMapping } from "../Models/vehicle-icon-mapping";
+import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetRequestModel";
 
 // export enum RiseLevel {
 //   Increase,
@@ -17,6 +18,7 @@ import { eventIconMapping } from "../Models/vehicle-icon-mapping";
   styleUrl: "./i2v-kpi-chart.component.scss",
 })
 export class I2vKpiChartComponent extends I2vChartsComponent {
+  @Input() override widgetRequestModel: KpiWidget = null;
   percentValue: number = 0;
   PropName: string = "";
   PropIcon: string = "";
@@ -25,7 +27,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   ResSvgIcon: string = "";
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
-  @Input() showChart: boolean = true;
+  @Input() showChart: boolean = false;
 
   constructor(
     private chartingDataService: ChartingDataService,
@@ -60,52 +62,55 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       });
     }
 
-    //if our data is created from a single column, we use IsMultivaluedcolumn = true because we cannot get series with greatest name
-    if (this.widgetRequestModel.isMultiValuedColumn) {
-      const maxValuesSeriesIndex = this.findMaxLastValue(chartData.series);
-      this.setData(chartData, maxValuesSeriesIndex);
-      this.PropName = chartData.series[maxValuesSeriesIndex].name;
+    //if we don't have multivaluedColumn then we used clubbingFieldName property and we get series as Lowest/greatest/total
+    if (this.widgetRequestModel.clubbingFieldName != null) {
+      if (this.widgetRequestModel.clubbingFieldName == Enum_Method_Aggregation.Greatest) {
+        const greatestSeries = chartData.series.find((x) => {
+          return x.name.toLowerCase() == "greatest";
+        });
+
+        const maxValuesSeriesLastValue = greatestSeries.data[greatestSeries.data.length - 1];
+        const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
+          return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
+        });
+
+        this.setData(chartData.series[maxValuesSeriesIndex], 0);
+        this.PropName = chartData.series[maxValuesSeriesIndex].name;
+      }
+      else if (this.widgetRequestModel.clubbingFieldName == Enum_Method_Aggregation.Lowest) {
+        const lowestSeries = chartData.series.find((x) => {
+          return x.name.toLowerCase() == "lowest";
+        });
+
+        const minValuesSeriesLastValue =
+          lowestSeries.data[lowestSeries.data.length - 1];
+        const minValuesSeriesIndex = chartData.series.findIndex((x) => {
+          return x.data[x.data.length - 1] == minValuesSeriesLastValue;
+        });
+
+        this.setData(chartData.series[minValuesSeriesIndex], 0);
+        this.PropName = chartData.series[minValuesSeriesIndex].name;
+      }
+
+      else if (this.widgetRequestModel.clubbingFieldName == Enum_Method_Aggregation.Total) {
+        const totalSeries = chartData.series.find((x) => {
+          return x.name.toLowerCase() == "total";
+        });
+        this.setData(totalSeries, 0);
+      }
+    }
+    else if (this.widgetRequestModel.kpiConf) {
+      const resultIndexBasedOnCountValueColumnName = this.findValueAsPerAggregation(this.widgetRequestModel.kpiConf, chartData.series);
+      var countValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.CountValueColumnName)
+      var displayValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.DisplayValueColumnName)
+      this.setData(chartData.series[countValueSeriesIndex], resultIndexBasedOnCountValueColumnName, this.widgetRequestModel.kpiConf.showChart);
+      this.PropName = chartData.series[displayValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
+
+    }
+    else {
+      this.setData(chartData.series[0]);
     }
 
-    //if we dont have multivaluedColumn then we used clubbingFieldName property and we get series as Lowest/greatest/total
-    else if (
-      this.widgetRequestModel.clubbingFieldName != null &&
-      this.widgetRequestModel.clubbingFieldName ==
-        Enum_Method_Aggregation.Greatest
-    ) {
-      const greatestSeries = chartData.series.find((x) => {
-        return x.name == "greatest";
-      });
-
-      const maxValuesSeriesLastValue =
-        greatestSeries.data[greatestSeries.data.length - 1];
-      const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
-        return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
-      });
-
-      this.setData(chartData, maxValuesSeriesIndex);
-      this.PropName = chartData.series[maxValuesSeriesIndex].name;
-    } else if (
-      this.widgetRequestModel.clubbingFieldName != null &&
-      this.widgetRequestModel.clubbingFieldName ==
-        Enum_Method_Aggregation.Lowest
-    ) {
-      const greatestSeries = chartData.series.find((x) => {
-        return x.name == "lowest";
-      });
-
-      const maxValuesSeriesLastValue =
-        greatestSeries.data[greatestSeries.data.length - 1];
-      const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
-        return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
-      });
-
-      this.setData(chartData);
-      this.PropName = chartData.series[maxValuesSeriesIndex].name;
-      this.PropIcon = "";
-    } else {
-      this.setData(chartData);
-    }
     if (this.widgetRequestModel.findResultSvgIcon == true) {
       //svg icon as per result
       const uppercaseRes = chartData.series[0].name.toUpperCase();
@@ -114,49 +119,73 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     return chartData;
   }
 
-  setData(chartData: ClientChartModel, index: number = 0) {
-    if (chartData.series[index].data.length > 1) {
-      this.PropValue = Number(
-        chartData.series[index].data[chartData.series[index].data.length - 1],
-      );
-      this.percentValue =
-        ((Number(
-          chartData.series[index].data[chartData.series[index].data.length - 1],
-        ) -
-          Number(
-            chartData.series[index].data[
-              chartData.series[index].data.length - 2
-            ],
-          )) /
-          Number(
-            chartData.series[index].data[
-              chartData.series[index].data.length - 1
-            ],
-          )) *
-        100;
-    } else if (chartData.series[index].data.length > 0) {
-      this.PropValue = Number(
-        chartData.series[index].data[chartData.series[index].data.length - 1],
-      );
-      this.percentValue = 100;
+  setData(chartSeries: ChartSeries, index: number = 0, showSeries: boolean = false) {
+    if(showSeries)
+    {
+      this.showChart = true;
+    }
+    if (chartSeries.data.length > 1) {
+      this.PropValue = Number(chartSeries.data[index]);
+      if (showSeries) {
+        this.percentValue = (
+          (Number(chartSeries.data[index]) - Number(chartSeries.data[index])) /
+          Number(chartSeries.data[index])) * 100;
+      }
+    } else if (chartSeries.data.length == 1) {
+      this.PropValue = Number(chartSeries.data[index]);
+      if (showSeries) {
+        this.percentValue = 100;
+      }
     } else {
       this.PropValue = 0;
-      this.percentValue = 0;
+      if (showSeries) {
+        this.percentValue = 0;
+      }
     }
   }
 
-  findMaxLastValue(arr: ChartSeries[]): number {
-    let maxLastValue = -Infinity;
-    let maxIndex = -1;
+  findValueAsPerAggregation(conf: KPIConf, arr: ChartSeries[]): number {
+    if (arr.length === 0) {
+      return 0;
+    }
+    if (!conf.seriesAggregation) {
+      return 0;
+    }
+    else if (conf.seriesAggregation === Enum_Method_Aggregation.Greatest) {
+      let maxLastValue = -Infinity;
+      let maxIndex = -1;
 
-    arr.forEach((subArray, index) => {
-      const lastValue = Number(subArray.data[subArray.data.length - 1]);
-      if (lastValue > maxLastValue) {
-        maxLastValue = lastValue;
-        maxIndex = index;
+      var series = arr.find(series => series.name == conf.CountValueColumnName)
+      if (series) {
+        const lastValue = Number(series.data[series.data.length - 1]);
+        series.data.forEach((x, index) => {
+          if (lastValue > maxLastValue) {
+            maxLastValue = lastValue;
+            maxIndex = index;
+          }
+        })
       }
-    });
 
-    return maxIndex;
+      return maxIndex;
+    }
+    else if (conf.seriesAggregation === Enum_Method_Aggregation.Lowest) {
+      let minLastValue = Infinity;
+      let minIndex = -1;
+
+      var series = arr.find(series => series.name == conf.CountValueColumnName)
+      if (series) {
+        const lastValue = Number(series.data[series.data.length - 1]);
+        series.data.forEach((x, index) => {
+          if (lastValue < minLastValue) {
+            minLastValue = lastValue;
+            minIndex = index;
+          }
+        })
+
+        return minIndex;
+      }
+    }
+    // Default return if no condition is met
+    return 0; // Or any default value you prefer
   }
 }

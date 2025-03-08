@@ -11,7 +11,8 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 })
 export class I2vPieChartComponent extends I2vChartsComponent {
   public labelContent(args: any): string {
-    return `${args.dataItem.name}`;
+    var x = `${args.dataItem.name}`;
+    return x;
   }
 
   constructor(

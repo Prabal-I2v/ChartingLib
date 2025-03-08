@@ -37,6 +37,7 @@
       [heading]="widgetRequestModel.heading"
       [subHeading]="widgetRequestModel.subHeading"
       [customFilters]="customFilters"
+      [disableTimeFilter]="widgetRequestModel.disableTimeFilter"
       (daysFilterOutput)="onTimeChange($event)"
       [widgetCustomFiltersValue]="getDefinedFilterValue"
       (customFilterOutput)="onCustomFilterValuesChange($event)"

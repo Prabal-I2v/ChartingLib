@@ -4,7 +4,7 @@ import * as moment from "moment";
 
 declare let $: any;
 
-export interface WidgetConstructorProps {
+export class WidgetConstructorProps {
   // Required properties
   heading: string;
   widgetType: Enum_WidgetType;
@@ -29,17 +29,20 @@ export interface WidgetConstructorProps {
   joinableEntities?: JoinableEntity[];
   baseFilter?: RuleSet;
   getColumnNameWithAggregationMethod?: boolean;
-  fieldName?: Record<string, EventPropertyType>;
-  groupBy1?: string | Enum_TimePeriod;
-  groupBy2?: string;
-  groupByOneIsTime?: boolean;
-  groupByTwoIsTime?: boolean;
-  showableProperties?: string[];
-  showablePropertiesLabel?: string[];
+
+  // It is used to define columns which will be useed for aggregation purposes
+  clubbingFieldNames?: Record<string, EventPropertyType>;
+  groupBy1?: groupByConf | null;
+  groupBy2?: groupByConf | null;
+  showableProperties: showablePropertyModel[];
+  showablePropertiesLabel?: showablePropertyLabelModel[];
   clubbingTime?: boolean;
+
+  //It only includes column to be club if any field name is passed, 
+  // else it is used for get aggreagtion on client side based on value of isAnyMultiValuedColumn
   clubbingFieldName?: Enum_Method_Aggregation;
   isDistinct?: boolean;
-  isMultiValuedColumn?: boolean;
+  isAnyMultiValuedColumn?: boolean;
   isSelfCount?: boolean;
   allowRefresh?: boolean;
   refreshInterval?: number;
@@ -82,17 +85,21 @@ export abstract class Widget {
   baseFilter?: RuleSet;
   //It is used if we want column value along with aggregation method like bus, car, truck also apart from Greatest(Bus+ car+truck) ...
   getColumnNameAlsoWithAggregationMethod: boolean;
-  fieldName: Record<string, EventPropertyType>;
-  groupBy1: string | Enum_TimePeriod;
-  groupBy2: string;
-  groupByOneIsTime: boolean;
-  groupByTwoIsTime: boolean;
-  showableProperties: string[];
-  showablePropertiesLabel: string[];
+  clubbingFieldNames: Record<string, EventPropertyType>;
+  groupBy1: groupByConf | null;
+  groupBy2: groupByConf | null;
+
+  //It is used which column will be included in Charting Data Result
+  showableProperties: showablePropertyModel[];
+
+  //It is used for showing label in chart like bar, column, stacked Charts eg. months need to be showed in y-axis
+  showablePropertiesLabel: showablePropertyLabelModel[];
   clubbingTime: boolean;
   clubbingFieldName?: Enum_Method_Aggregation;
   isDistinct: boolean;
-  isMultiValuedColumn: boolean;
+
+  //make this true if 
+  
   isSelfCount: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
@@ -130,23 +137,20 @@ export abstract class Widget {
     this.isZoomable = props.isZoomable ?? false;
     this.max = props.max ?? 10;
     this.customFilters = props.customFilters ?? {};
-    this.disableTimeFilter = props.disableTimeFilter ?? true;
+    this.disableTimeFilter = props.disableTimeFilter ?? false;
     this.startTime = props.startTime ?? Widget.getCurrentDayStart();
     this.endTime = props.endTime ?? moment(new Date()).valueOf();
     this.joinableEntities = props.joinableEntities ?? [];
     this.baseFilter = props.baseFilter;
     this.getColumnNameAlsoWithAggregationMethod = props.getColumnNameWithAggregationMethod ?? false;
-    this.fieldName = props.fieldName ?? {};
-    this.groupBy1 = props.groupBy1 ?? '';
-    this.groupBy2 = props.groupBy2 ?? '';
-    this.groupByOneIsTime = props.groupByOneIsTime ?? false;
-    this.groupByTwoIsTime = props.groupByTwoIsTime ?? false;
+    this.clubbingFieldNames = props.clubbingFieldNames ?? {};
+    this.groupBy1 = props.groupBy1 ?? null;
+    this.groupBy2 = props.groupBy2 ?? null;
     this.showableProperties = props.showableProperties ?? [];
     this.showablePropertiesLabel = props.showablePropertiesLabel ?? [];
     this.clubbingTime = props.clubbingTime ?? false;
     this.clubbingFieldName = props.clubbingFieldName;
     this.isDistinct = props.isDistinct ?? false;
-    this.isMultiValuedColumn = props.isMultiValuedColumn ?? false;
     this.isSelfCount = props.isSelfCount ?? false;
     this.allowRefresh = props.allowRefresh ?? false;
     this.refreshInterval = props.refreshInterval ?? 240;
@@ -222,6 +226,7 @@ export enum Enum_WidgetType {
   HeatMapChart,
   LineChart,
   PieChart,
+  Donut,
   StackedBarChart,
   StackedColumnChart,
   KPI,
@@ -291,5 +296,34 @@ export class JoinableEntity {
 
 export class JoinableEntityProperty {
   name: string;
-  DisplayName: string;
+  displayName: string;
+}
+
+export class showablePropertyModel{
+  name : string;
+  displayName: string;
+  multiValued? : multivaluedColumn;
+}
+
+export class multivaluedColumn{
+
+    //column should present in showPropertiesLabel and name should match DisplayName
+    dependentOnColumn?: string;
+
+    //column should present in showPropertiesLabel
+    valueBasedOnColumn: string
+}
+
+export class showablePropertyLabelModel{
+   name : string
+   displayName : string
+   isMultiValued? : Boolean = false;
+}
+
+export class groupByConf{
+    mainColumn: string;
+    type : EventPropertyType;
+    subColumn? : string;
+    projectionName? : string;
+    isTime? : boolean = false;
 }

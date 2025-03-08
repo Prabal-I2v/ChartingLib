@@ -15,6 +15,7 @@
     [subHeading]="widgetRequestModel.subHeading"
     [customFilters]="customFilters"
     (daysFilterOutput)="onTimeChange($event)"
+    [disableTimeFilter]="widgetRequestModel.disableTimeFilter"
     [widgetCustomFiltersValue]="getDefinedFilterValue"
     (customFilterOutput)="onCustomFilterValuesChange($event)"
     (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
@@ -173,7 +174,7 @@
         </div>
       </div>
       <!-- <div class="sparkline"> -->
-        {{chartData.series | json}}
+        <!-- {{chartData.series | json}} -->
       <kendo-sparkline
         *ngIf="showChart && chartData && chartData.series"
         class="sparkline"
@@ -198,8 +199,8 @@
         !isLoading &&
         dataExists &&
         widgetRequestModel.clubbingTime &&
-        (widgetRequestModel.groupByOneIsTime ||
-          widgetRequestModel.groupByTwoIsTime)
+        (widgetRequestModel.groupBy1?.isTime ||
+          widgetRequestModel.groupBy2?.isTime)
       "
       class="bottom"
     >
@@ -230,9 +231,9 @@
       </svg>
       in last
       {{
-        widgetRequestModel.groupByOneIsTime
-          ? widgetRequestModel.groupBy1
-          : widgetRequestModel.groupBy2
+        widgetRequestModel.groupBy1?.isTime
+          ? widgetRequestModel.groupBy1.mainColumn
+          : widgetRequestModel.groupBy2.mainColumn
       }}
     </div>
   </div>

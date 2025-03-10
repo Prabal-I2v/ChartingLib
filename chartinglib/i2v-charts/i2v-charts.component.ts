@@ -3,6 +3,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   SimpleChanges,
 } from "@angular/core";
@@ -18,7 +19,8 @@ import {
   ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
 } from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
-import { Subject, Subscription } from "rxjs";
+import { Subject, Subscription, timer } from "rxjs";
+import { debounce } from "rxjs/operators";
 import { month } from "../Models/vehicle-icon-mapping";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 
@@ -31,7 +33,7 @@ export enum CustomFilterEnum {
   templateUrl: "./i2v-charts.component.html",
   styleUrl: "./i2v-charts.component.scss",
 })
-export abstract class I2vChartsComponent {
+export abstract class I2vChartsComponent implements OnInit {
   @Input() widgetRequestModel: Widget;
   @Input() isModel: boolean;
   @Input() isLoading: boolean;
@@ -48,7 +50,10 @@ export abstract class I2vChartsComponent {
     new EventEmitter<ICustomFilterOutputEmittorModel>();
 
   private interval: NodeJS.Timeout;
-  private apiSubscription: any;
+  private apiSubscription: Subscription;
+  private debouncedRefreshSubject: Subject<Widget> = new Subject<Widget>();
+  private debouncedRefreshSubscription: Subscription;
+  private debounceTime = 500; // milliseconds
 
   private _chartData: ClientChartModel;
   @Input()
@@ -60,18 +65,9 @@ export abstract class I2vChartsComponent {
   }
 
   get getDefinedFilterValue() {
-    // if(Object.keys(this.widgetRequestModel.customFilters).length == 0 && Object.keys(this.dashboardCustomFilterValue).length == 0)
-    //   {
-    //     return this.widgetRequestModel.customFilters;
-    //   }
-    // else if(Object.keys(this.widgetRequestModel.customFilters).length > 0)
-    //   {
-    //     return this.widgetRequestModel.customFilters;
-    //   }
-    //   else{
     return this.widgetRequestModel.customFilters;
-    // }
   }
+  
   private baseChartingDataService: ChartingDataService;
   private cdr: ChangeDetectorRef;
 
@@ -84,8 +80,6 @@ export abstract class I2vChartsComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // console.log(changes)
-    //because chart header is not detecting chnages
     this.widgetRequestModel.customFilters = JSON.parse(
       JSON.stringify(this.widgetRequestModel.customFilters),
     );
@@ -112,7 +106,15 @@ export abstract class I2vChartsComponent {
     this.refreshCallSubject.subscribe(() => {
       this.getDataFromServer(this.widgetRequestModel);
     });
+
+     // Set up the debounced data fetching
+     this.debouncedRefreshSubscription = this.debouncedRefreshSubject
+     .pipe(debounce(() => timer(this.debounceTime)))
+     .subscribe((widgetRequestModel: Widget) => {
+       this.fetchDataFromServer(widgetRequestModel);
+     });
   }
+  
 
   ngAfterViewInit() {
     if (
@@ -122,7 +124,6 @@ export abstract class I2vChartsComponent {
       this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
-      // this.getDataFromServer(this.widgetRequestModel);
     }
   }
 
@@ -148,7 +149,6 @@ export abstract class I2vChartsComponent {
     event: ICustomFilterOutputEmittorModel,
     commonCall: boolean = false,
   ) {
-    // console.log(event)
     switch (event.key) {
       case "Video Sources": {
         this.widgetRequestModel.customFilters[event.key] = this.customFilters[
@@ -205,7 +205,6 @@ export abstract class I2vChartsComponent {
     event: IDateTimeFilterOutputEmittorModel,
     commonCall: boolean = false,
   ) {
-    // console.log(event);
     this.widgetRequestModel.customFilters["Time"] = [
       { displayName: event.key, returnValue: event.value },
     ];
@@ -220,7 +219,6 @@ export abstract class I2vChartsComponent {
   }
 
   onRefreshIntervalChange(event: IRefreshIntervalFilterOutputEmittorModel) {
-    // console.log(event);
     this.widgetRequestModel.customFilters["RefreshInterval"] = [
       { displayName: event.key, returnValue: event.value },
     ];
@@ -233,28 +231,36 @@ export abstract class I2vChartsComponent {
     if (widgetRequestModel != null) {
       this.isLoading = true;
       this.cdr.detectChanges();
-      // console.log("Start Time : " + this.formatUnixTimestamp(widgetRequestModel.startTime));
-      // console.log("End TIme : " + this.formatUnixTimestamp(widgetRequestModel.endTime))
-      this.apiSubscription = this.baseChartingDataService
-        .getChartingData(widgetRequestModel)
-        .subscribe(
-          (data: ChartsOutputModel) => {
-            if (data && this.checkIfAnySeriesExists(data)) {
-              this.chartData = data;
-              this.dataExists = true;
-            } else {
-              this.dataExists = false;
-            }
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          },
-          (error) => {
-            this.dataExists = false;
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          },
-        );
+      // Trigger the debounced subject instead of directly calling the API
+      this.debouncedRefreshSubject.next(widgetRequestModel);
     }
+  }
+
+  // The actual API call is moved to this method
+  private fetchDataFromServer(widgetRequestModel: Widget) {
+    if (this.apiSubscription) {
+      this.apiSubscription.unsubscribe();
+    }
+
+    this.apiSubscription = this.baseChartingDataService
+      .getChartingData(widgetRequestModel)
+      .subscribe(
+        (data: ChartsOutputModel) => {
+          if (data && this.checkIfAnySeriesExists(data)) {
+            this.chartData = data;
+            this.dataExists = true;
+          } else {
+            this.dataExists = false;
+          }
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        (error) => {
+          this.dataExists = false;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+      );
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {
@@ -348,6 +354,10 @@ export abstract class I2vChartsComponent {
   ngOnDestroy() {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
+    }
+
+    if (this.debouncedRefreshSubscription) {
+      this.debouncedRefreshSubscription.unsubscribe();
     }
 
     if (this.interval) {

@@ -5,53 +5,83 @@ import * as moment from "moment";
 declare let $: any;
 
 export class WidgetConstructorProps {
-  // Required properties
+  // Heading of widget
   heading: string;
+  //Select type of widget
   widgetType: Enum_WidgetType;
+  //It is used for selecting table for data to work on
   entity: Enum_Entity;
+  //It is used for selecting which type of aggregation you want to apply like Count, Sum, Live Count
   method: Enum_Method;
+
+  //It is used for selecting schema method
   schemaName: Enum_Schema;
-  
+
   // Optional properties
   id?: string;
   dashboardId?: string;
   dashboard?: dashboard;
   color?: string;
   analyticManagerId?: string;
+  // Sub Heading of widget
   subHeading?: string;
+  //To make widget scrollable (it work accordindly to type of widget i.e horizontal for column chart)
   isPannable?: boolean;
+  //To make widget zoomable
   isZoomable?: boolean;
+  //max no. of  entries to be show at initial screen (mainly used for chart which can have long length like column, bar, stacked bar, etc)
   max?: number;
+  //It is used for filters for widget, like properties filters basically for ui filters currently used for video sources
   customFilters?: Record<string, CustomFilterValueModel[]>;
+  // It is used to disable time filter in widget
   disableTimeFilter?: boolean;
+  //It is used for starting time for data
   startTime?: number;
+  //It is used for ending time for data
   endTime?: number;
+  //It is used for joining two table on basis on column and selecting column name and their display name 
   joinableEntities?: JoinableEntity[];
+  //It is used for applying base filter like time, it works same as custom filter but it need to be set from code not from ui (base filter is the event of which we want event like FRS, ANPR, ATCC, it is basically used when we have multiple analytic data in same table)
   baseFilter?: RuleSet;
+  //Its is used for projection column name along with aggregation like sum(col1+ col2+ col3...) but we also want col1, col2, col3... to be projected in data
   getColumnNameWithAggregationMethod?: boolean;
 
   // It is used to define columns which will be useed for aggregation purposes
   clubbingFieldNames?: Record<string, EventPropertyType>;
   groupBy1?: groupByConf | null;
   groupBy2?: groupByConf | null;
+  //It is used which column will be included in Charting Data Result
   showableProperties: showablePropertyModel[];
+  //It is used for showing label in chart like bar, column, stacked Charts eg. months need to be showed in y-axis
+
   showablePropertiesLabel?: showablePropertyLabelModel[];
+  //It is used for club time like club month for multiple years
   clubbingTime?: boolean;
 
   //It only includes column to be club if any field name is passed, 
   // else it is used for get aggreagtion on client side based on value of isAnyMultiValuedColumn
-  clubbingFieldName?: Enum_Method_Aggregation;
+  ClubbingAggregationType?: Enum_Method_Aggregation;
+
+  //Make it true if you want distinct data only
   isDistinct?: boolean;
-  isAnyMultiValuedColumn?: boolean;
   isSelfCount?: boolean;
+      //To allow widget to self call for data
   allowRefresh?: boolean;
+      //Time interval when you want to call for data
   refreshInterval?: number;
+  //It is used for applying _PropertyFilters filter (basically for filter you want to apply for properties)
   propertyFilters?: RuleSet;
+     //not used currently
   pagination?: boolean;
+     //not used currently
   pageLimit?: number;
+     //not used currently
   pageNumber?: number;
+     //not used currently
   identifierFieldName?: string;
+     //not used currently
   multiplicationFactor?: number;
+     //not used currently
   isPreview?: boolean | null;
   svgIcon?: string;
   findResultSvgIcon?: boolean;
@@ -79,29 +109,26 @@ export abstract class Widget {
   disableTimeFilter: boolean;
   startTime: number;
   endTime: number;
-  //It is use to join entities of two different tables
   joinableEntities: JoinableEntity[];
-  //filter used in base query (basically with time part)
   baseFilter?: RuleSet;
-  //It is used if we want column value along with aggregation method like bus, car, truck also apart from Greatest(Bus+ car+truck) ...
   getColumnNameAlsoWithAggregationMethod: boolean;
   clubbingFieldNames: Record<string, EventPropertyType>;
   groupBy1: groupByConf | null;
   groupBy2: groupByConf | null;
-
-  //It is used which column will be included in Charting Data Result
   showableProperties: showablePropertyModel[];
 
-  //It is used for showing label in chart like bar, column, stacked Charts eg. months need to be showed in y-axis
   showablePropertiesLabel: showablePropertyLabelModel[];
+  //It is used for club time like club month for multiple years
   clubbingTime: boolean;
-  clubbingFieldName?: Enum_Method_Aggregation;
+  //It is used for defining how what to do with aggregated data 
+  clubbingAggregationType?: Enum_Method_Aggregation;
+  //Make it true if you want distinct data only
   isDistinct: boolean;
 
-  //make this true if 
-  
   isSelfCount: boolean;
+  //To allow widget to self call for data
   allowRefresh: boolean;
+  //Time interval when you want to call for data
   refreshInterval: number;
   propertyFilters?: RuleSet;
   pagination?: boolean;
@@ -149,7 +176,7 @@ export abstract class Widget {
     this.showableProperties = props.showableProperties ?? [];
     this.showablePropertiesLabel = props.showablePropertiesLabel ?? [];
     this.clubbingTime = props.clubbingTime ?? false;
-    this.clubbingFieldName = props.clubbingFieldName;
+    this.clubbingAggregationType = props.ClubbingAggregationType;
     this.isDistinct = props.isDistinct ?? false;
     this.isSelfCount = props.isSelfCount ?? false;
     this.allowRefresh = props.allowRefresh ?? false;
@@ -204,6 +231,7 @@ export enum Enum_Method {
   Sum,
   Average,
   LiveCount,
+  NoAggregation
 }
 
 export enum Enum_Schema {
@@ -262,9 +290,9 @@ export interface ICustomFilterOutputEmittorModel {
 
 export interface ICommonFilterOutputEmittorModel {
   [key: string]:
-    | ISetIntervalFilterOutputEmittorModel
-    | IDateTimeFilterOutputEmittorModel
-    | ICustomFilterOutputEmittorModel;
+  | ISetIntervalFilterOutputEmittorModel
+  | IDateTimeFilterOutputEmittorModel
+  | ICustomFilterOutputEmittorModel;
 }
 
 export interface ITimeRange {
@@ -273,7 +301,7 @@ export interface ITimeRange {
 }
 
 export class RuleSet {
-  constructor() {}
+  constructor() { }
   condition: string = "";
   rules: Array<Rule> = new Array<Rule>();
   ruleSet: Array<RuleSet> = new Array<RuleSet>();
@@ -299,31 +327,31 @@ export class JoinableEntityProperty {
   displayName: string;
 }
 
-export class showablePropertyModel{
-  name : string;
+export class showablePropertyModel {
+  name: string;
   displayName: string;
-  multiValued? : multivaluedColumn;
+  multiValued?: multivaluedColumn;
 }
 
-export class multivaluedColumn{
+export class multivaluedColumn {
 
-    //column should present in showPropertiesLabel and name should match DisplayName
-    dependentOnColumn?: string;
+  //column should present in showPropertiesLabel and name should match DisplayName
+  dependentOnColumn?: string;
 
-    //column should present in showPropertiesLabel
-    valueBasedOnColumn: string
+  //column should present in showPropertiesLabel
+  valueBasedOnColumn: string
 }
 
-export class showablePropertyLabelModel{
-   name : string
-   displayName : string
-   isMultiValued? : Boolean = false;
+export class showablePropertyLabelModel {
+  name: string
+  displayName: string
+  isMultiValued?: Boolean = false;
 }
 
-export class groupByConf{
-    mainColumn: string;
-    type : EventPropertyType;
-    subColumn? : string;
-    projectionName? : string;
-    isTime? : boolean = false;
+export class groupByConf {
+  mainColumn: string;
+  type: EventPropertyType;
+  subColumn?: string;
+  projectionName?: string;
+  isTime?: boolean = false;
 }

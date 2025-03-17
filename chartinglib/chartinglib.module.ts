@@ -41,11 +41,17 @@ import { HttpClientModule } from "@angular/common/http";
 import { I2vKpiChartComponent } from "./i2v-kpi-chart/i2v-kpi-chart.component";
 import { I2vDonutChartComponent } from "./i2v-donut-chart/i2v-donut-chart.component";
 import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
+import { FormatTimePipe } from "./Models/pipes/formatTime.pipe";
+import { ShowVideoSourceNamePipe } from "./Models/pipes/showVideoSourceName.pipe";
+import { DetailsWidgetComponent } from "./details-widget/details-widget.component";
+import { MatBadgeModule } from "@angular/material/badge";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
 @NgModule({
   declarations: [
+    FormatTimePipe,
+    ShowVideoSourceNamePipe,
     ChartingComponent,
     // FusionChartComponent,
     // I2vChartsComponent,
@@ -60,6 +66,7 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
+    DetailsWidgetComponent
   ],
   imports: [
     CommonModule,
@@ -79,6 +86,7 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     DropdownModule,
     HttpClientModule,
     i2vUtilityModule,
+    MatBadgeModule
     // NgxDaterangepickerMd
   ],
   exports: [
@@ -102,6 +110,10 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     CalendarModule,
     DropdownModule,
     MultiSelectModule,
+    FormatTimePipe,
+    ShowVideoSourceNamePipe,
+    DetailsWidgetComponent
+
   ],
 })
 export class ChartinglibModule {}

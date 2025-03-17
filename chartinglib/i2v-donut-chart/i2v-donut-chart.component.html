@@ -1,4 +1,5 @@
 <div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+  <div style="display: flex; flex-direction: column; width: 100%; height: 100%; padding: 16px; overflow-x: auto">
   <div style="
       display: flex;
       justify-items: center;
@@ -6,7 +7,7 @@
       gap: 10px;
       width: 100%;
     ">
-    <div *ngIf="!isModel" class="watchlist-data-container" style="
+    <div *ngIf="!isModel" class="data-container" style="
         overflow-x: hidden;
         height: 100%;
         flex: 1;
@@ -15,21 +16,18 @@
         padding: 10px 15px;
         background-color: #fff;
       ">
-      <div class="nowatchlistexist">
+      <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
           [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
         <span class="major-heading">No Configurations found</span>
       </div>
     </div>
-    <i2v-chart-header *ngIf="isModel" style="width: 100%" [heading]="widgetRequestModel.heading"
-      [subHeading]="widgetRequestModel.subHeading" [customFilters]="customFilters"
-      (daysFilterOutput)="onTimeChange($event)" [widgetCustomFiltersValue]="widgetRequestModel.customFilters"
-      [disableTimeFilter]="widgetRequestModel.disableTimeFilter"
-      (customFilterOutput)="onCustomFilterValuesChange($event)"
-      (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
-      (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)">
-    </i2v-chart-header>
-  </div>
+    <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValue" [widgetModel]="widgetRequestModel"
+    [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
+    (customFilterOutput)="onCustomFilterValuesChange($event)"
+    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+    (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"></i2v-chart-header>
+</div>
   <ng-container *ngIf="isModel && isLoading">
     <div style="
         display: flex;
@@ -50,7 +48,7 @@
         "></span>
     </div>
   </ng-container>
-  <div *ngIf="isModel && !isLoading && !dataExists" class="watchlist-data-container" style="
+  <div *ngIf="isModel && !isLoading && !dataExists" class="data-container" style="
       overflow-x: hidden;
       height: 100%;
       flex: 1;
@@ -59,13 +57,13 @@
       padding: 10px 15px;
       background-color: #fff;
     ">
-    <div class="nowatchlistexist">
+    <div class="noConfExist">
       <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
         [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
       <span class="major-heading">No Data found</span>
     </div>
   </div>
-  <kendo-chart style="min-height: 400px; height: 100%" *ngIf="isModel && !isLoading && dataExists" [transitions]="true"
+  <kendo-chart style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [transitions]="true" [ngStyle]="{'min-height': showFilterValue ? '400px' : '0px'}"
     (legendItemClick)="onLegendItemClick($event)">
     <ng-template kendoChartDonutCenterTemplate>
       <div style="
@@ -98,4 +96,9 @@
     </kendo-chart-series>
     <kendo-chart-legend position="right"></kendo-chart-legend>
   </kendo-chart>
+</div>
+<div *ngIf="showFilterValue"  style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
+  <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
+  </app-details-widget>
+</div>
 </div>

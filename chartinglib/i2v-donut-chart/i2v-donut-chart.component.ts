@@ -27,21 +27,14 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
   }
 
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
   ) {
-    super();
+    super(cd, chartingDataService);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+    super.ngOnInit();
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {

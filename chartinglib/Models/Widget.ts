@@ -83,8 +83,14 @@ export class WidgetConstructorProps {
   multiplicationFactor?: number;
      //not used currently
   isPreview?: boolean | null;
+  //used to show svg based for a particulat widget near heading (currently can be set from Widget model or also from kpi logic)
   svgIcon?: string;
+  //used to show svg based on the basis of result like emotion (angry, happy, sad ...)
   findResultSvgIcon?: boolean;
+  //used for position of widget
+  widgetTileConf: WidgetTileConf;
+  //used to check which filter precedence will be followed, dashboard or widget filter
+  isDashboardFilterApplied?: boolean;
 }
 
 export abstract class Widget {
@@ -116,19 +122,12 @@ export abstract class Widget {
   groupBy1: groupByConf | null;
   groupBy2: groupByConf | null;
   showableProperties: showablePropertyModel[];
-
   showablePropertiesLabel: showablePropertyLabelModel[];
-  //It is used for club time like club month for multiple years
   clubbingTime: boolean;
-  //It is used for defining how what to do with aggregated data 
   clubbingAggregationType?: Enum_Method_Aggregation;
-  //Make it true if you want distinct data only
   isDistinct: boolean;
-
   isSelfCount: boolean;
-  //To allow widget to self call for data
   allowRefresh: boolean;
-  //Time interval when you want to call for data
   refreshInterval: number;
   propertyFilters?: RuleSet;
   pagination?: boolean;
@@ -139,6 +138,8 @@ export abstract class Widget {
   isPreview?: boolean | null;
   svgIcon?: string;
   findResultSvgIcon: boolean;
+  widgetTileConf: WidgetTileConf;
+  isDashboardFilterApplied? : boolean;
 
   private static getCurrentDayStart(): number {
     const now = new Date();
@@ -152,6 +153,7 @@ export abstract class Widget {
     this.entity = props.entity;
     this.method = props.method;
     this.schemaName = props.schemaName;
+    this.widgetTileConf = props.widgetTileConf;
 
     // Optional properties with defaults
     this.id = props.id ?? '00000000-0000-0000-0000-000000000000';
@@ -190,6 +192,7 @@ export abstract class Widget {
     this.isPreview = props.isPreview;
     this.svgIcon = props.svgIcon;
     this.findResultSvgIcon = props.findResultSvgIcon ?? false;
+    this.isDashboardFilterApplied = props.isDashboardFilterApplied ?? true;
   }
 }
 
@@ -204,7 +207,7 @@ export enum Enum_Entity {
   VideoSources,
   Persons,
   EnrolledPersonsEvent,
-  Facepoint,
+  FacePoint,
   Highway_ATCC,
   VIDS,
   Vehicle_Stopped,
@@ -354,4 +357,16 @@ export class groupByConf {
   subColumn?: string;
   projectionName?: string;
   isTime?: boolean = false;
+}
+
+export class WidgetTileConf
+{
+  col: number;
+  colHeight?: string;
+  row?: number;
+  rowHeight?: string;
+  colSpan:number;
+  rowSpan?: number;
+  order?: number;
+  index? : number;
 }

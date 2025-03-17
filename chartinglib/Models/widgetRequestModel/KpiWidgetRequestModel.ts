@@ -4,6 +4,7 @@ import { Enum_Method_Aggregation, Enum_WidgetType, showablePropertyModel, Widget
 export interface KPIConf {
   CountValueColumnName: string,
   DisplayValueColumnName: string,
+  ImageColumnName?: string,
   seriesAggregation? : Enum_Method_Aggregation,
   showChart?: boolean
 }

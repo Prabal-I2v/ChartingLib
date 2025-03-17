@@ -4,7 +4,7 @@ import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { Enum_Method_Aggregation } from "../Models/Widget";
-import { eventIconMapping } from "../Models/vehicle-icon-mapping";
+import { emotionIconColorMapping, eventIconMapping } from "../Models/vehicle-icon-mapping";
 import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetRequestModel";
 
 // export enum RiseLevel {
@@ -23,31 +23,24 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   PropName: string = "";
   PropIcon: string = "";
   PropValue: number = 0;
+  propImage : string;
   svgIcon: string = "";
   ResSvgIcon: string = "";
+  ResSvgIconColor: string = "#5F6F94";
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
 
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
   ) {
-    super();
+    super(cd, chartingDataService);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.svgIcon = this.widgetRequestModel.svgIcon;
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+    super.ngOnInit();
   }
-
   transformData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
@@ -103,8 +96,14 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       const resultIndexBasedOnCountValueColumnName = this.findValueAsPerAggregation(this.widgetRequestModel.kpiConf, chartData.series);
       var countValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.CountValueColumnName)
       var displayValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.DisplayValueColumnName)
+            
       this.setData(chartData.series[countValueSeriesIndex], resultIndexBasedOnCountValueColumnName, this.widgetRequestModel.kpiConf.showChart);
       this.PropName = chartData.series[displayValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
+      if(this.widgetRequestModel.kpiConf.ImageColumnName)
+      {
+        var imageValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.ImageColumnName)
+        this.propImage = chartData.series[imageValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
+      }
 
     }
     else {
@@ -113,8 +112,18 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
     if (this.widgetRequestModel.findResultSvgIcon == true) {
       //svg icon as per result
-      const uppercaseRes = chartData.series[0].name.toUpperCase();
+      var uppercaseRes = chartData.series[0].name.toUpperCase();
+      if(this.widgetRequestModel.kpiConf)
+      {
+        uppercaseRes =  this.PropName.toUpperCase();
+        if(chartData.series[0].name.toUpperCase() == "EMOTION"){
+          this.ResSvgIconColor = emotionIconColorMapping[uppercaseRes]
+        }
+          
+      }
+      
       this.ResSvgIcon = eventIconMapping[uppercaseRes];
+       
     }
     return chartData;
   }

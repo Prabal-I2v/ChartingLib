@@ -41,13 +41,7 @@
       "
     >
       <div class="nowatchlistexist">
-        <div
-          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
-          libSvgElement
-          [appSvg]="'assets/Outline/table.svg'"
-          [size]="'48'"
-          [fill-color]="'white'"
-        ></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'18'" [color]="'black'"></lib-svg></div>
         <span class="major-heading">No Configurations found</span>
       </div>
     </div>
@@ -56,12 +50,7 @@
       <div class="top">
         <div class="data-box">
           <div *ngIf="svgIcon" class="icon-box">
-            <div
-              libSvgElement
-              [appSvg]="svgIcon"
-              [size]="'20'"
-              [fill-color]="'#5F6F94'"
-            ></div>
+            <div><lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg></div>
           </div>
           <div class="number-grp" style="align-items: flex-start">
             <div class="minorheader" *ngIf="widgetRequestModel.heading">
@@ -95,12 +84,7 @@
     >
       <div class="data-box">
         <div *ngIf="svgIcon" class="icon-box">
-          <div
-            libSvgElement
-            [appSvg]="svgIcon"
-            [size]="'20'"
-            [fill-color]="'#5F6F94'"
-          ></div>
+          <div><lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg></div>
         </div>
         <div
           class="number-grp"
@@ -110,13 +94,7 @@
             {{ widgetRequestModel.heading }}
           </div>
           <div class="nowatchlistexist">
-            <div
-              class="logo-container large flex-row-center-center tertiary-default"
-              libSvgElement
-              [appSvg]="'assets/Outline/table.svg'"
-              [size]="'24'"
-              [fill-color]="'white'"
-            ></div>
+            <div class="logo-container large flex-row-center-center tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'18'" [color]="'black'"></lib-svg></div>
             <span class="major-heading">No Data found</span>
           </div>
         </div>
@@ -125,12 +103,7 @@
     <div *ngIf="isModel && !isLoading && dataExists" class="top">
       <div class="data-box">
         <div *ngIf="svgIcon" class="icon-box">
-          <div
-            libSvgElement
-            [appSvg]="svgIcon"
-            [size]="'20'"
-            [fill-color]="'#5F6F94'"
-          ></div>
+          <div><lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg></div>
         </div>
         <div class="number-grp" style="align-items: flex-start">
           <div class="minorheader" *ngIf="widgetRequestModel.heading">
@@ -156,12 +129,7 @@
                 display: flex;
               "
             >
-              <div
-                libSvgElement
-                [appSvg]="ResSvgIcon"
-                [size]="'24'"
-                [fill-color]="'#5F6F94'"
-              ></div>
+              <div><lib-svg [path]="ResSvgIcon" [size]="'24'" [color]="'#5F6F94'"></lib-svg></div>
             </div>
             <div class="number-grp">
               <div *ngIf="PropName">{{ PropName }}</div>

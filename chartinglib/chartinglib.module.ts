@@ -45,6 +45,7 @@ import { FormatTimePipe } from "./Models/pipes/formatTime.pipe";
 import { ShowVideoSourceNamePipe } from "./Models/pipes/showVideoSourceName.pipe";
 import { DetailsWidgetComponent } from "./details-widget/details-widget.component";
 import { MatBadgeModule } from "@angular/material/badge";
+import { MatTooltip } from "@angular/material/tooltip";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -86,7 +87,8 @@ import { MatBadgeModule } from "@angular/material/badge";
     DropdownModule,
     HttpClientModule,
     i2vUtilityModule,
-    MatBadgeModule
+    MatBadgeModule,
+    MatTooltip
     // NgxDaterangepickerMd
   ],
   exports: [

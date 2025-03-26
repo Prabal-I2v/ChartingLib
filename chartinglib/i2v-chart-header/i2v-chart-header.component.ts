@@ -41,6 +41,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   subHeading = "";
   disableTimeFilter = false;
   showFilter = false;
+  hideWidget = false;
+  showTimeDurationFilter: boolean = false;
+  @Input() applyToAllEnabled: boolean = false;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Input() customFilters: ICustomFilter;
@@ -50,6 +53,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() daysFilterOutput = new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput = new EventEmitter<ICustomFilterOutputEmittorModel>();
   @Output() combineFilterOutputEmittor = new EventEmitter<ICommonFilterOutputEmittorModel>();
+  @Output() timePeriodOutput = new EventEmitter<string>();
 
   @ViewChild("multiselectRef") multiselectRef: any;
   @ViewChild("keySelectRef") keySelectRef: any;
@@ -63,10 +67,12 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   // Time filter properties
   readonly timeFilter = ["Today", "Last 7 days", "Last 30 days", "Custom"];
+  readonly timePeriodOptions = ["Month", "Week", "Year", "Day"];
   timeFilterValue: string;
   timeObj: ITimeRange;
   dateRange: Date[] = [];
   enableCustomTime = false;
+  timePeriodValue = "Month";
 
   // Refresh interval options
   readonly refreshInterval: CustomFilterValueModel[] = [
@@ -98,7 +104,12 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     this.heading = this.widgetModel.heading;
     this.subHeading = this.widgetModel?.subHeading;
     this.disableTimeFilter = this.widgetModel.disableTimeFilter;
+    this.hideWidget = this.widgetModel.isWidgetHidden;
     this.customFilterKeys = Object.keys(this.customFilters);
+    if((this.widgetModel.groupBy1 && this.widgetModel.groupBy1.isTime) || (this.widgetModel.groupBy2 && this.widgetModel.groupBy2.isTime)){
+      this.showTimeDurationFilter = true;
+      this.timePeriodValue = this.widgetModel.showablePropertiesLabel[0]?.displayName || "Month";
+    }
     if (!this.widgetModel.isDashboardFilterApplied) {
       this.setValueAsPerWidgetCustomFiltersValue();
     }
@@ -159,6 +170,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
         value: this.timeObj
       });
     }
+  }
+  
+  onTimeDurationChange(event: { value: string }): void {
+    this.timePeriodValue = event.value;
+    this.timePeriodOutput.emit(this.timePeriodValue);
   }
 
   onCustomTimeSelected(): void {
@@ -354,5 +370,10 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   {
     this.showFilterValues = !this.showFilterValues;
     this.showFilterValuesChange.emit(this.showFilterValues);
+  }
+
+  toggleHideWidget(){
+    this.widgetModel.isWidgetHidden = !this.widgetModel.isWidgetHidden;
+    this.hideWidget = this.widgetModel.isWidgetHidden;
   }
 }

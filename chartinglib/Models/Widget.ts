@@ -91,6 +91,8 @@ export class WidgetConstructorProps {
   widgetTileConf: WidgetTileConf;
   //used to check which filter precedence will be followed, dashboard or widget filter
   isDashboardFilterApplied?: boolean;
+  //used to hide and unhide widget
+  isWidgetHidden?: boolean;
 }
 
 export abstract class Widget {
@@ -140,6 +142,7 @@ export abstract class Widget {
   findResultSvgIcon: boolean;
   widgetTileConf: WidgetTileConf;
   isDashboardFilterApplied? : boolean;
+  isWidgetHidden:boolean;
 
   private static getCurrentDayStart(): number {
     const now = new Date();
@@ -193,6 +196,7 @@ export abstract class Widget {
     this.svgIcon = props.svgIcon;
     this.findResultSvgIcon = props.findResultSvgIcon ?? false;
     this.isDashboardFilterApplied = props.isDashboardFilterApplied ?? true;
+    this.isWidgetHidden = props.isWidgetHidden ?? false;
   }
 }
 
@@ -275,7 +279,7 @@ export interface ICustomFilterKeyModel {
 
 export class CustomFilterValueModel {
   displayName: string;
-  returnValue: string | ITimeRange | number;
+  returnValue: string | ITimeRange | number | boolean;
 }
 
 export interface ISetIntervalFilterOutputEmittorModel {

@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnInit,
+  output,
   Output,
   SimpleChanges,
 } from "@angular/core";
@@ -35,7 +37,8 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
-  showFilterValue: boolean = false;
+  @Input() showFilterValue: boolean = false;
+  @Output() showFilterValuesChange = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   @Input() customFilters: ICustomFilter;
@@ -68,7 +71,7 @@ export abstract class I2vChartsComponent implements OnInit {
     return this._chartData;
   }
 
-  constructor(private cd: ChangeDetectorRef, private chartingDataService: ChartingDataService) {
+  constructor(private cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
         // Generate and store a UUID when component is created
         this.componentId = uuidv4();
   }
@@ -345,7 +348,7 @@ export abstract class I2vChartsComponent implements OnInit {
 
   transformData(data: ChartsOutputModel): ClientChartModel {
     let isMonthData = false;
-    if (data.labels[0].key == "month") isMonthData = true;
+    if (data.labels[0].key.toLowerCase() == "month") isMonthData = true;
 
     const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
@@ -467,5 +470,13 @@ export abstract class I2vChartsComponent implements OnInit {
     const formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
 
     return formattedDateTime;
+  }
+
+  ShowFilterChange($event)
+  {
+      this.cd.detectChanges();
+      const height = this.elementRef.nativeElement.offsetHeight;
+      const width = this.elementRef.nativeElement.offsetWidth;
+      this.showFilterValuesChange.emit({"value" : $event, "height": height, "width": width});
   }
 }

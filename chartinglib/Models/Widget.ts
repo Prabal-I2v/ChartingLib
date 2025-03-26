@@ -1,5 +1,6 @@
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { dashboard } from "./DashboardModel";
+import { GridStackOptions, GridStackWidget } from "gridstack";
 import * as moment from "moment";
 
 declare let $: any;
@@ -65,23 +66,23 @@ export class WidgetConstructorProps {
   //Make it true if you want distinct data only
   isDistinct?: boolean;
   isSelfCount?: boolean;
-      //To allow widget to self call for data
+  //To allow widget to self call for data
   allowRefresh?: boolean;
-      //Time interval when you want to call for data
+  //Time interval when you want to call for data
   refreshInterval?: number;
   //It is used for applying _PropertyFilters filter (basically for filter you want to apply for properties)
   propertyFilters?: RuleSet;
-     //not used currently
+  //not used currently
   pagination?: boolean;
-     //not used currently
+  //not used currently
   pageLimit?: number;
-     //not used currently
+  //not used currently
   pageNumber?: number;
-     //not used currently
+  //not used currently
   identifierFieldName?: string;
-     //not used currently
+  //not used currently
   multiplicationFactor?: number;
-     //not used currently
+  //not used currently
   isPreview?: boolean | null;
   //used to show svg based for a particulat widget near heading (currently can be set from Widget model or also from kpi logic)
   svgIcon?: string;
@@ -91,6 +92,8 @@ export class WidgetConstructorProps {
   widgetTileConf: WidgetTileConf;
   //used to check which filter precedence will be followed, dashboard or widget filter
   isDashboardFilterApplied?: boolean;
+
+  ColumnClubInRange?: ColumnClubInRange[]
 }
 
 export abstract class Widget {
@@ -137,9 +140,10 @@ export abstract class Widget {
   multiplicationFactor?: number;
   isPreview?: boolean | null;
   svgIcon?: string;
-  findResultSvgIcon: boolean;
+  findResultSvgIcon?: boolean;
   widgetTileConf: WidgetTileConf;
-  isDashboardFilterApplied? : boolean;
+  isDashboardFilterApplied?: boolean;
+  ColumnClubInRange?: ColumnClubInRange[]
 
   private static getCurrentDayStart(): number {
     const now = new Date();
@@ -193,6 +197,7 @@ export abstract class Widget {
     this.svgIcon = props.svgIcon;
     this.findResultSvgIcon = props.findResultSvgIcon ?? false;
     this.isDashboardFilterApplied = props.isDashboardFilterApplied ?? true;
+    this.ColumnClubInRange = props.ColumnClubInRange ?? null
   }
 }
 
@@ -359,14 +364,62 @@ export class groupByConf {
   isTime?: boolean = false;
 }
 
-export class WidgetTileConf
-{
-  col: number;
-  colHeight?: string;
-  row?: number;
-  rowHeight?: string;
-  colSpan:number;
-  rowSpan?: number;
-  order?: number;
-  index? : number;
+export class WidgetTileConf implements GridStackWidget {
+   /** widget position x (default?: 0) */
+   x?: number;
+   /** widget position y (default?: 0) */
+   y?: number;
+   /** widget dimension width (default?: 1) */
+   w?: number;
+   /** widget dimension height (default?: 1) */
+   h?: number;
+   initialMinH? : number;
+   initialMaxH? : number;
+   initialMinW? : number;
+   initialMaxW? : number;
+  /** if true then x, y parameters will be ignored and widget will be places on the first available position (default?: false) */
+  autoPosition?: boolean;
+  /** minimum width allowed during resize/creation (default?: undefined = un-constrained) */
+  minW?: number;
+  /** maximum width allowed during resize/creation (default?: undefined = un-constrained) */
+  maxW?: number;
+  /** minimum height allowed during resize/creation (default?: undefined = un-constrained) */
+  minH?: number;
+  /** maximum height allowed during resize/creation (default?: undefined = un-constrained) */
+  maxH?: number;
+  /** prevent direct resizing by the user (default?: undefined = un-constrained) */
+  noResize?: boolean;
+  /** prevents direct moving by the user (default?: undefined = un-constrained) */
+  noMove?: boolean;
+  /** same as noMove+noResize but also prevents being pushed by other widgets or api (default?: undefined = un-constrained) */
+  locked?: boolean;
+  /** value for `gs-id` stored on the widget (default?: undefined) */
+  id?: string;
+  /** html to append inside as content */
+  content?: string;
+  /** true when widgets are only created when they scroll into view (visible) */
+  lazyLoad?: boolean;
+  /** local (vs grid) override - see GridStackOptions.
+   * Note: This also allow you to set a maximum h value (but user changeable during normal resizing) to prevent unlimited content from taking too much space (get scrollbar) */
+  sizeToContent?: boolean | number;
+  /** local override of GridStack.resizeToContentParent that specify the class to use for the parent (actual) vs child (wanted) height */
+  resizeToContentParent?: string;
+  /** optional nested grid options and list of children, which then turns into actual instance at runtime to get options from */
+  subGridOpts?: GridStackOptions;
+}
+
+export class ColumnClubInRange {
+  columnNameForRange: string;
+  range: ColumnRange[]
+}
+
+export class ColumnRange {
+  rangeName: string;
+  condition: ColumnRangeCondition
+}
+
+export class ColumnRangeCondition {
+  greaterThan: string;
+  lessThan: string;
+  type: EventPropertyType;
 }

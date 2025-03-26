@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
@@ -34,8 +34,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super(cd, chartingDataService);
+    super(cd, chartingDataService, elementRef);
   }
 
   ngOnInit(): void {
@@ -55,7 +56,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       });
     }
 
-    //if we don't have multivaluedColumn then we used clubbingFieldName property and we get series as Lowest/greatest/total
+    //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
     if (this.widgetRequestModel.clubbingAggregationType != null) {
       if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
         const greatestSeries = chartData.series.find((x) => {
@@ -166,10 +167,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
       var series = arr.find(series => series.name == conf.CountValueColumnName)
       if (series) {
-        const lastValue = Number(series.data[series.data.length - 1]);
         series.data.forEach((x, index) => {
-          if (lastValue > maxLastValue) {
-            maxLastValue = lastValue;
+          if (Number(x) > Number(maxLastValue)) {
+            maxLastValue = x;
             maxIndex = index;
           }
         })
@@ -183,10 +183,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
       var series = arr.find(series => series.name == conf.CountValueColumnName)
       if (series) {
-        const lastValue = Number(series.data[series.data.length - 1]);
         series.data.forEach((x, index) => {
-          if (lastValue < minLastValue) {
-            minLastValue = lastValue;
+          if (Number(x) < Number(minLastValue)) {
+            minLastValue = x;
             minIndex = index;
           }
         })
@@ -197,4 +196,26 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     // Default return if no condition is met
     return 0; // Or any default value you prefer
   }
+
+  showDetail() {
+  //   const data: any = {};
+  //   data.component = ShowDetectionPopupFrsComponent;
+  //   data.data = {};
+  //   const dialogData: CommonModalData = {
+  //     event: data,
+  //     width: '100%',
+  //     heading: 'Person Detail',
+  //     footerButtons: [],
+  //     showPreviousButton: false,
+  //     showNextButton: false,
+  //     showBackButton: false,
+  //   };
+
+  //   const ref = this.dialog.open(CommonModalComponent, {
+  //     panelClass: 'custom-dialog-container',
+  //     data: dialogData,
+  //   });
+  //   ref.afterClosed().subscribe(() => { });
+  }
+
 }

@@ -26,7 +26,6 @@ import { LayoutModule } from "@progress/kendo-angular-layout";
 import { MultiSelectModule } from "primeng/multiselect";
 import { DropdownModule } from "primeng/dropdown";
 import { CalendarModule } from "primeng/calendar";
-import { I2vChartsComponent } from "./i2v-charts/i2v-charts.component";
 import { I2vBarChartComponent } from "./i2v-bar-chart/i2v-bar-chart.component";
 import { I2vChartHeaderComponent } from "./i2v-chart-header/i2v-chart-header.component";
 import { FormsModule } from "@angular/forms";
@@ -40,11 +39,13 @@ import { I2vAreaChartComponent } from "./i2v-area-chart/i2v-area-chart.component
 import { HttpClientModule } from "@angular/common/http";
 import { I2vKpiChartComponent } from "./i2v-kpi-chart/i2v-kpi-chart.component";
 import { I2vDonutChartComponent } from "./i2v-donut-chart/i2v-donut-chart.component";
-import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
 import { FormatTimePipe } from "./Models/pipes/formatTime.pipe";
 import { ShowVideoSourceNamePipe } from "./Models/pipes/showVideoSourceName.pipe";
 import { DetailsWidgetComponent } from "./details-widget/details-widget.component";
 import { MatBadgeModule } from "@angular/material/badge";
+import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.component";
+import { GridstackModule } from 'gridstack/dist/angular';
+import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -66,7 +67,8 @@ import { MatBadgeModule } from "@angular/material/badge";
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
-    DetailsWidgetComponent
+    DetailsWidgetComponent,
+    I2vSankeyChartComponent
   ],
   imports: [
     CommonModule,
@@ -86,7 +88,8 @@ import { MatBadgeModule } from "@angular/material/badge";
     DropdownModule,
     HttpClientModule,
     i2vUtilityModule,
-    MatBadgeModule
+    MatBadgeModule,
+    GridstackModule
     // NgxDaterangepickerMd
   ],
   exports: [
@@ -102,6 +105,7 @@ import { MatBadgeModule } from "@angular/material/badge";
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
+    I2vSankeyChartComponent,
     ChartsModule,
     LayoutModule,
     GridModule,
@@ -112,7 +116,8 @@ import { MatBadgeModule } from "@angular/material/badge";
     MultiSelectModule,
     FormatTimePipe,
     ShowVideoSourceNamePipe,
-    DetailsWidgetComponent
+    DetailsWidgetComponent,
+    GridstackModule
 
   ],
 })

@@ -45,14 +45,14 @@
     </div>
   </div>
 
-  <div *ngIf="customFilters && isEditModeOn" style="
+  <div *ngIf="customFilters && isEditModeOn && !applyToAllEnabled" style="
       flex-wrap: wrap;
       gap: 10px;
       justify-content: flex-end;
       align-self: start;
     " [ngStyle]="{'display' : showFilter ? 'flex' : 'none'}">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement
-      [appSvg]="'assets/Outline/filter-off.svg'" [size]="'20'" (click)="toggleShowFilter()">
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement  matTooltip="Hide Filter"
+      [appSvg]="'assets/Outline/cross.svg'" [size]="'20'" (click)="toggleShowFilter()">
     </button>
     <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
       #customTimeFilterRef (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
@@ -76,27 +76,40 @@
       [appendTo]="'body'">
     </p-multiSelect>
   </div>
-  <div *ngIf="!showFilter && customFilters && isEditModeOn" style="
+  <div *ngIf="!showFilter && customFilters && isEditModeOn && !applyToAllEnabled" style="
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;">
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement
-      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()">
+      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()" matTooltip="Show Filter">
     </button>
   </div>
+  <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
+    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown>
   <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
 ">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement
-      [appSvg]="showFilterValues ? 'assets/Outline/eye.svg' : 'assets/Outline/eye-off.svg'" [size]="'20'"
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
+      [appSvg]="showFilterValues ? 'assets/Outline/info-circle.svg' : 'assets/Outline/info-circle.svg'" [size]="'20'"
       (click)="toggleShowFilterValues()">
     </button>
     <span style="position: absolute; top: -12px; right: -5px;" class="filterSVG" libSvgElement
       [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'#0099ED'">
     </span>
+  </div>
+  <div *ngIf="isEditModeOn"style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+">
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="hideWidget ? 'Show Widget' : 'Hide Widget'"
+      [appSvg]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'" [size]="'20'"
+      (click)="toggleHideWidget()">
+    </button>
   </div>
 </div>

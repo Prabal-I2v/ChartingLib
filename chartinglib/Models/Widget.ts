@@ -94,6 +94,8 @@ export class WidgetConstructorProps {
   isDashboardFilterApplied?: boolean;
 
   ColumnClubInRange?: ColumnClubInRange[]
+  //used to hide and unhide widget
+  isWidgetHidden?: boolean;
 }
 
 export abstract class Widget {
@@ -144,6 +146,7 @@ export abstract class Widget {
   widgetTileConf: WidgetTileConf;
   isDashboardFilterApplied?: boolean;
   ColumnClubInRange?: ColumnClubInRange[]
+  isWidgetHidden:boolean;
 
   private static getCurrentDayStart(): number {
     const now = new Date();
@@ -198,6 +201,7 @@ export abstract class Widget {
     this.findResultSvgIcon = props.findResultSvgIcon ?? false;
     this.isDashboardFilterApplied = props.isDashboardFilterApplied ?? true;
     this.ColumnClubInRange = props.ColumnClubInRange ?? null
+    this.isWidgetHidden = props.isWidgetHidden ?? false;
   }
 }
 
@@ -280,7 +284,7 @@ export interface ICustomFilterKeyModel {
 
 export class CustomFilterValueModel {
   displayName: string;
-  returnValue: string | ITimeRange | number;
+  returnValue: string | ITimeRange | number | boolean;
 }
 
 export interface ISetIntervalFilterOutputEmittorModel {

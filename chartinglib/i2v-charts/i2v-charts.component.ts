@@ -20,6 +20,7 @@ import {
   IDateTimeFilterOutputEmittorModel,
   ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
   ICommonFilterOutputEmittorModel,
+  Enum_TimePeriod,
 } from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
@@ -41,6 +42,7 @@ export abstract class I2vChartsComponent implements OnInit {
   @Output() showFilterValuesChange = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
+  applyToAllEnabled: boolean = false;
   @Input() customFilters: ICustomFilter;
   @Input() widgetRequestModel: Widget;
   @Input() refreshCallSubject: Subject<any> = new Subject<any>();
@@ -104,17 +106,16 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (
-      changes.dashboardCustomFilterValue &&
-      changes.dashboardCustomFilterValue.currentValue !==
-      changes.dashboardCustomFilterValue.previousValue
-    ) {
-      this.widgetRequestModel.customFilters = this.dashboardCustomFilterValue;
-      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-      this.widgetRequestModel = JSON.parse(JSON.stringify(this.widgetRequestModel))
-      this.widgetRequestModel.isDashboardFilterApplied = true;
-      this.cd.detectChanges();
-    }
+    if (changes.dashboardCustomFilterValue?.currentValue !== changes.dashboardCustomFilterValue?.previousValue) {
+      this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
+      if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
+        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+        this.widgetRequestModel.isDashboardFilterApplied = true;
+        this.cd.detectChanges();
+      }
+    }    
   }
 
   private setValueAsPerWidgetCustomFiltersValue(dashboardCustomFilterValue: ICustomFilter): void {
@@ -479,4 +480,60 @@ export abstract class I2vChartsComponent implements OnInit {
       const width = this.elementRef.nativeElement.offsetWidth;
       this.showFilterValuesChange.emit({"value" : $event, "height": height, "width": width});
   }
+
+  onTimeDurationChanged(event: string) {
+    const newTimePeriod = Enum_TimePeriod[event.toLowerCase() as keyof typeof Enum_TimePeriod];
+    if (!newTimePeriod) {
+      return;
+    }
+    this.updateTimePeriodInWidget(this.widgetRequestModel, newTimePeriod);
+    this.getDataFromServer(this.widgetRequestModel);
+  }
+
+  private updateTimePeriodInWidget(widgetModel: any, newTimePeriod: string) {
+    if (!widgetModel) {
+      console.error("Widget model is undefined.");
+      return;
+    }
+    // Update groupBy1 and groupBy2 if they are time-based
+    if (widgetModel.groupBy1?.isTime) {
+      widgetModel.groupBy1.mainColumn = newTimePeriod;
+    }
+
+    if (widgetModel.groupBy2?.isTime) {
+      widgetModel.groupBy2.mainColumn = newTimePeriod;
+    }
+
+    // Update showableProperties
+    widgetModel.showableProperties?.forEach((property: any) => {
+      if (this.isTimeRelatedProperty(property.name)) {
+        property.name = newTimePeriod.toLowerCase();
+        property.displayName = this.capitalizeFirstLetter(newTimePeriod);
+      }
+
+      //  dependentOnColumn inside multiValued
+      if (property.multiValued?.dependentOnColumn && this.isTimeRelatedProperty(property.multiValued.dependentOnColumn)) {
+        property.multiValued.dependentOnColumn = this.capitalizeFirstLetter(newTimePeriod);
+      }
+    });
+
+    // Update showablePropertiesLabel
+    widgetModel.showablePropertiesLabel?.forEach((label: any) => {
+      if (this.isTimeRelatedProperty(label.name)) {
+        label.name = newTimePeriod.toLowerCase();
+        label.displayName = this.capitalizeFirstLetter(newTimePeriod);
+      }
+    });
+  }
+
+  private isTimeRelatedProperty(propertyName: string): boolean {
+    return ["day", "month", "year", "week"].some(keyword =>
+      propertyName?.toLowerCase().includes(keyword)
+    );
+  }
+
+  private capitalizeFirstLetter(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
 }

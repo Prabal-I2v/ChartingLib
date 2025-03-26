@@ -46,6 +46,7 @@ import { MatBadgeModule } from "@angular/material/badge";
 import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.component";
 import { GridstackModule } from 'gridstack/dist/angular';
 import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
+import { MatTooltip } from "@angular/material/tooltip";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -89,7 +90,8 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     HttpClientModule,
     i2vUtilityModule,
     MatBadgeModule,
-    GridstackModule
+    GridstackModule,
+    MatTooltip
     // NgxDaterangepickerMd
   ],
   exports: [

@@ -26,7 +26,8 @@
         [widgetModel]="widgetRequestModel" [customFilters]="customFilters" [isEditModeOn]="isEditModeOn"
         (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"></i2v-chart-header>
+        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (timePeriodOutput)="onTimeDurationChanged($event)" 
+        [applyToAllEnabled]="applyToAllEnabled"></i2v-chart-header>
     </div>
     <ng-container *ngIf="isModel && isLoading">
       <div style="

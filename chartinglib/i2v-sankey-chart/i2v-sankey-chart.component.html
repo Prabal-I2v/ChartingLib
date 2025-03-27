@@ -2,7 +2,7 @@
     <kendo-sankey-links colorType="source"></kendo-sankey-links>
 </kendo-sankey> -->
 
-<kendo-chart style="height: 100%"  [ngStyle]="{'min-height': showFilterValue ? '400px' : '0px'}">
+<kendo-chart style="height: 100%"  [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}">
 <kendo-chart-series>
   <kendo-chart-series-item type="kendo-sankey" *ngFor="let data of data" [gap]="2" [spacing]="0.25"
     [data]="data.data">

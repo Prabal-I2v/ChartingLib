@@ -54,6 +54,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() customFilterOutput = new EventEmitter<ICustomFilterOutputEmittorModel>();
   @Output() combineFilterOutputEmittor = new EventEmitter<ICommonFilterOutputEmittorModel>();
   @Output() timePeriodOutput = new EventEmitter<string>();
+  @Output() widgetResizeEmittor = new EventEmitter<boolean>();
 
   @ViewChild("multiselectRef") multiselectRef: any;
   @ViewChild("keySelectRef") keySelectRef: any;
@@ -126,6 +127,15 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       this.enableCustomTime = false;
       this.updateUIFilterModelValues();
     }
+
+    if(changes.isEditModeOn?.previousValue != undefined && changes.isEditModeOn?.currentValue != changes.isEditModeOn?.previousValue)
+      {
+        this.cdr.detectChanges();
+        setTimeout(()=>{
+                  this.widgetResizeEmittor.emit(changes.isEditModeOn?.currentValue);
+        }, 100)
+
+      }
   }
 
   ngAfterViewInit(): void {
@@ -370,6 +380,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   {
     this.showFilterValues = !this.showFilterValues;
     this.showFilterValuesChange.emit(this.showFilterValues);
+    this.widgetResizeEmittor.emit(this.showFilterValues);
   }
 
   toggleHideWidget(){

@@ -38,8 +38,9 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
-  @Input() showFilterValue: boolean = false;
-  @Output() showFilterValuesChange = new EventEmitter<any>();
+  @Input() showFilterValues: boolean = false;
+  @Output() showFilterValuesChange = new EventEmitter<boolean>();
+  @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
@@ -118,6 +119,10 @@ export abstract class I2vChartsComponent implements OnInit {
     }    
   }
 
+  onShowFilterValuesChange()
+  {
+    this.widgetResizeCallback(this.showFilterValues);
+  }
   private setValueAsPerWidgetCustomFiltersValue(dashboardCustomFilterValue: ICustomFilter): void {
     if (!dashboardCustomFilterValue || Object.keys(dashboardCustomFilterValue).length === 0) {
       return;
@@ -473,12 +478,12 @@ export abstract class I2vChartsComponent implements OnInit {
     return formattedDateTime;
   }
 
-  ShowFilterChange($event)
+  widgetResizeCallback(value : boolean)
   {
       this.cd.detectChanges();
       const height = this.elementRef.nativeElement.offsetHeight;
       const width = this.elementRef.nativeElement.offsetWidth;
-      this.showFilterValuesChange.emit({"value" : $event, "height": height, "width": width});
+      this.widgetResizeCallbackEmittor.emit({"value" : value, "height": height, "width": width});
   }
 
   onTimeDurationChanged(event: string) {

@@ -22,7 +22,7 @@
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
-      <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValue"
+      <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues"
         [widgetModel]="widgetRequestModel" [customFilters]="customFilters" [isEditModeOn]="isEditModeOn"
         (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
@@ -64,7 +64,7 @@
         <span class="major-heading">No Data found</span>
       </div>
     </div>
-    <kendo-chart style=" height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValue ? '400px' : '0px'}"
+    <kendo-chart style=" height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
       [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="
       widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false
     ">
@@ -89,7 +89,7 @@
       </kendo-chart-series>
     </kendo-chart>
   </div>
-  <div *ngIf="showFilterValue" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
+  <div *ngIf="showFilterValues" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
     <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
     </app-details-widget>
   </div>

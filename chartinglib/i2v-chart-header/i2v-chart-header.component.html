@@ -27,7 +27,7 @@
       [title]="heading"
       *ngIf="heading"
     >
-      {{ heading }}
+      {{ heading | translate}}
     </h3>
     <span
       style="
@@ -38,7 +38,7 @@
       "
       [title]="subHeading"
       *ngIf="subHeading"
-      >({{ subHeading }})</span
+      >({{ subHeading | translate}})</span
     >
   </div>
 
@@ -78,11 +78,17 @@
       *ngIf="!disableTimeFilter"
       [options]="TimeFilter"
       [(ngModel)]="TimeFilterValue"
-      placeholder="Select Time"
+      [placeholder]="'Select Time' | translate"
       [editable]="false"
       (onChange)="onTimeChange($event)"
       [appendTo]="'body'"
     >
+    <ng-template let-option pTemplate="item">
+        {{ option  |translate}}
+    </ng-template>
+    <ng-template let-selectedOption pTemplate="selectedItem">
+      {{ selectedOption | translate }}
+    </ng-template>
     </p-dropdown>
     <span style="display: none">
       <p-dropdown
@@ -96,6 +102,12 @@
         (onChange)="setIntervalTime($event)"
         [appendTo]="'body'"
       >
+      <ng-template let-option pTemplate="item">
+        {{ option  |translate}}
+    </ng-template>
+    <ng-template let-selectedOption pTemplate="selectedItem">
+      {{ selectedOption | translate }}
+    </ng-template>
       </p-dropdown>
     </span>
     <p-dropdown
@@ -107,6 +119,12 @@
       (onChange)="onCustomFilterKeyChange($event)"
       [appendTo]="'body'"
     >
+    <ng-template let-option pTemplate="item">
+        {{ option  |translate}}
+    </ng-template>
+    <ng-template let-selectedOption pTemplate="selectedItem">
+      {{ selectedOption | translate }}
+    </ng-template>
     </p-dropdown>
     <p-multiSelect
       [options]="customFilters[selectedCustomFilterkey]"

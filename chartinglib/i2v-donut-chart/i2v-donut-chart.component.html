@@ -29,7 +29,7 @@
           [size]="'48'"
           [fill-color]="'white'"
         ></div>
-        <span class="major-heading">No Configurations found</span>
+        <span class="major-heading">{{'No Configurations found' | translate}}</span>
       </div>
     </div>
     <i2v-chart-header
@@ -91,7 +91,7 @@
         [size]="'48'"
         [fill-color]="'white'"
       ></div>
-      <span class="major-heading">No Data found</span>
+      <span class="major-heading">{{'No Data found' | translate}}</span>
     </div>
   </div>
   <kendo-chart
@@ -111,7 +111,7 @@
         "
       >
         <p style="padding: 0px; margin: 0px">
-          Total no. of {{ widgetRequestModel.subHeading }}
+          Total no. of {{ widgetRequestModel.subHeading | translate }}
         </p>
         <h1 style="padding: 0px; margin: 0px">{{ totaldata }}</h1>
       </div>
@@ -123,7 +123,7 @@
         let-value="value"
         let-category="category"
       >
-        {{ value }}
+        {{ value | translate}}
       </ng-template>
     </kendo-chart-tooltip>
 

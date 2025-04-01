@@ -95,7 +95,7 @@
         *ngIf="refreshIntervalValue"
         [options]="refreshInterval"
         [(ngModel)]="refreshIntervalValue"
-        placeholder="Select Interval Time"
+        placeholder="'Select Interval Time' | translate"
         optionLabel="displayName"
         #refreshIntervalRef
         optionValue="returnValue"
@@ -113,7 +113,7 @@
     <p-dropdown
       [options]="CustomFilterKeys"
       [(ngModel)]="selectedCustomFilterkey"
-      placeholder="Select an Entity"
+      placeholder="'Select an Entity' | translate"
       [editable]="false"
       #keySelectRef
       (onChange)="onCustomFilterKeyChange($event)"
@@ -131,7 +131,7 @@
       optionLabel="displayName"
       optionValue="returnValue"
       #multiselectRef
-      placeholder="Select {{ selectedCustomFilterkey }}"
+      [placeholder]="('Select' | translate) + ' ' + (selectedCustomFilterkey | translate)"
       [showClear]="true"
       (onClear)="onCustomFilterValuesChange($event)"
       (onChange)="onCustomFilterValuesChange($event)"

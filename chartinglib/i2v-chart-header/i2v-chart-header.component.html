@@ -113,13 +113,22 @@
     <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: relative; left: 20px;" class="filterSVG" libSvgElement
       [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
-    <button [hidden]="!isEditModeOn || applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+    <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
       appSvg="assets/Outline/menu.svg" [size]="'20'"
-      (click)="onMenuClick()">
+      (click)="onContextMenuEvent($event)">
     </button>
     <!-- <button *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="'Hide Filter Values'"
     [appSvg]=" 'assets/Outline/cross.svg'"
     (click)="toggleShowFilterValues()">
     </button> -->
+    <i2v-context-menu [open]="isContexMenuOpen"
+    (menuClosed)="onMenuClosed()"
+    [position]="position">
+      <i2v-context-menu-item icon="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+      [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+      <i2v-context-menu-item icon='assets/Outline/filter.svg'
+      label="Add Custom Filter" (click)="onMenuClick()"></i2v-context-menu-item>
+    </i2v-context-menu>
   </div>
+ 
 </div>

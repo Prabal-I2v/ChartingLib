@@ -94,8 +94,9 @@ import { i2vContextMenuModule } from "@i2v-systems/context-menu";
     i2vUtilityModule,
     MatBadgeModule,
     GridstackModule,
-    MatTooltip
-    // NgxDaterangepickerMd
+    MatTooltip,
+    // NgxDaterangepickerMd,
+    i2vContextMenuModule
   ],
   exports: [
     // FusionChartComponent,

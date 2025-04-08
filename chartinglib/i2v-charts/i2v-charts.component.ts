@@ -21,6 +21,7 @@ import {
   ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
   ICommonFilterOutputEmittorModel,
   Enum_TimePeriod,
+  CustomFilterValueModel,
 } from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
@@ -65,6 +66,7 @@ export abstract class I2vChartsComponent implements OnInit {
   private refreshCallSubjectSubscription: Subscription;
   private debounceTime = 500; // milliseconds
   componentId: string;
+  customFilterValues: Record<string, CustomFilterValueModel[]>;
 
   private _chartData: ClientChartModel;
   @Input()
@@ -110,18 +112,18 @@ export abstract class I2vChartsComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.dashboardCustomFilterValue?.currentValue !== changes.dashboardCustomFilterValue?.previousValue) {
       this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
-      if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
-        if(this.isCustomFilterApplied){
-          this.widgetRequestModel.isDashboardFilterApplied = this.applyToAllEnabled;
-          return;
-        }
-        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
-        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      this.updateCustomFiltersValues();
+    }
+    else if
+      (!changes.isEditModeOn?.currentValue) {
+      this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+      this.showFilterValues = false;
+      this.widgetResizeCallback(this.showFilterValues);
+      if(this.isCustomFilterApplied && this.applyToAllEnabled){
+        this.isCustomFilterApplied = false;
         this.widgetRequestModel.isDashboardFilterApplied = true;
-        this.cd.detectChanges();
       }
-    }    
+    }
   }
 
   onShowFilterValuesChange()
@@ -555,6 +557,28 @@ export abstract class I2vChartsComponent implements OnInit {
       this.widgetRequestModel.isDashboardFilterApplied = true;
       this.cd.detectChanges();
     }
+  }
 
+  updateCustomFiltersValues() {
+    if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
+      if (this.isCustomFilterApplied) {
+        this.widgetRequestModel.isDashboardFilterApplied = this.applyToAllEnabled;
+        const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
+        if (isCustomFilterValuesEmpty) {
+          this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+        }
+      }
+      if (!this.applyToAllEnabled) {
+        this.widgetRequestModel.customFilters = { ...this.customFilterValues };
+        this.setValueAsPerWidgetCustomFiltersValue(this.customFilterValues);
+        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      } else {
+        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+        this.widgetRequestModel.isDashboardFilterApplied = true;
+      }
+      this.cd.detectChanges();
+    }
   }
 }

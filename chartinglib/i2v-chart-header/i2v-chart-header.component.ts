@@ -49,6 +49,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   showFilter = false;
   hideWidget = false;
   showTimeDurationFilter: boolean = false;
+  isContexMenuOpen:boolean = false;
+  hideWidgetMsg: string = "Hide Widget";
+  position = { top: 0, left: 0 };
   @Input() applyToAllEnabled: boolean = false;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
@@ -116,6 +119,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     this.subHeading = this.widgetModel?.subHeading;
     this.disableTimeFilter = this.widgetModel.disableTimeFilter;
     this.hideWidget = this.widgetModel.isWidgetHidden;
+    this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
     this.customFilterKeys = Object.keys(this.customFilters);
     if((this.widgetModel.groupBy1 && this.widgetModel.groupBy1.isTime) || (this.widgetModel.groupBy2 && this.widgetModel.groupBy2.isTime)){
       this.showTimeDurationFilter = true;
@@ -415,6 +419,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   toggleHideWidget(){
     this.widgetModel.isWidgetHidden = !this.widgetModel.isWidgetHidden;
     this.hideWidget = this.widgetModel.isWidgetHidden;
+    this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
   }
 
   onMenuClick() {
@@ -473,5 +478,19 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     });
   
     ref.afterClosed().subscribe((data) => {});
+  }
+
+  onContextMenuEvent(event) {
+    if (this.isContexMenuOpen == false) {
+      this.isContexMenuOpen = true;
+      this.position = { top: event.clientY, left: event.clientX };
+    } else {
+      this.isContexMenuOpen = false;
+    }
+    event.stopPropagation();
+  }
+  
+  onMenuClosed() {
+    this.isContexMenuOpen = false;
   }
 }

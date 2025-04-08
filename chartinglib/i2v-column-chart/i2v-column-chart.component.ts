@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
   SimpleChanges,
 } from "@angular/core";
@@ -16,8 +17,9 @@ export class I2vColumnChartComponent extends I2vChartsComponent {
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super(cd, chartingDataService);
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {

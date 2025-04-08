@@ -45,7 +45,7 @@
     </div>
   </div>
 
-  <div *ngIf="customFilters && isEditModeOn && !applyToAllEnabled" style="
+  <!-- <div *ngIf="customFilters && isEditModeOn && !applyToAllEnabled" style="
       flex-wrap: wrap;
       gap: 10px;
       justify-content: flex-end;
@@ -75,8 +75,8 @@
       (onClear)="onCustomFilterValuesChange($event)" (onChange)="onCustomFilterValuesChange($event)"
       [appendTo]="'body'">
     </p-multiSelect>
-  </div>
-  <div *ngIf="!showFilter && customFilters && isEditModeOn && !applyToAllEnabled" style="
+  </div> -->
+  <!-- <div *ngIf="!showFilter && customFilters && isEditModeOn && !applyToAllEnabled" style="
     display: flex;
     justify-content: center;
     align-items: center;
@@ -84,7 +84,7 @@
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement
       [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()" matTooltip="Show Filter">
     </button>
-  </div>
+  </div> -->
   <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
     [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown>
   <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
@@ -97,11 +97,8 @@
       [appSvg]="showFilterValues ? 'assets/Outline/info-circle.svg' : 'assets/Outline/info-circle.svg'" [size]="'20'"
       (click)="toggleShowFilterValues()">
     </button>
-    <span style="position: absolute; top: -12px; right: -5px;" class="filterSVG" libSvgElement
-      [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'#0099ED'">
-    </span>
   </div>
-  <div *ngIf="isEditModeOn"style="
+  <!-- <div *ngIf="isEditModeOn"style="
   display: flex;
   justify-content: center;
   align-items: center;
@@ -111,5 +108,18 @@
       [appSvg]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'" [size]="'20'"
       (click)="toggleHideWidget()">
     </button>
+  </div> -->
+  <div >
+    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: relative; left: 20px;" class="filterSVG" libSvgElement
+      [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
+    </span>
+    <button [hidden]="!isEditModeOn || applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+      appSvg="assets/Outline/menu.svg" [size]="'20'"
+      (click)="onMenuClick()">
+    </button>
+    <!-- <button *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="'Hide Filter Values'"
+    [appSvg]=" 'assets/Outline/cross.svg'"
+    (click)="toggleShowFilterValues()">
+    </button> -->
   </div>
 </div>

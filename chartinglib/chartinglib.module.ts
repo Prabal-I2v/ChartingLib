@@ -47,6 +47,8 @@ import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.com
 import { GridstackModule } from 'gridstack/dist/angular';
 import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
 import { MatTooltip } from "@angular/material/tooltip";
+import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
+import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -69,7 +71,8 @@ import { MatTooltip } from "@angular/material/tooltip";
     I2vLineChartComponent,
     I2vAreaChartComponent,
     DetailsWidgetComponent,
-    I2vSankeyChartComponent
+    I2vSankeyChartComponent,
+    CustomFilterDialogComponent
   ],
   imports: [
     CommonModule,

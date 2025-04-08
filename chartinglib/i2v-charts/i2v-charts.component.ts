@@ -38,6 +38,7 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
+  isCustomFilterApplied: boolean = false;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
@@ -110,6 +111,10 @@ export abstract class I2vChartsComponent implements OnInit {
     if (changes.dashboardCustomFilterValue?.currentValue !== changes.dashboardCustomFilterValue?.previousValue) {
       this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
       if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
+        if(this.isCustomFilterApplied){
+          this.widgetRequestModel.isDashboardFilterApplied = this.applyToAllEnabled;
+          return;
+        }
         this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
         this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
         this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
@@ -280,6 +285,7 @@ export abstract class I2vChartsComponent implements OnInit {
       }
     }
     this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.isCustomFilterApplied = true;
     this.getDataFromServer(this.widgetRequestModel);
     // if (!commonCall) {
     //   this.getDataFromServer(this.widgetRequestModel);
@@ -541,4 +547,14 @@ export abstract class I2vChartsComponent implements OnInit {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  clearCustomFiltersValues(event) {
+    if (event) {
+      this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+      this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      this.widgetRequestModel.isDashboardFilterApplied = true;
+      this.cd.detectChanges();
+    }
+
+  }
 }

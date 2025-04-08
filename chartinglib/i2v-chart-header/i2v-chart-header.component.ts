@@ -21,6 +21,12 @@ import {
   Widget,
 } from "../Models/Widget";
 import * as moment from "moment";
+import { EditAnalyticServerComponent } from "src/app/modules/settings/analytic-server-form/editAnalyticServer/edit-analytic-server.component";
+import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
+import { MatDialog } from "@angular/material/dialog";
+import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
+import { MyContextMenuComponent } from "src/app/shared/context-menu/context-menu.component";
+import { ContextMenuItem } from "src/app/Models/ContextMenuItem.model";
 
 declare let $: any;
 
@@ -55,6 +61,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() combineFilterOutputEmittor = new EventEmitter<ICommonFilterOutputEmittorModel>();
   @Output() timePeriodOutput = new EventEmitter<string>();
   @Output() widgetResizeEmittor = new EventEmitter<boolean>();
+  @Output() clearCustomFiltersValues = new EventEmitter<boolean>();
 
   @ViewChild("multiselectRef") multiselectRef: any;
   @ViewChild("keySelectRef") keySelectRef: any;
@@ -88,7 +95,10 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   private startDate: Date;
   private endDate: Date;
 
-  constructor(private cdr: ChangeDetectorRef) {
+  contextMenuVisible = false;
+  contextMenuPosition = { x: 0, y: 0 };
+
+  constructor(private cdr: ChangeDetectorRef, private dialog: MatDialog,) {
     const now = new Date();
     this.startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     this.endDate = new Date(now);
@@ -132,7 +142,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       {
         this.cdr.detectChanges();
         setTimeout(()=>{
-                  this.widgetResizeEmittor.emit(changes.isEditModeOn?.currentValue);
+                  // this.widgetResizeEmittor.emit(changes.isEditModeOn?.currentValue);
         }, 100)
 
       }
@@ -207,6 +217,12 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     }
   }
 
+  clearCustomFilters(): void { 
+    if(this.showFilterValues)
+    this.toggleShowFilterValues();
+    this.clearCustomFiltersValues.emit(true);
+  }
+
   setIntervalTime(event: { value: number }): void {
     this.refreshIntervalValue = event.value;
 
@@ -251,13 +267,25 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   }
 
   private setCustomFilterValues(outputModel: ICommonFilterOutputEmittorModel): void {
-    // Find the first matching key from customFilters in widgetCustomFiltersValue
     for (const key of this.customFilterKeys) {
       if (key in this.customFilters) {
         this.selectedCustomFilterkey = key;
-        this.selectedCustomFilterValue = this.customFilters[this.selectedCustomFilterkey]
-          .map(x => String(x.returnValue));
-
+  
+        const allValues = this.customFilters[this.selectedCustomFilterkey];
+  
+        // Check if 'videoSources' exists in widget.customFilters
+        if ('Video Sources' in this.widgetModel.customFilters) {
+          const allowedVideoSources = this.widgetModel.customFilters['Video Sources']
+            .map((item: CustomFilterValueModel) => item.returnValue);
+        
+          this.selectedCustomFilterValue = allValues
+            .filter(x => allowedVideoSources.includes(x.returnValue))
+            .map(x => String(x.returnValue));
+        } else {
+          this.selectedCustomFilterValue = allValues.map(x => String(x.returnValue));
+        }
+        
+  
         outputModel["CustomFilterEmitModel"] = {
           key: this.selectedCustomFilterkey,
           value: this.selectedCustomFilterValue
@@ -374,6 +402,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   toggleShowFilter()
   {
     this.showFilter = !this.showFilter;
+    // this.widgetResizeEmittor.emit(this.showFilter);
   }
 
   toggleShowFilterValues()
@@ -386,5 +415,63 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   toggleHideWidget(){
     this.widgetModel.isWidgetHidden = !this.widgetModel.isWidgetHidden;
     this.hideWidget = this.widgetModel.isWidgetHidden;
+  }
+
+  onMenuClick() {
+    console.log(this.widgetModel)
+    const event: any = {};
+    event.component = CustomFilterDialogComponent;
+    event.data = {
+      parentComponent: this,
+      dateRange: this.dateRange,
+      timeFilterValue: this.timeFilterValue,
+      refreshIntervalValue: this.refreshIntervalValue,
+      selectedCustomFilterkey: this.selectedCustomFilterkey,
+      selectedFilterValues: this.selectedCustomFilterValue,
+      customFilters: this.customFilters,
+      timeFilter: this.timeFilter,
+      refreshInterval: this.refreshInterval,
+      customFilterKeys: this.customFilterKeys,
+      enableCustomTime: this.enableCustomTime,
+      disableTimeFilter: this.disableTimeFilter
+    };
+  
+    const dialogData: CommonModalData = {
+      event: event,
+      width: '500px',
+      height: 'auto',
+      heading: 'Add Custom Filters',
+      footerButtons: [
+        {
+          Callback: "clearFilters",
+          title: "Clear",
+          basedOnChildTemplate: true,
+          style: "i2v-btn medium warn-default btn-left"
+        },
+        {
+          Callback: "applyFilters",
+          title: "Update",  
+          basedOnChildTemplate: true,
+          style: "i2v-btn medium primary-default",
+        },
+        {
+          Callback: 'cancel',
+          title: 'Cancel',
+          basedOnChildTemplate: true,
+          style: 'i2v-button tertiary-outline medium',
+        },
+      ],
+      showPreviousButton: false,
+      showNextButton: false,
+      showBackButton: false,
+    };
+  
+    const ref = this.dialog.open(CommonModalComponent, {
+      minHeight: '300px',
+      panelClass: 'custom-dialog-container',
+      data: dialogData,
+    });
+  
+    ref.afterClosed().subscribe((data) => {});
   }
 }

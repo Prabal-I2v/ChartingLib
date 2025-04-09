@@ -118,10 +118,10 @@ export abstract class I2vChartsComponent implements OnInit {
       (!changes.isEditModeOn?.currentValue) {
       this.customFilterValues = { ...this.widgetRequestModel.customFilters };
       this.showFilterValues = false;
-      this.widgetResizeCallback(this.showFilterValues);
       if(this.isCustomFilterApplied && this.applyToAllEnabled){
         this.isCustomFilterApplied = false;
         this.widgetRequestModel.isDashboardFilterApplied = true;
+        this.widgetResizeCallback(this.showFilterValues);
       }
     }
   }
@@ -569,8 +569,10 @@ export abstract class I2vChartsComponent implements OnInit {
         }
       }
       if (!this.applyToAllEnabled) {
-        this.widgetRequestModel.customFilters = { ...this.customFilterValues };
-        this.setValueAsPerWidgetCustomFiltersValue(this.customFilterValues);
+        this.widgetRequestModel.customFilters = {
+          ...(this.customFilterValues ?? this.dashboardCustomFilterValue)
+        };
+        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.customFilters);
         this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
       } else {
         this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };

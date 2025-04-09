@@ -35,7 +35,7 @@
     </div>
     <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel" 
     [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
-    (customFilterOutput)="onCustomFilterValuesChange($event)"
+    (customFilterOutput)="onCustomFilterValuesChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
     (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"(clearCustomFiltersValues)="clearCustomFiltersValues($event)"
     (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (timePeriodOutput)="onTimeDurationChanged($event)" 
     [applyToAllEnabled]="applyToAllEnabled"></i2v-chart-header>

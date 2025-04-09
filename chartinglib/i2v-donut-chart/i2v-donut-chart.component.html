@@ -23,9 +23,9 @@
       </div>
     </div>
     <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
-    [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
+    [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
     (customFilterOutput)="onCustomFilterValuesChange($event)"
-    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+    (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
     (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (timePeriodOutput)="onTimeDurationChanged($event)" 
     [applyToAllEnabled]="applyToAllEnabled"></i2v-chart-header>
 </div>
@@ -98,7 +98,7 @@
     <kendo-chart-legend position="right"></kendo-chart-legend>
   </kendo-chart>
 </div>
-<div *ngIf="showFilterValues"  style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
+<div *ngIf="showFilterValues && !isEditModeOn"  style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
   <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
   </app-details-widget>
 </div>

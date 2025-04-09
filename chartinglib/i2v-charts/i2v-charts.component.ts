@@ -21,6 +21,7 @@ import {
   ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
   ICommonFilterOutputEmittorModel,
   Enum_TimePeriod,
+  CustomFilterValueModel,
 } from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
@@ -38,6 +39,7 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
+  isCustomFilterApplied: boolean = false;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
@@ -64,6 +66,7 @@ export abstract class I2vChartsComponent implements OnInit {
   private refreshCallSubjectSubscription: Subscription;
   private debounceTime = 500; // milliseconds
   componentId: string;
+  customFilterValues: Record<string, CustomFilterValueModel[]>;
 
   private _chartData: ClientChartModel;
   @Input()
@@ -109,14 +112,18 @@ export abstract class I2vChartsComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.dashboardCustomFilterValue?.currentValue !== changes.dashboardCustomFilterValue?.previousValue) {
       this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
-      if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
-        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
-        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      this.updateCustomFiltersValues();
+    }
+    else if
+      (!changes.isEditModeOn?.currentValue) {
+      this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+      this.showFilterValues = false;
+      if(this.isCustomFilterApplied && this.applyToAllEnabled){
+        this.isCustomFilterApplied = false;
         this.widgetRequestModel.isDashboardFilterApplied = true;
-        this.cd.detectChanges();
+        this.widgetResizeCallback(this.showFilterValues);
       }
-    }    
+    }
   }
 
   onShowFilterValuesChange()
@@ -280,6 +287,7 @@ export abstract class I2vChartsComponent implements OnInit {
       }
     }
     this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.isCustomFilterApplied = true;
     this.getDataFromServer(this.widgetRequestModel);
     // if (!commonCall) {
     //   this.getDataFromServer(this.widgetRequestModel);
@@ -541,4 +549,38 @@ export abstract class I2vChartsComponent implements OnInit {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
+  clearCustomFiltersValues(event) {
+    if (event) {
+      this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+      this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      this.widgetRequestModel.isDashboardFilterApplied = true;
+      this.cd.detectChanges();
+    }
+  }
+
+  updateCustomFiltersValues() {
+    if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
+      if (this.isCustomFilterApplied) {
+        this.widgetRequestModel.isDashboardFilterApplied = this.applyToAllEnabled;
+        const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
+        if (isCustomFilterValuesEmpty) {
+          this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+        }
+      }
+      if (!this.applyToAllEnabled) {
+        this.widgetRequestModel.customFilters = {
+          ...(this.customFilterValues ?? this.dashboardCustomFilterValue)
+        };
+        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.customFilters);
+        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+      } else {
+        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+        this.widgetRequestModel.isDashboardFilterApplied = true;
+      }
+      this.cd.detectChanges();
+    }
+  }
 }

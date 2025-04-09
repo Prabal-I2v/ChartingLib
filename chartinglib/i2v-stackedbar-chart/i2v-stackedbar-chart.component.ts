@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
@@ -13,8 +13,9 @@ export class I2vStackedbarChartComponent extends I2vChartsComponent {
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super(cd, chartingDataService);
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {

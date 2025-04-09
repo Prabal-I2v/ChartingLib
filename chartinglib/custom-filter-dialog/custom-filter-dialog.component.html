@@ -1,0 +1,27 @@
+<div mat-dialog-content class="filter-dialog-content">
+    <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
+      (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
+    </p-calendar>
+    
+    <p-dropdown *ngIf="!disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
+      placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
+    </p-dropdown>
+  
+    <p-dropdown *ngIf="refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
+      placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
+      (onChange)="setIntervalTime($event)" [appendTo]="'body'">
+    </p-dropdown>
+  
+    <p-dropdown [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+      [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
+    </p-dropdown>
+  
+    <p-multiSelect *ngIf="selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
+      [(ngModel)]="selectedFilterValues"
+      optionLabel="displayName" optionValue="returnValue"
+      placeholder="Select {{ selectedCustomFilterkey }}"
+      [showClear]="true"
+      (onChange)="onCustomFilterValuesChange($event)"
+      [appendTo]="'body'">
+    </p-multiSelect>
+</div>

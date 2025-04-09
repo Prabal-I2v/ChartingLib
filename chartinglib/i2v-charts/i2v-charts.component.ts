@@ -300,7 +300,7 @@ export abstract class I2vChartsComponent {
       field: fieldName,
       operator: "Contains",
       value: data.value.join(","),
-      type: RulePropertyType.StringArray,
+      type: RulePropertyType.array,
     });
     return ruleSet;
   }

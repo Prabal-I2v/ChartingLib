@@ -109,8 +109,8 @@
       (click)="toggleHideWidget()">
     </button>
   </div> -->
-  <div >
-    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: relative; left: 20px;" class="filterSVG" libSvgElement
+  <div style="position: relative;">
+    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
       [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
     <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement

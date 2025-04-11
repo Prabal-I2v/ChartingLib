@@ -127,7 +127,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       this.timePeriodValue = this.widgetModel.showablePropertiesLabel[0]?.displayName || "Month";
     }
     if (!this.widgetModel.isDashboardFilterApplied) {
-      this.setValueAsPerWidgetCustomFiltersValue();
+      this.setCustomFilterValuesAsPerWidgetModel();
     }
     // this.customFiltersValue = this.widgetModel.customFilters;
   }
@@ -494,5 +494,30 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   
   onMenuClosed() {
     this.isContexMenuOpen = false;
+  }
+
+  setCustomFilterValuesAsPerWidgetModel() {
+        // Set initial filter values from widgetModel
+        if (this.widgetModel.customFilters) {
+          // Initialize filters from widget model
+          for (const key of Object.keys(this.widgetModel.customFilters)) {
+            if (key === 'Time') {
+              const timeFilter = this.widgetModel.customFilters[key][0];
+              this.timeFilterValue = timeFilter.displayName;
+              this.enableCustomTime = timeFilter.displayName === 'Custom';
+              if (timeFilter.returnValue) {
+                const timeRange = timeFilter.returnValue as ITimeRange;
+                this.dateRange = [new Date(timeRange.startTime), new Date(timeRange.endTime)];
+              }
+            } else if (key === 'RefreshInterval') {
+              this.refreshIntervalValue = Number(this.widgetModel.customFilters[key][0].returnValue);
+            } else {
+              // For other custom filters (like Video Sources)
+              this.selectedCustomFilterkey = key;
+              this.selectedCustomFilterValue = this.widgetModel.customFilters[key]
+                .map(item => String(item.returnValue));
+            }
+          }
+        }
   }
 }

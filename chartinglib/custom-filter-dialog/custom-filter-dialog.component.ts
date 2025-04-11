@@ -63,7 +63,6 @@ export class CustomFilterDialogComponent {
     this.parentComponent.timeFilterValue = this.timeFilterValue;
     this.parentComponent.enableCustomTime = this.enableCustomTime;
     this.parentComponent.dateRange = this.dateRange;
-    // this.parentComponent.refreshIntervalValue = this.refreshIntervalValue;
     this.parentComponent.selectedCustomFilterkey = this.selectedCustomFilterkey;
     this.parentComponent.selectedCustomFilterValue = this.selectedFilterValues;
     
@@ -75,6 +74,7 @@ export class CustomFilterDialogComponent {
     // this.parentComponent.setIntervalTime({ value: this.refreshIntervalValue });
     this.parentComponent.onCustomFilterKeyChange({ value: this.selectedCustomFilterkey });
     this.parentComponent.onCustomFilterValuesChange({ value: this.selectedFilterValues });
+    this.parentComponent.setIntervalTime({ value: this.refreshIntervalValue });
 
     this.dialogRef.close();
   }

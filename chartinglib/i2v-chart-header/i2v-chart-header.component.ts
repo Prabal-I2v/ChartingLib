@@ -121,6 +121,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     this.hideWidget = this.widgetModel.isWidgetHidden;
     this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
     this.customFilterKeys = Object.keys(this.customFilters);
+    // this.customFilters = this.widgetModel.customFilters;
     if((this.widgetModel.groupBy1 && this.widgetModel.groupBy1.isTime) || (this.widgetModel.groupBy2 && this.widgetModel.groupBy2.isTime)){
       this.showTimeDurationFilter = true;
       this.timePeriodValue = this.widgetModel.showablePropertiesLabel[0]?.displayName || "Month";
@@ -438,7 +439,8 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       refreshInterval: this.refreshInterval,
       customFilterKeys: this.customFilterKeys,
       enableCustomTime: this.enableCustomTime,
-      disableTimeFilter: this.disableTimeFilter
+      disableTimeFilter: this.disableTimeFilter,
+      showTimeDurationFilter : this.showTimeDurationFilter
     };
   
     const dialogData: CommonModalData = {

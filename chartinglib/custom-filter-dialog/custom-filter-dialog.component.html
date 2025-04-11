@@ -1,4 +1,7 @@
 <div mat-dialog-content class="filter-dialog-content">
+    <p-dropdown *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" placeholder="Select Time Duration"
+    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-dropdown>
+    
     <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
       (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
     </p-calendar>

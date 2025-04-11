@@ -85,8 +85,8 @@
       [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()" matTooltip="Show Filter">
     </button>
   </div> -->
-  <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
-    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown>
+  <!-- <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
+    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown> -->
   <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
   display: flex;
   justify-content: center;

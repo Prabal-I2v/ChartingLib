@@ -19,8 +19,9 @@ export class CustomFilterDialogComponent {
   customFilterKeys: string[];
   enableCustomTime: boolean = false;
   disableTimeFilter: boolean;
+  showTimeDurationFilter: boolean = false;
   private parentComponent: I2vChartHeaderComponent;
-
+  readonly timePeriodOptions = ["Month", "Week", "Year", "Day"];
   constructor(
     public dialogRef: MatDialogRef<CustomFilterDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -85,5 +86,9 @@ export class CustomFilterDialogComponent {
   clearFilters(): void {
     this.parentComponent.clearCustomFilters();
     this.dialogRef.close();
+  }
+
+  onTimeDurationChange($event: any) {
+    this.parentComponent.onTimeDurationChange($event);
   }
 }

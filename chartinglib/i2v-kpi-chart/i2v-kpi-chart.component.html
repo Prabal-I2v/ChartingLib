@@ -16,7 +16,7 @@
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
-      <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" (widgetResizeEmittor)="widgetResizeCallback($event)"
+      <i2v-chart-header *ngIf="isModel" style="width: 100%;" [(showFilterValues)]="showFilterValues" (widgetResizeEmittor)="widgetResizeCallback($event)"
         [widgetModel]="widgetRequestModel" [customFilters]="customFilters" [isEditModeOn]="isEditModeOn"
         (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"(clearCustomFiltersValues)="clearCustomFiltersValues($event)"

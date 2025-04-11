@@ -121,14 +121,13 @@
     [appSvg]=" 'assets/Outline/cross.svg'"
     (click)="toggleShowFilterValues()">
     </button> -->
-    <i2v-context-menu [open]="isContexMenuOpen"
-    (menuClosed)="onMenuClosed()"
-    [position]="position">
-      <i2v-context-menu-item icon="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
-      [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
-      <i2v-context-menu-item icon='assets/Outline/filter.svg'
-      label="Add Custom Filter" (click)="onMenuClick()"></i2v-context-menu-item>
-    </i2v-context-menu>
   </div>
  
 </div>
+
+<i2v-context-menu [open]="isContexMenuOpen" (menuClosed)="onMenuClosed()" [position]="position">
+  <i2v-context-menu-item icon="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+    [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+  <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
+    (click)="onMenuClick()"></i2v-context-menu-item>
+</i2v-context-menu>

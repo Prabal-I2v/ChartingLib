@@ -33,7 +33,7 @@
         <span class="major-heading">No Configurations found</span>
       </div>
     </div>
-    <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
+    <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"

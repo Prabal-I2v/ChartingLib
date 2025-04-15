@@ -114,7 +114,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     //set properties
-    this.svgIcon = this.widgetModel?.svgIcon
+    this.svgIcon = this.widgetModel.svgIcon ? this.widgetModel.svgIcon : "assets/fill/va/default.svg";
     this.heading = this.widgetModel.heading;
     this.subHeading = this.widgetModel?.subHeading;
     this.disableTimeFilter = this.widgetModel.disableTimeFilter;

@@ -1,6 +1,12 @@
-<div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white;">
   <div style="display: flex; flex-direction: column; width: 100%; height: 100%; padding: 16px; overflow-x: auto">
-    <div style=" display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
+    <div style="
+      display: flex;
+      justify-items: center;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    ">
       <div *ngIf="!isModel" class="data-container" style="
         overflow-x: hidden;
         height: 100%;
@@ -16,7 +22,7 @@
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
-      <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
+      <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
@@ -50,7 +56,6 @@
       display: flex;
       flex-direction: column;
       padding: 10px 15px;
-      background-color: #fff;
     ">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
@@ -59,9 +64,13 @@
       </div>
     </div>
 
-    <kendo-chart style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}">
-      <kendo-chart-legend position="bottom" [visible]="true"></kendo-chart-legend>
-      <kendo-chart-tooltip format="{0}"></kendo-chart-tooltip>
+    <kendo-chart [chartArea]="{ background: 'transparent' }" style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}">
+      <kendo-chart-legend position="top" orientation="horizontal" [spacing]="140" [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
+      <kendo-chart-tooltip>
+        <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+          {{ value }}
+        </ng-template>
+      </kendo-chart-tooltip>
       <kendo-chart-series>
         <kendo-chart-series-item type="pie" [data]="chartData.series" field="value" categoryField="name"
           [autoFit]="true" [labels]="{ visible: true, content: labelContent }">

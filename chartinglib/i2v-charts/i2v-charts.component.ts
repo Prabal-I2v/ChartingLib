@@ -103,6 +103,8 @@ export abstract class I2vChartsComponent implements OnInit {
       }
       if (this.widgetRequestModel.isDashboardFilterApplied) {
         this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
+      }else{
+        this.isCustomFilterApplied = true;
       }
     } else {
       this.isModel = false;

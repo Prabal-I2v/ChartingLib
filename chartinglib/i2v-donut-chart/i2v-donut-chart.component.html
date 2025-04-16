@@ -1,4 +1,4 @@
-<div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%">
   <div style="display: flex; flex-direction: column; width: 100%; height: 100%; padding: 16px; overflow-x: auto">
   <div style="
       display: flex;
@@ -22,7 +22,7 @@
         <span class="major-heading">No Configurations found</span>
       </div>
     </div>
-    <i2v-chart-header *ngIf="isModel" style="width: 100%; z-index : 10" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
+    <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
     [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
     (customFilterOutput)="onCustomFilterValuesChange($event)"
     (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
@@ -56,7 +56,6 @@
       display: flex;
       flex-direction: column;
       padding: 10px 15px;
-      background-color: #fff;
     ">
     <div class="noConfExist">
       <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
@@ -64,7 +63,7 @@
       <span class="major-heading">No Data found</span>
     </div>
   </div>
-  <kendo-chart style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [transitions]="true" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
+  <kendo-chart [chartArea]="{ background: 'transparent' }" style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [transitions]="true" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
     (legendItemClick)="onLegendItemClick($event)">
     <ng-template kendoChartDonutCenterTemplate>
       <div style="

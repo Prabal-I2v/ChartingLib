@@ -19,8 +19,9 @@ export class CustomFilterDialogComponent {
   customFilterKeys: string[];
   enableCustomTime: boolean = false;
   disableTimeFilter: boolean;
+  showTimeDurationFilter: boolean = false;
   private parentComponent: I2vChartHeaderComponent;
-
+  readonly timePeriodOptions = ["Month", "Week", "Year", "Day"];
   constructor(
     public dialogRef: MatDialogRef<CustomFilterDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -62,7 +63,6 @@ export class CustomFilterDialogComponent {
     this.parentComponent.timeFilterValue = this.timeFilterValue;
     this.parentComponent.enableCustomTime = this.enableCustomTime;
     this.parentComponent.dateRange = this.dateRange;
-    // this.parentComponent.refreshIntervalValue = this.refreshIntervalValue;
     this.parentComponent.selectedCustomFilterkey = this.selectedCustomFilterkey;
     this.parentComponent.selectedCustomFilterValue = this.selectedFilterValues;
     
@@ -74,6 +74,7 @@ export class CustomFilterDialogComponent {
     // this.parentComponent.setIntervalTime({ value: this.refreshIntervalValue });
     this.parentComponent.onCustomFilterKeyChange({ value: this.selectedCustomFilterkey });
     this.parentComponent.onCustomFilterValuesChange({ value: this.selectedFilterValues });
+    this.parentComponent.setIntervalTime({ value: this.refreshIntervalValue });
 
     this.dialogRef.close();
   }
@@ -85,5 +86,9 @@ export class CustomFilterDialogComponent {
   clearFilters(): void {
     this.parentComponent.clearCustomFilters();
     this.dialogRef.close();
+  }
+
+  onTimeDurationChange($event: any) {
+    this.parentComponent.onTimeDurationChange($event);
   }
 }

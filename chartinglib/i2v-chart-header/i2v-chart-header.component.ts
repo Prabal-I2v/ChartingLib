@@ -114,19 +114,20 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     //set properties
-    this.svgIcon = this.widgetModel?.svgIcon
+    this.svgIcon = this.widgetModel.svgIcon ? this.widgetModel.svgIcon : "assets/fill/va/default.svg";
     this.heading = this.widgetModel.heading;
     this.subHeading = this.widgetModel?.subHeading;
     this.disableTimeFilter = this.widgetModel.disableTimeFilter;
     this.hideWidget = this.widgetModel.isWidgetHidden;
     this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
     this.customFilterKeys = Object.keys(this.customFilters);
+    // this.customFilters = this.widgetModel.customFilters;
     if((this.widgetModel.groupBy1 && this.widgetModel.groupBy1.isTime) || (this.widgetModel.groupBy2 && this.widgetModel.groupBy2.isTime)){
       this.showTimeDurationFilter = true;
       this.timePeriodValue = this.widgetModel.showablePropertiesLabel[0]?.displayName || "Month";
     }
     if (!this.widgetModel.isDashboardFilterApplied) {
-      this.setValueAsPerWidgetCustomFiltersValue();
+      this.setCustomFilterValuesAsPerWidgetModel();
     }
     // this.customFiltersValue = this.widgetModel.customFilters;
   }
@@ -438,20 +439,21 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       refreshInterval: this.refreshInterval,
       customFilterKeys: this.customFilterKeys,
       enableCustomTime: this.enableCustomTime,
-      disableTimeFilter: this.disableTimeFilter
+      disableTimeFilter: this.disableTimeFilter,
+      showTimeDurationFilter : this.showTimeDurationFilter
     };
   
     const dialogData: CommonModalData = {
       event: event,
       width: '500px',
-      height: 'auto',
+      height: '550px',
       heading: 'Add Custom Filters',
       footerButtons: [
         {
           Callback: "clearFilters",
           title: "Clear",
           basedOnChildTemplate: true,
-          style: "i2v-btn medium warn-default btn-left"
+          style: "i2v-btn medium secondary-outline btn-left"
         },
         {
           Callback: "applyFilters",
@@ -492,5 +494,30 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   
   onMenuClosed() {
     this.isContexMenuOpen = false;
+  }
+
+  setCustomFilterValuesAsPerWidgetModel() {
+        // Set initial filter values from widgetModel
+        if (this.widgetModel.customFilters) {
+          // Initialize filters from widget model
+          for (const key of Object.keys(this.widgetModel.customFilters)) {
+            if (key === 'Time') {
+              const timeFilter = this.widgetModel.customFilters[key][0];
+              this.timeFilterValue = timeFilter.displayName;
+              this.enableCustomTime = timeFilter.displayName === 'Custom';
+              if (timeFilter.returnValue) {
+                const timeRange = timeFilter.returnValue as ITimeRange;
+                this.dateRange = [new Date(timeRange.startTime), new Date(timeRange.endTime)];
+              }
+            } else if (key === 'RefreshInterval') {
+              this.refreshIntervalValue = Number(this.widgetModel.customFilters[key][0].returnValue);
+            } else {
+              // For other custom filters (like Video Sources)
+              this.selectedCustomFilterkey = key;
+              this.selectedCustomFilterValue = this.widgetModel.customFilters[key]
+                .map(item => String(item.returnValue));
+            }
+          }
+        }
   }
 }

@@ -85,8 +85,8 @@
       [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()" matTooltip="Show Filter">
     </button>
   </div> -->
-  <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
-    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown>
+  <!-- <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
+    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown> -->
   <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
   display: flex;
   justify-content: center;
@@ -94,7 +94,7 @@
   position: relative;
 ">
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
-      [appSvg]="showFilterValues ? 'assets/Outline/info-circle.svg' : 'assets/Outline/info-circle.svg'" [size]="'20'"
+      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'"
       (click)="toggleShowFilterValues()">
     </button>
   </div>
@@ -121,14 +121,13 @@
     [appSvg]=" 'assets/Outline/cross.svg'"
     (click)="toggleShowFilterValues()">
     </button> -->
-    <i2v-context-menu [open]="isContexMenuOpen"
-    (menuClosed)="onMenuClosed()"
-    [position]="position">
-      <i2v-context-menu-item icon="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
-      [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
-      <i2v-context-menu-item icon='assets/Outline/filter.svg'
-      label="Add Custom Filter" (click)="onMenuClick()"></i2v-context-menu-item>
-    </i2v-context-menu>
   </div>
  
 </div>
+
+<i2v-context-menu [open]="isContexMenuOpen" (menuClosed)="onMenuClosed()" [position]="position">
+  <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
+    (click)="onMenuClick()"></i2v-context-menu-item>
+    <i2v-context-menu-item icon="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+    [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+</i2v-context-menu>

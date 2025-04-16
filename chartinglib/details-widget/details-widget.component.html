@@ -34,7 +34,7 @@
     </div>
 
     <div class="detail-row" *ngIf="commonWidgetCustomFilter['Video Sources']">
-      <label class="detail-label">Video Sources:</label>
+      <!-- <label class="detail-label">Video Sources:</label>
       <div class="source-container">
         <ng-container
           *ngFor="let source of commonWidgetCustomFilter['Video Sources'] | showVideoSourceName; let last = last; let i = index">
@@ -42,7 +42,8 @@
             {{source}}{{!last ? ', ' : ''}}
           </span>
         </ng-container>
-      </div>
+      </div> -->
+      <span class="detail-label">{{resourceLength}} Video Sources Attached</span>
     </div>
   </div>
 </div>

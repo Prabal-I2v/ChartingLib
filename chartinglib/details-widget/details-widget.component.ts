@@ -10,6 +10,6 @@ export class DetailsWidgetComponent implements OnInit {
   @Input() commonWidgetCustomFilter: { [key: string]: any };
   resourceLength: number = 0;
   ngOnInit() {
-    this.resourceLength = this.commonWidgetCustomFilter['Video Sources'].length
+    this.resourceLength = this.commonWidgetCustomFilter['Video Sources']?.length ? this.commonWidgetCustomFilter['Video Sources'].length : 0;
   }
 }

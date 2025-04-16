@@ -1,4 +1,4 @@
-<div [ngStyle]="{ opacity: widgetRequestModel?.isWidgetHidden ? '0.6' : '1' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white;">
+<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white;">
   <div style="display: flex; flex-direction: column; width: 100%; height: 100%; padding: 16px; overflow-x: auto">
     <div style="
       display: flex;
@@ -56,7 +56,6 @@
       display: flex;
       flex-direction: column;
       padding: 10px 15px;
-      background-color: #fff;
     ">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
@@ -65,7 +64,7 @@
       </div>
     </div>
 
-    <kendo-chart style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}">
+    <kendo-chart [chartArea]="{ background: 'transparent' }" style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}">
       <kendo-chart-legend position="top" orientation="horizontal" [spacing]="140" [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-tooltip>
         <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">

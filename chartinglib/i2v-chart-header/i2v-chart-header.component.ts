@@ -446,14 +446,14 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     const dialogData: CommonModalData = {
       event: event,
       width: '500px',
-      height: 'auto',
+      height: '550px',
       heading: 'Add Custom Filters',
       footerButtons: [
         {
           Callback: "clearFilters",
           title: "Clear",
           basedOnChildTemplate: true,
-          style: "i2v-btn medium warn-default btn-left"
+          style: "i2v-btn medium secondary-outline btn-left"
         },
         {
           Callback: "applyFilters",

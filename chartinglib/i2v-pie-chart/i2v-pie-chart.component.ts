@@ -27,7 +27,7 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ value: Number(x.data[0]), name: x.label });

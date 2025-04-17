@@ -75,7 +75,7 @@ export class I2vSankeyChartComponent  extends I2vChartsComponent {
    super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
       const chartData = new ClientChartModel();
       chartData.series = data.data.map((x) => {
         return new ChartSeries({ name: x.label, data: x.data });

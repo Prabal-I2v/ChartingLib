@@ -44,49 +44,8 @@
       " [title]="subHeading" *ngIf="subHeading">({{ subHeading }})</span>
     </div>
   </div>
+  <ng-content></ng-content>
 
-  <!-- <div *ngIf="customFilters && isEditModeOn && !applyToAllEnabled" style="
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-      align-self: start;
-    " [ngStyle]="{'display' : showFilter ? 'flex' : 'none'}">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement  matTooltip="Hide Filter"
-      [appSvg]="'assets/Outline/cross.svg'" [size]="'20'" (click)="toggleShowFilter()">
-    </button>
-    <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
-      #customTimeFilterRef (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
-    </p-calendar>
-    <p-dropdown *ngIf="!disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
-      placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
-    </p-dropdown>
-    <span>
-      <p-dropdown *ngIf="refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
-        placeholder="Select Interval Time" optionLabel="displayName" #refreshIntervalRef optionValue="returnValue"
-        (onChange)="setIntervalTime($event)" [appendTo]="'body'">
-      </p-dropdown>
-    </span>
-    <p-dropdown [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
-      [editable]="false" #keySelectRef (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
-    </p-dropdown>
-    <p-multiSelect *ngIf="selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
-      optionLabel="displayName" optionValue="returnValue" #multiselectRef
-      placeholder="Select {{ selectedCustomFilterkey }}" [showClear]="true"
-      (onClear)="onCustomFilterValuesChange($event)" (onChange)="onCustomFilterValuesChange($event)"
-      [appendTo]="'body'">
-    </p-multiSelect>
-  </div> -->
-  <!-- <div *ngIf="!showFilter && customFilters && isEditModeOn && !applyToAllEnabled" style="
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement
-      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilter()" matTooltip="Show Filter">
-    </button>
-  </div> -->
-  <!-- <p-dropdown *ngIf="showTimeDurationFilter && isEditModeOn" [options]="timePeriodOptions" [(ngModel)]="timePeriodValue" placeholder="Select Time"
-    [editable]="false" (onChange)="onTimeDurationChange($event)"></p-dropdown> -->
   <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
   display: flex;
   justify-content: center;
@@ -98,17 +57,7 @@
       (click)="toggleShowFilterValues()">
     </button>
   </div>
-  <!-- <div *ngIf="isEditModeOn"style="
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="hideWidget ? 'Show Widget' : 'Hide Widget'"
-      [appSvg]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'" [size]="'20'"
-      (click)="toggleHideWidget()">
-    </button>
-  </div> -->
+
   <div style="position: relative;">
     <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
       [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
@@ -117,10 +66,7 @@
       appSvg="assets/Outline/menu.svg" [size]="'20'"
       (click)="onContextMenuEvent($event)">
     </button>
-    <!-- <button *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="'Hide Filter Values'"
-    [appSvg]=" 'assets/Outline/cross.svg'"
-    (click)="toggleShowFilterValues()">
-    </button> -->
+
   </div>
  
 </div>

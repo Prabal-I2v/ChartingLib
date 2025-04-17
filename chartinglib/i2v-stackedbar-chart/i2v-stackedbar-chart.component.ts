@@ -22,7 +22,7 @@ export class I2vStackedbarChartComponent extends I2vChartsComponent {
     super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
 
     chartData.series = data.data.map((x) => {

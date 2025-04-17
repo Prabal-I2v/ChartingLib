@@ -42,7 +42,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   ngOnInit(): void {
     super.ngOnInit();
   }
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ name: x.label, data: x.data });

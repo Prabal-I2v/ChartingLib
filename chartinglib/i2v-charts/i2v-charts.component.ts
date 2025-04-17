@@ -5,7 +5,6 @@ import {
   EventEmitter,
   Input,
   OnInit,
-  output,
   Output,
   SimpleChanges,
 } from "@angular/core";
@@ -29,6 +28,7 @@ import { debounce } from "rxjs/operators";
 import { month } from "../Models/vehicle-icon-mapping";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { v4 as uuidv4 } from 'uuid';
+import { TableOutputModel } from "../Models/TableOutputModel";
 
 @Component({
   selector: "i2v-charts",
@@ -71,15 +71,24 @@ export abstract class I2vChartsComponent implements OnInit {
   private _chartData: ClientChartModel;
   @Input()
   set chartData(data: ChartsOutputModel) {
-    this._chartData = this.transformData(data);
+    this._chartData = this.transformChartData(data);
   }
   get chartData(): ClientChartModel {
     return this._chartData;
   }
 
-  constructor(private cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
-        // Generate and store a UUID when component is created
-        this.componentId = uuidv4();
+  private _tableData: TableOutputModel;
+  @Input()
+  set tableData(data: TableOutputModel) {
+    this._tableData = this.transformTableData(data);
+  }
+  get tableData(): TableOutputModel {
+    return this._tableData;
+  }
+
+  constructor(public cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
+    // Generate and store a UUID when component is created
+    this.componentId = uuidv4();
   }
 
   ngOnInit() {
@@ -103,7 +112,7 @@ export abstract class I2vChartsComponent implements OnInit {
       }
       if (this.widgetRequestModel.isDashboardFilterApplied) {
         this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
-      }else{
+      } else {
         this.isCustomFilterApplied = true;
       }
     } else {
@@ -120,7 +129,7 @@ export abstract class I2vChartsComponent implements OnInit {
       (!changes.isEditModeOn?.currentValue) {
       this.customFilterValues = { ...this.widgetRequestModel.customFilters };
       this.showFilterValues = false;
-      if(this.isCustomFilterApplied && this.applyToAllEnabled){
+      if (this.isCustomFilterApplied && this.applyToAllEnabled) {
         this.isCustomFilterApplied = false;
         this.widgetRequestModel.isDashboardFilterApplied = true;
         this.widgetResizeCallback(this.showFilterValues);
@@ -128,8 +137,7 @@ export abstract class I2vChartsComponent implements OnInit {
     }
   }
 
-  onShowFilterValuesChange()
-  {
+  onShowFilterValuesChange() {
     this.widgetResizeCallback(this.showFilterValues);
   }
   private setValueAsPerWidgetCustomFiltersValue(dashboardCustomFilterValue: ICustomFilter): void {
@@ -335,6 +343,16 @@ export abstract class I2vChartsComponent implements OnInit {
     }
   }
 
+  // Type guard functions
+  private isChartsOutputModel(data: any): data is ChartsOutputModel {
+    return data && 'labels' in data && 'data' in data;
+  }
+
+  private isTableOutputModel(data: any): data is TableOutputModel {
+    return data && 'columns' in data && 'rows' in data;
+  }
+
+
   // The actual API call is moved to this method
   private fetchDataFromServer(widgetRequestModel: Widget) {
     if (this.apiSubscription) {
@@ -344,13 +362,21 @@ export abstract class I2vChartsComponent implements OnInit {
     this.apiSubscription = this.chartingDataService
       .getChartingData(widgetRequestModel)
       .subscribe(
-        (data: ChartsOutputModel) => {
-          if (data && this.checkIfAnySeriesExists(data)) {
-            this.chartData = data;
-            this.dataExists = true;
-          } else {
-            this.dataExists = false;
+        // In your subscription handler
+        (data: ChartsOutputModel | TableOutputModel) => {
+          this.dataExists = false;
+
+          if (data) {
+            if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
+              this.chartData = data;
+              this.dataExists = true;
+            }
+            else if (this.isTableOutputModel(data)) {
+              this.tableData = data;
+              this.dataExists = true;
+            }
           }
+
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -358,18 +384,20 @@ export abstract class I2vChartsComponent implements OnInit {
           this.dataExists = false;
           this.isLoading = false;
           this.cd.detectChanges();
-        },
+        }
       );
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  // Chart transformation (your original logic)
+  public transformChartData(data: ChartsOutputModel): ClientChartModel {
     let isMonthData = false;
-    if (data.labels[0].key.toLowerCase() == "month") isMonthData = true;
+    if (data.labels[0]?.key.toLowerCase() === "month") isMonthData = true;
 
     const chartData = new ClientChartModel();
     chartData.series = data.data.map((x) => {
       return new ChartSeries({ name: x.label, data: x.data });
     });
+
     if (data.labels.length > 0) {
       if (isMonthData) {
         const monthData: any[] = [];
@@ -389,6 +417,19 @@ export abstract class I2vChartsComponent implements OnInit {
       });
     }
     return chartData;
+  }
+
+  // Table transformation
+  public transformTableData(data: TableOutputModel): TableOutputModel {
+    const clientModel = new TableOutputModel();
+
+    // Set headers from columns
+    clientModel.columns = [...data.columns];
+
+    // Transform rows
+    clientModel.rows = data.rows;
+
+    return clientModel;
   }
 
   createRule(
@@ -459,7 +500,7 @@ export abstract class I2vChartsComponent implements OnInit {
       this.debouncedRefreshSubscription.unsubscribe();
     }
 
-    if(this.refreshCallSubjectSubscription){
+    if (this.refreshCallSubjectSubscription) {
       this.refreshCallSubjectSubscription.unsubscribe();
     }
 
@@ -488,12 +529,11 @@ export abstract class I2vChartsComponent implements OnInit {
     return formattedDateTime;
   }
 
-  widgetResizeCallback(value : boolean)
-  {
-      this.cd.detectChanges();
-      const height = this.elementRef.nativeElement.offsetHeight;
-      const width = this.elementRef.nativeElement.offsetWidth;
-      this.widgetResizeCallbackEmittor.emit({"value" : value, "height": height, "width": width});
+  widgetResizeCallback(value: boolean) {
+    this.cd.detectChanges();
+    const height = this.elementRef.nativeElement.offsetHeight;
+    const width = this.elementRef.nativeElement.offsetWidth;
+    this.widgetResizeCallbackEmittor.emit({ "value": value, "height": height, "width": width });
   }
 
   onTimeDurationChanged(event: string) {

@@ -49,6 +49,9 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
 import { MatTooltip } from "@angular/material/tooltip";
 import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
 import { i2vContextMenuModule } from "@i2v-systems/context-menu";
+import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
+import { GetImagePipe } from "src/app/pipes/getImage.pipe";
+import { SharedModule } from "../../shared.module";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -72,11 +75,11 @@ import { i2vContextMenuModule } from "@i2v-systems/context-menu";
     I2vAreaChartComponent,
     DetailsWidgetComponent,
     I2vSankeyChartComponent,
-    CustomFilterDialogComponent
+    CustomFilterDialogComponent,
+    I2vGridComponent
   ],
   imports: [
     CommonModule,
-    FormsModule,
     // BrowserAnimationsModule,
     // EchartsxModule,
     // FusionChartsModule,
@@ -91,12 +94,12 @@ import { i2vContextMenuModule } from "@i2v-systems/context-menu";
     MultiSelectModule,
     DropdownModule,
     HttpClientModule,
-    i2vUtilityModule,
     MatBadgeModule,
     GridstackModule,
     MatTooltip,
     // NgxDaterangepickerMd,
-    i2vContextMenuModule
+    i2vContextMenuModule,
+    SharedModule
   ],
   exports: [
     // FusionChartComponent,
@@ -112,6 +115,7 @@ import { i2vContextMenuModule } from "@i2v-systems/context-menu";
     I2vLineChartComponent,
     I2vAreaChartComponent,
     I2vSankeyChartComponent,
+    I2vGridComponent,
     ChartsModule,
     LayoutModule,
     GridModule,

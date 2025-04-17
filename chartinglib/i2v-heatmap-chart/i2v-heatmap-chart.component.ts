@@ -25,7 +25,7 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
   //   return this.chartData.chartCategories[e.value] || "";
   // };
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
     chartData.series[0].data = [];
     data.data.forEach((x, i) => {

@@ -38,7 +38,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     this.dataExists = false;
     this.resultLabel = this.widgetRequestModel.donutConf.resultLabel;
     const chartData = new ClientChartModel();

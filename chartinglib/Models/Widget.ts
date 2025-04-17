@@ -52,7 +52,7 @@ export class WidgetConstructorProps {
   groupBy1?: groupByConf | null;
   groupBy2?: groupByConf | null;
   //It is used which column will be included in Charting Data Result
-  showableProperties: showablePropertyModel[];
+  showableProperties?: showablePropertyModel[];
   //It is used for showing label in chart like bar, column, stacked Charts eg. months need to be showed in y-axis
 
   showablePropertiesLabel?: showablePropertyLabelModel[];
@@ -96,6 +96,8 @@ export class WidgetConstructorProps {
   ColumnClubInRange?: ColumnClubInRange[]
   //used to hide and unhide widget
   isWidgetHidden?: boolean;
+
+  query? : string;
 }
 
 export abstract class Widget {
@@ -132,7 +134,7 @@ export abstract class Widget {
   clubbingAggregationType?: Enum_Method_Aggregation;
   isDistinct: boolean;
   isSelfCount: boolean;
-  allowRefresh: boolean;
+  allowRefresh: boolean
   refreshInterval: number;
   propertyFilters?: RuleSet;
   pagination?: boolean;
@@ -147,6 +149,7 @@ export abstract class Widget {
   isDashboardFilterApplied?: boolean;
   ColumnClubInRange?: ColumnClubInRange[]
   isWidgetHidden:boolean;
+  query? : string;
 
   private static getCurrentDayStart(): number {
     const now = new Date();
@@ -202,6 +205,7 @@ export abstract class Widget {
     this.isDashboardFilterApplied = props.isDashboardFilterApplied ?? true;
     this.ColumnClubInRange = props.ColumnClubInRange ?? null
     this.isWidgetHidden = props.isWidgetHidden ?? false;
+    this.query = props.query ?? null
   }
 }
 
@@ -235,7 +239,11 @@ export enum Enum_Entity {
   Fire_Detected,
   Smoke_Detected,
   Abandoned_Object_Detected,
-  Face_Recognition
+  Face_Recognition,
+  ServerStatus,
+  PipelinesStatus,
+  CameraConnected,
+  CameraDisconnected
 }
 
 export enum Enum_Method {

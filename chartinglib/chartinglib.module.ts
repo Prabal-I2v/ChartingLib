@@ -79,7 +79,6 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     DropdownModule,
     HttpClientModule,
     i2vUtilityModule,
-    
     // NgxDaterangepickerMd
   ],
   exports: [

@@ -40,7 +40,7 @@ export class WidgetConstructorProps {
   startTime?: number;
   //It is used for ending time for data
   endTime?: number;
-  //It is used for joining two table on basis on column and selecting column name and their display name 
+  //It is used for joining two table on basis on column and selecting column name and their display name
   joinableEntities?: JoinableEntity[];
   //It is used for applying base filter like time, it works same as custom filter but it need to be set from code not from ui (base filter is the event of which we want event like FRS, ANPR, ATCC, it is basically used when we have multiple analytic data in same table)
   baseFilter?: RuleSet;
@@ -59,7 +59,7 @@ export class WidgetConstructorProps {
   //It is used for club time like club month for multiple years
   clubbingTime?: boolean;
 
-  //It only includes column to be club if any field name is passed, 
+  //It only includes column to be club if any field name is passed,
   // else it is used for get aggreagtion on client side based on value of isAnyMultiValuedColumn
   ClubbingAggregationType?: Enum_Method_Aggregation;
 
@@ -240,10 +240,10 @@ export enum Enum_Entity {
   Smoke_Detected,
   Abandoned_Object_Detected,
   Face_Recognition,
-  ServerStatus,
-  PipelinesStatus,
-  CameraConnected,
-  CameraDisconnected
+  Server_Status,
+  Pipeline_State,
+  DEVICE_CONNECTED,
+  DEVICE_DISCONNECTED
 }
 
 export enum Enum_Method {

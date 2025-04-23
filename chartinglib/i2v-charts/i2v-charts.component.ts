@@ -486,9 +486,11 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.interval) {
       clearInterval(this.interval);
     }
-    this.interval = setInterval(() => {
-      this.getDataFromServer(this.widgetRequestModel);
-    }, this.widgetRequestModel.refreshInterval * 1000);
+    if (this.widgetRequestModel.refreshInterval != -1) {
+      this.interval = setInterval(() => {
+        this.getDataFromServer(this.widgetRequestModel);
+      }, this.widgetRequestModel.refreshInterval * 1000);
+    }
   }
 
   ngOnDestroy() {

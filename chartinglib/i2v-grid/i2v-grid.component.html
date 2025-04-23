@@ -26,7 +26,7 @@
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled">
-        <div *ngIf="selectedColumnDefs.length == 0" style="display : flex; gap : 10px">
+        <div *ngIf="selectedColumnDefs.length > 0" style="display : flex; gap : 10px">
           <p-multiSelect class="column-multiselect" [(ngModel)]="selectedColumnDefs"
             [options]="SelectColumnFilteredList | async" optionLabel="headerName" placeholder="Select Columns"
             (onChange)="updateColumns()"></p-multiSelect>
@@ -91,7 +91,7 @@
       </div>
 
     </div>
-    <div *ngIf="isModel && !isLoading && dataExists && selectedColumnDefs.length > 0" class="top">
+    <div *ngIf="isModel && !isLoading && dataExists && selectedColumnDefs.length > 0" class="top" style="height: 100%;">
       <app-kendo-grid #Grid [data]="tableData.rows.events" [configuration]="configuration" [cameraNames]="[]"
         (columnChanged)="columnChanged($event)"></app-kendo-grid>
     </div>

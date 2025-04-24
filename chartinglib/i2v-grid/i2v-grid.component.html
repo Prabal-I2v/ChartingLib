@@ -26,15 +26,15 @@
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled">
-        <div *ngIf="selectedColumnDefs.length > 0" style="display : flex; gap : 10px">
+        <div *ngIf="columnDefs.length>0" style="display : flex; gap : 10px">
           <p-multiSelect class="column-multiselect" [(ngModel)]="selectedColumnDefs"
             [options]="SelectColumnFilteredList | async" optionLabel="headerName" placeholder="Select Columns"
             (onChange)="updateColumns()"></p-multiSelect>
 
-            <p-dropdown 
-            [options]="pageLimitOptions" 
-            [(ngModel)]="pageLimit" 
-            placeholder="Page Limit" 
+            <p-dropdown
+            [options]="pageLimitOptions"
+            [(ngModel)]="pageLimit"
+            placeholder="Page Limit"
             (onChange)="onPageLimitChange($event)"
             styleClass="i2v-dropdown primary-outline medium">
           </p-dropdown>
@@ -92,7 +92,7 @@
 
     </div>
     <div *ngIf="isModel && !isLoading && dataExists && selectedColumnDefs.length > 0" class="top" style="height: 100%;">
-      <app-kendo-grid #Grid [data]="tableData.rows.events" [configuration]="configuration" [cameraNames]="[]"
+      <app-kendo-grid #Grid [data]="tableData.rows.events" [configuration]="configuration" [cameraNames]="videoSources"
         (columnChanged)="columnChanged($event)"></app-kendo-grid>
     </div>
 

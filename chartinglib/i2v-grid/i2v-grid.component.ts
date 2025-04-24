@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, Input, ViewChild} from '@angular/core';
 import { ChartingDataService } from '../charting-data.service';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import moment from 'moment';
@@ -15,6 +15,7 @@ import { TableOutputModel } from '../Models/TableOutputModel';
 })
 export class I2vGridComponent extends I2vChartsComponent {
 
+  @Input() videoSources = []
   pageLimit = 100;
   @ViewChild('Grid') Grid: KendoGridComponent;
   columnToSelected: ColumnModel[] = [];
@@ -36,11 +37,20 @@ export class I2vGridComponent extends I2vChartsComponent {
     this.configuration.isSpecific = true;
     this.configuration.noHeader = true;
     this.configuration.pageLimit = this.pageLimit;
-    this.configuration.pagination = true;
+    this.configuration.pagination = {
+      info: true,  // This is what makes the "1-x of y" text visible
+      type: 'numeric',
+    };
+    
+    ;
+    this.configuration.length = 0;
   }
 
   ngOnInit(): void {
     super.ngOnInit();
+    setInterval(() => {
+      console.log(this.configuration.length)
+    }, 1000);
   }
 
   UnixToDateConverter(unix) {
@@ -69,6 +79,7 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   public pageLimitOptions: any[] = [
+    { label: '10', value: 10 },
     { label: '50', value: 50 },
     { label: '100', value: 100 },
     { label: '200', value: 200 },
@@ -80,7 +91,9 @@ export class I2vGridComponent extends I2vChartsComponent {
 
   onPageLimitChange(event)
   {
-    this.configuration.pageLimit = event.target.value
+    this.configuration.pageLimit = event.value
+    this.configuration = JSON.parse(JSON.stringify(this.configuration));
+    this.cd.detectChanges();
   }
 
   sortColumns() {

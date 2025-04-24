@@ -37,10 +37,7 @@ export class I2vGridComponent extends I2vChartsComponent {
     this.configuration.isSpecific = true;
     this.configuration.noHeader = true;
     this.configuration.pageLimit = this.pageLimit;
-    this.configuration.pagination = {
-      info: true,  // This is what makes the "1-x of y" text visible
-      type: 'numeric',
-    };
+    this.configuration.pagination = true
     
     ;
     this.configuration.length = 0;

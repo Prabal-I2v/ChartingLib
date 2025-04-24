@@ -8,6 +8,10 @@ import { I2vChartHeaderComponent } from '../i2v-chart-header/i2v-chart-header.co
   styleUrl: './custom-filter-dialog.component.css'
 })
 export class CustomFilterDialogComponent {
+  showTimeFilter: boolean = true;
+  showRefreshInterval: boolean = true;
+  showEntity : boolean = true;
+  showTimeDurationFilter: boolean = false;
   dateRange: Date[];
   timeFilterValue: string;
   refreshIntervalValue: number;
@@ -19,7 +23,6 @@ export class CustomFilterDialogComponent {
   customFilterKeys: string[];
   enableCustomTime: boolean = false;
   disableTimeFilter: boolean;
-  showTimeDurationFilter: boolean = false;
   private parentComponent: I2vChartHeaderComponent;
   readonly timePeriodOptions = ["Month", "Week", "Year", "Day"];
   constructor(

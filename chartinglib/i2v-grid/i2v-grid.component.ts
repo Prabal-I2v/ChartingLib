@@ -45,9 +45,6 @@ export class I2vGridComponent extends I2vChartsComponent {
 
   ngOnInit(): void {
     super.ngOnInit();
-    setInterval(() => {
-      console.log(this.configuration.length)
-    }, 1000);
   }
 
   UnixToDateConverter(unix) {

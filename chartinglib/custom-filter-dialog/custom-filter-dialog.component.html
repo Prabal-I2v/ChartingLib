@@ -6,20 +6,20 @@
       (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
     </p-calendar>
     
-    <p-dropdown *ngIf="!disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
+    <p-dropdown *ngIf="showTimeFilter || disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
       placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
     </p-dropdown>
   
-    <p-dropdown *ngIf="refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
+    <p-dropdown *ngIf="showRefreshInterval || refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
       placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
       (onChange)="setIntervalTime($event)" [appendTo]="'body'">
     </p-dropdown>
   
-    <p-dropdown [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+    <p-dropdown *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
       [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
     </p-dropdown>
   
-    <p-multiSelect *ngIf="selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
+    <p-multiSelect *ngIf="showEntity && selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
       [(ngModel)]="selectedFilterValues"
       optionLabel="displayName" optionValue="returnValue"
       placeholder="Select {{ selectedCustomFilterkey }}"

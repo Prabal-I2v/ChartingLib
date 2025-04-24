@@ -52,6 +52,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   isContexMenuOpen:boolean = false;
   hideWidgetMsg: string = "Hide Widget";
   position = { top: 0, left: 0 };
+  @Input() showTimeFilter: boolean = true;
+  @Input() showRefreshInterval: boolean = true;
+  @Input() showEntity: boolean = true;
   @Input() applyToAllEnabled: boolean = false;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
@@ -87,6 +90,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   // Refresh interval options
   readonly refreshInterval: CustomFilterValueModel[] = [
+    { displayName: "No Refresh", returnValue: -1 },
     { displayName: "30sec", returnValue: 30 },
     { displayName: "1min", returnValue: 60 },
     { displayName: "2min", returnValue: 120 },
@@ -440,7 +444,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       customFilterKeys: this.customFilterKeys,
       enableCustomTime: this.enableCustomTime,
       disableTimeFilter: this.disableTimeFilter,
-      showTimeDurationFilter : this.showTimeDurationFilter
+      showRefreshInterval : this.showRefreshInterval,
+      showTimeFilter: this.showTimeFilter,
+      showEntity : this.showEntity,
     };
   
     const dialogData: CommonModalData = {

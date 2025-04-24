@@ -27,7 +27,7 @@
         (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (timePeriodOutput)="onTimeDurationChanged($event)" 
-        [applyToAllEnabled]="applyToAllEnabled"></i2v-chart-header>
+        [applyToAllEnabled]="applyToAllEnabled" [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval"></i2v-chart-header>
     </div>
     <ng-container *ngIf="isModel && isLoading">
       <div style="

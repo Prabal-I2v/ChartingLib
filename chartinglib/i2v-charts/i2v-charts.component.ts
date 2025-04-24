@@ -40,6 +40,9 @@ export abstract class I2vChartsComponent implements OnInit {
   isLoading: boolean;
   dataExists: boolean;
   isCustomFilterApplied: boolean = false;
+  @Input() showEntity: boolean = true;
+  @Input() showTimeFilter: boolean = true;
+  @Input() showRefreshInterval: boolean = true;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();

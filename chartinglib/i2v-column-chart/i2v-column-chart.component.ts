@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
   SimpleChanges,
 } from "@angular/core";
@@ -14,20 +15,14 @@ import { ChartingDataService } from "../charting-data.service";
 })
 export class I2vColumnChartComponent extends I2vChartsComponent {
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super();
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+   super.ngOnInit();
   }
 }

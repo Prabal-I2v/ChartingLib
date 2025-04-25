@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
 import { month } from "../Models/vehicle-icon-mapping";
-import { Enum_TimePeriod } from "../Models/WidgetRequestModel";
+import { Enum_TimePeriod } from "../Models/Widget";
 
 @Component({
   selector: "i2v-stackedcolumn-chart",
@@ -13,21 +13,15 @@ import { Enum_TimePeriod } from "../Models/WidgetRequestModel";
 })
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super();
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+   super.ngOnInit();
   }
 
   transformData(data: ChartsOutputModel): ClientChartModel {

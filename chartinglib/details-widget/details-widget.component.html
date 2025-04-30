@@ -1,0 +1,49 @@
+<!-- details-widget.component.html -->
+<div style="height: 100%">
+  <ng-container *ngIf="!commonWidgetCustomFilter">
+    <div style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    ">
+      <span style="
+        width: 50px;
+        height: 50px;
+        background: url(assets/gifs/horizontal-loader.gif) no-repeat center;
+        background-size: 100% 100%;
+      "></span>
+    </div>
+  </ng-container>
+  <div class="details-widget" *ngIf="commonWidgetCustomFilter">
+    <div class="detail-row" *ngIf="commonWidgetCustomFilter['Time']">
+      <label class="detail-label">Start Time:</label>
+      <span class="detail-value time-value">{{commonWidgetCustomFilter['Time'][0]?.returnValue?.startTime | formatTime:
+        'h:mm a'}}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="commonWidgetCustomFilter['Time']">
+      <label class="detail-label">End Time:</label>
+      <span class="detail-value time-value">{{commonWidgetCustomFilter['Time'][0]?.returnValue?.endTime | formatTime:
+        'h:mm a'}}</span>
+    </div>
+
+    <div class="detail-row" *ngIf="commonWidgetCustomFilter['RefreshInterval']">
+      <label class="detail-label">Refresh Interval Time:</label>
+      <span class="detail-value time-value">{{commonWidgetCustomFilter['RefreshInterval'][0]?.returnValue}} secs</span>
+    </div>
+
+    <div class="detail-row" *ngIf="commonWidgetCustomFilter['Video Sources']">
+      <!-- <label class="detail-label">Video Sources:</label>
+      <div class="source-container">
+        <ng-container
+          *ngFor="let source of commonWidgetCustomFilter['Video Sources'] | showVideoSourceName; let last = last; let i = index">
+          <span class="detail-value source-value">
+            {{source}}{{!last ? ', ' : ''}}
+          </span>
+        </ng-container>
+      </div> -->
+      <span class="detail-label">{{resourceLength}} Video Sources Attached</span>
+    </div>
+  </div>
+</div>

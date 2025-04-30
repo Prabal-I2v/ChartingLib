@@ -11,7 +11,18 @@ export const eventIconMapping = {
   AUTO_RICKSHAW: "",
   VAN: "",
   TRACTOR: "",
+  ANGRY: "assets/Outline/emoji-sad.svg",
+  HAPPY : "assets/Outline/emoji-happy.svg",
+  SAD : "assets/Outline/emoji-sad.svg",
+  DISGUSTING : "assets/Outline/emoji-disgusting.svg",
 };
+
+export const emotionIconColorMapping = {
+  ANGRY: "red",
+  HAPPY : "green",
+  SAD : "blue",
+  DISGUSTING : "yellow",
+}
 export enum month {
   Jan,
   Feb,

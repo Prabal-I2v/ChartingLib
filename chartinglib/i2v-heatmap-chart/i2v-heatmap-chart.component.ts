@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
@@ -11,27 +11,21 @@ import { ChartingDataService } from "../charting-data.service";
 })
 export class I2vHeatmapChartComponent extends I2vChartsComponent {
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super();
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+   super.ngOnInit();
   }
   // public yAxisLabelContent = (e: { value: string }): string => {
   //   return this.chartData.chartCategories[e.value] || "";
   // };
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
     chartData.series[0].data = [];
     data.data.forEach((x, i) => {

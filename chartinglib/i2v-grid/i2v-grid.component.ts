@@ -16,7 +16,7 @@ import { TableOutputModel } from '../Models/TableOutputModel';
 export class I2vGridComponent extends I2vChartsComponent {
 
   @Input() videoSources = []
-  pageLimit = 100;
+  pageLimit = 300;
   @ViewChild('Grid') Grid: KendoGridComponent;
   columnToSelected: ColumnModel[] = [];
   configuration: GridInputFormat = new GridInputFormat();
@@ -37,10 +37,11 @@ export class I2vGridComponent extends I2vChartsComponent {
     this.configuration.isSpecific = true;
     this.configuration.noHeader = true;
     this.configuration.pageLimit = this.pageLimit;
-    this.configuration.pagination = true
-    
-    ;
+    this.configuration.pagination = true;
     this.configuration.length = 0;
+    if(this.Grid){
+    this.Grid.skip = 0;
+    }
   }
 
   ngOnInit(): void {
@@ -57,6 +58,7 @@ export class I2vGridComponent extends I2vChartsComponent {
     //var date = new Date(unix);
     //return date.toLocaleString();
   }
+
   GetImageFieldValue(row, field) {
     let value;
     try {
@@ -73,7 +75,6 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   public pageLimitOptions: any[] = [
-    { label: '10', value: 10 },
     { label: '50', value: 50 },
     { label: '100', value: 100 },
     { label: '200', value: 200 },
@@ -87,6 +88,9 @@ export class I2vGridComponent extends I2vChartsComponent {
   {
     this.configuration.pageLimit = event.value
     this.configuration = JSON.parse(JSON.stringify(this.configuration));
+    if(this.Grid && this.Grid.kendoGrid){
+      this.Grid.kendoGrid.skip = 0;
+      }
     this.cd.detectChanges();
   }
 

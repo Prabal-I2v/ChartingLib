@@ -7,6 +7,7 @@ import { GridInputFormat } from 'src/app/Models/GridInputFormat.model';
 import { KendoGridComponent } from 'src/app/kendo-grid/kendo-grid.component';
 import { ReplaySubject } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
+import { totalData } from 'src/app/modules/report/attendance-report/attendance-report.model';
 
 @Component({
   selector: 'i2v-table-grid',
@@ -90,6 +91,9 @@ export class I2vGridComponent extends I2vChartsComponent {
     this.configuration = JSON.parse(JSON.stringify(this.configuration));
     if(this.Grid && this.Grid.kendoGrid){
       this.Grid.kendoGrid.skip = 0;
+      // Extract fixed number of events without modifying the original array
+      var limitedEvents = this.tableData.rows.events.slice(0, this.configuration.pageLimit);
+      this.Grid.gridView.data = limitedEvents
       }
     this.cd.detectChanges();
   }

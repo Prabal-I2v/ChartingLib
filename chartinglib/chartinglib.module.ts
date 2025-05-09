@@ -52,6 +52,8 @@ import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
 import { GetImagePipe } from "src/app/pipes/getImage.pipe";
 import { SharedModule } from "../../shared.module";
+import { WidgetFormComponent } from './widget-form/widget-form.component';
+import { AccordionModule } from 'primeng/accordion';
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -76,7 +78,8 @@ import { SharedModule } from "../../shared.module";
     DetailsWidgetComponent,
     I2vSankeyChartComponent,
     CustomFilterDialogComponent,
-    I2vGridComponent
+    I2vGridComponent,
+    WidgetFormComponent
   ],
   imports: [
     CommonModule,
@@ -99,7 +102,8 @@ import { SharedModule } from "../../shared.module";
     MatTooltip,
     // NgxDaterangepickerMd,
     i2vContextMenuModule,
-    SharedModule
+    SharedModule,
+    AccordionModule
   ],
   exports: [
     // FusionChartComponent,
@@ -127,7 +131,9 @@ import { SharedModule } from "../../shared.module";
     FormatTimePipe,
     ShowVideoSourceNamePipe,
     DetailsWidgetComponent,
-    GridstackModule
+    GridstackModule,
+    WidgetFormComponent,
+    
 
   ],
 })

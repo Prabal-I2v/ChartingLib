@@ -2,8 +2,6 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  Input,
-  SimpleChanges,
 } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";

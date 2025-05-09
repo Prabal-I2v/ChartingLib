@@ -1,4 +1,4 @@
-<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: fit-content; min-width: fit-content;background: white;">
+<div [ngStyle]="{ background:widgetRequestModel?.WidgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: fit-content; min-width: fit-content;background: white;">
   <div style="display: flex; flex-direction: column; width: 100%; flex: 1; padding: 16px; gap: 10px; overflow-x: auto; min-height: fit-content;">
     <div style=" display: flex; justify-items: center; align-items: center; gap: 10px; width: 100%;">
       <div *ngIf="!isModel" class="data-container" style="
@@ -71,8 +71,8 @@
               {{ PropValue }}
             </div>
           </div>
-          <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
-            [fill-color]="ResSvgIconColor" [size]="'60'"></div>
+          <!-- <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
+            [fill-color]="ResSvgIconColor" [size]="'60'"></div> -->
           <img style="height: 60px; width: 60px; border-radius: 20px;" *ngIf="propImage" [src]="propImage" (click)="showDetail()">
         </div>
       </div>
@@ -87,7 +87,7 @@
         }">
       </kendo-sparkline>
     </div>
-    <div *ngIf="
+    <!-- <div *ngIf="
         isModel &&
         !isLoading &&
         dataExists &&
@@ -112,10 +112,10 @@
       ? widgetRequestModel.groupBy1.mainColumn
       : widgetRequestModel.groupBy2.mainColumn
       }}
-    </div>
+    </div> -->
   </div>
   <div *ngIf="showFilterValues" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
+    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
     </app-details-widget>
   </div>
 </div>

@@ -7,8 +7,8 @@ import {
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
-import { Enum_Method_Aggregation } from "../Models/Widget";
 import { DonutChartWidget } from "../Models/widgetRequestModel/DonutChartRequestModel";
+import { Enum_Method_Aggregation } from "../Models/enums/enums";
 
 @Component({
   selector: "i2v-donut-chart",

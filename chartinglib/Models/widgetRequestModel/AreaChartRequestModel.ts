@@ -1,10 +1,11 @@
-import { Enum_WidgetType, Widget, WidgetConstructorProps } from "../Widget";
+import { ThreeDimensionWidget, ThreeDimensionWidgetConstructorProps, TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../dimension-widgets";
+import { Enum_WidgetType } from "../enums/enums";
 
-export class AreaChartWidget extends Widget {
-    constructor(params: WidgetConstructorProps) {
+export class AreaChartWidget extends TwoDimensionWidget {
+    constructor(params: TwoDimensionWidgetConstructorProps) {
         // Call the parent constructor with the params
         super({
-          widgetType: Enum_WidgetType.AreaChart,  // Set default widget type
+          widgetType: Enum_WidgetType.AreaChart,
           ...params  // Allow overriding any properties
         });
       }

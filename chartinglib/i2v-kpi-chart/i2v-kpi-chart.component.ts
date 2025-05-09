@@ -3,9 +3,9 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
-import { Enum_Method_Aggregation } from "../Models/Widget";
 import { emotionIconColorMapping, eventIconMapping } from "../Models/vehicle-icon-mapping";
 import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetRequestModel";
+import { Enum_Method_Aggregation } from "../Models/enums/enums";
 
 // export enum RiseLevel {
 //   Increase,
@@ -57,8 +57,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
 
     //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
-    if (this.widgetRequestModel.clubbingAggregationType != null) {
-      if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
+    if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType != null) {
+      if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
         const greatestSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "greatest";
         });
@@ -71,7 +71,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.setData(chartData.series[maxValuesSeriesIndex], 0);
         this.PropName = chartData.series[maxValuesSeriesIndex].name;
       }
-      else if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Lowest) {
+      else if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Lowest) {
         const lowestSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "lowest";
         });
@@ -86,7 +86,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.PropName = chartData.series[minValuesSeriesIndex].name;
       }
 
-      else if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Total) {
+      else if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Total) {
         const totalSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "total";
         });
@@ -111,21 +111,21 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.setData(chartData.series[0]);
     }
 
-    if (this.widgetRequestModel.findResultSvgIcon == true) {
-      //svg icon as per result
-      var uppercaseRes = chartData.series[0].name.toUpperCase();
-      if(this.widgetRequestModel.kpiConf)
-      {
-        uppercaseRes =  this.PropName.toUpperCase();
-        if(chartData.series[0].name.toUpperCase() == "EMOTION"){
-          this.ResSvgIconColor = emotionIconColorMapping[uppercaseRes]
-        }
+    // if (this.widgetRequestModel.findResultSvgIcon == true) {
+    //   //svg icon as per result
+    //   var uppercaseRes = chartData.series[0].name.toUpperCase();
+    //   if(this.widgetRequestModel.kpiConf)
+    //   {
+    //     uppercaseRes =  this.PropName.toUpperCase();
+    //     if(chartData.series[0].name.toUpperCase() == "EMOTION"){
+    //       this.ResSvgIconColor = emotionIconColorMapping[uppercaseRes]
+    //     }
           
-      }
+    //   }
       
-      this.ResSvgIcon = eventIconMapping[uppercaseRes];
+    //   this.ResSvgIcon = eventIconMapping[uppercaseRes];
        
-    }
+    // }
     return chartData;
   }
 

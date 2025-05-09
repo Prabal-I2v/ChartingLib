@@ -1,0 +1,771 @@
+<!-- widget-form.component.html -->
+<div class="widget-form-container">
+  <!-- Loader while form is initializing -->
+  <div *ngIf="!isFormInitialized" class="loader-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 3rem"></i>
+    <p>Loading form data...</p>
+  </div>
+
+  <form [formGroup]="widgetForm" *ngIf="isFormInitialized">
+    <p-accordion [activeIndex]="currentStep - 1" (onOpen)="accordionTabOpened($event)">
+
+      <!-- Step 1: Choose Approach - Direct Properties or Widget Type -->
+      <p-accordionTab [disabled]="false">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">1</span>
+            <h2>Choose Configuration Approach</h2>
+            <span class="step-status" *ngIf="isStepComplete(1)">✓</span>
+          </div>
+        </ng-template>
+
+        <div class="form-group">
+          <label>Configuration Approach</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" formControlName="configurationApproach" value="widgetFirst"
+                (change)="onConfigurationApproachChange()">
+              Select Widget Type First
+            </label>
+            <label>
+              <input type="radio" formControlName="configurationApproach" value="propertiesFirst"
+                (change)="onConfigurationApproachChange()">
+              Select Properties First
+            </label>
+          </div>
+        </div>
+
+        <!-- Widget Type Selection (if widgetFirst approach) -->
+        <div *ngIf="widgetForm.get('configurationApproach').value === 'widgetFirst'">
+          <div class="form-group">
+            <label for="widgetType">Widget Type</label>
+            <select id="widgetType" formControlName="widgetType" class="form-control" (change)="onWidgetTypeChange()">
+              <option [ngValue]="null">Select Widget Type</option>
+              <option *ngFor="let type of widgetTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(1)"
+            (click)="goToNextStep()">Next</button>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 2: Display Configuration -->
+      <p-accordionTab [disabled]="!isStepComplete(1)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">2</span>
+            <h2>Display Configuration</h2>
+            <span class="step-status" *ngIf="isStepComplete(2)">✓</span>
+          </div>
+        </ng-template>
+
+        <div formGroupName="displayConfig">
+          <div class="form-group">
+            <label for="heading">Widget Title</label>
+            <input type="text" id="heading" formControlName="heading" class="form-control" (input)="onHeadingChange()">
+          </div>
+
+          <div class="form-group">
+            <label for="subHeading">Sub Title</label>
+            <input type="text" id="subHeading" formControlName="subHeading" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="color">Theme Color</label>
+            <input type="color" id="color" formControlName="color" class="form-control">
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">Previous</button>
+          <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(2)"
+            (click)="goToNextStep()">Next</button>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 3: Data Input Configuration -->
+      <p-accordionTab [disabled]="!isStepComplete(2)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">3</span>
+            <h2>Data Input Configuration & Filters</h2>
+            <span class="step-status" *ngIf="isStepComplete(3)">✓</span>
+          </div>
+        </ng-template>
+
+
+        <div class="form-group">
+          <label>Entity Configuration</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" formControlName="entityConfigType" value="single"
+                (change)="onEntityConfigTypeChange()">
+              Single Entity
+            </label>
+            <label>
+              <input type="radio" formControlName="entityConfigType" value="multiple"
+                (change)="onEntityConfigTypeChange()">
+              Multiple Entities
+            </label>
+          </div>
+        </div>
+
+        <div formGroupName="dataInputConfig">
+
+          <div class="form-group">
+            <label for="entityTypeSelect">Select Entity Type</label>
+            <p-dropdown id="entityTypeSelect" [options]="entityTypes" formControlName="entityTypeSelect" optionLabel="label"
+              optionValue="value" [filter]="true" placeholder="Choose an Entity Type" appendTo="body"
+              (onChange)="onEntityTypeSelectChange($event)">
+            </p-dropdown>
+          </div>
+
+          <!-- Aggregation Method -->
+          <div class="form-group">
+            <label for="method">Aggregation Method</label>
+            <select id="method" formControlName="method" class="form-control"
+              (change)="aggregationMethodChange($event)">
+              <option
+                *ngFor="let method of widgetForm.get('entityConfigType').value === 'single' ? singleEntityAggregationMethods : multipleEntitiesAggregationMethods"
+                [value]="method.value">
+                {{ method.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="isDistinct">
+              <input type="checkbox" id="isDistinct" formControlName="isDistinct">
+              Use Distinct Values
+            </label>
+          </div>
+
+          <!-- Single Entity Configuration -->
+          <div *ngIf="widgetForm.get('entityConfigType').value === 'single'">
+           
+            <div class="form-group">
+              <label for="entitySelect">Select Entity</label>
+              <p-dropdown id="entitySelect" [options]="selectedEntites" formControlName="entitySelect" optionLabel="label"
+                optionValue="value" [filter]="true" placeholder="Choose an Entity" appendTo="body"
+                (onChange)="onEntitySelectChange($event)">
+              </p-dropdown>
+            </div>
+
+            <!-- Properties Selection for Single Entity -->
+            <div class="form-group" *ngIf="widgetForm.get('dataInputConfig.entitySelect').value">
+              
+              <!-- <ng-container *ngIf="widgetForm.get('dataInputConfig.method').value == Enum_method.Count">
+                <label>Field Names</label>
+                <p-dropdown [options]="entityProperties" formControlName="fieldNames" optionLabel="name" [filter]="true"
+                  placeholder="Select Property" appendTo="body" (onChange)="onFieldNamesChange($event)">
+                </p-dropdown> 
+              </ng-container> -->
+              <ng-container *ngIf="widgetForm.get('dataInputConfig.method').value != Enum_method.Count">
+                <label>Field Names</label>
+                <p-multiSelect [options]="entityProperties" formControlName="fieldNames" optionLabel="name"
+                  [filter]="true" placeholder="Select Properties" appendTo="body" display="chip"
+                  (onChange)="onFieldNamesChange($event)">
+                </p-multiSelect>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Multiple Entities Configuration -->
+          <div *ngIf="widgetForm.get('entityConfigType').value === 'multiple'">
+            <div class="form-group">
+              <label for="entities">Select Entities</label>
+              <p-multiSelect id="entities" [options]="selectedEntites" formControlName="entities" optionLabel="label"
+                optionValue="value" [filter]="true" placeholder="Choose Entities" appendTo="body" display="chip"
+                (onChange)="onEntitiesChange($event)">
+              </p-multiSelect>
+            </div>
+
+            <!-- Common properties for multiple entities -->
+            <!-- <div class="form-group" *ngIf="widgetForm.get('dataInputConfig.entities').value?.length > 1">
+              <label for="commonProperties">Common Properties</label>
+              <ng-container *ngIf="widgetForm.get('dataInputConfig.method').value == Enum_method.Count">
+                <p-dropdown [options]="commonProperties" formControlName="commonProperties" optionLabel="name"
+                  [filter]="true" placeholder="Select Common Property" appendTo="body"
+                  (onChange)="onCommonPropertiesChange($event)">
+                </p-dropdown>
+              </ng-container>
+              <ng-container *ngIf="widgetForm.get('dataInputConfig.method').value != Enum_method.Count">
+                <p-multiSelect [options]="commonProperties" formControlName="commonProperties" optionLabel="name"
+                  [filter]="true" placeholder="Select Common Properties" appendTo="body" display="chip"
+                  (onChange)="onCommonPropertiesChange($event)">
+                </p-multiSelect>
+              </ng-container>
+            </div> -->
+          </div>
+
+          <!-- Group By Configuration -->
+          <div class="form-group">
+            <div class="group-by-header">
+              <input type="checkbox" id="enableGroupBy1" [checked]="enableGroupBy1" (change)="toggleGroupBy1($event)">
+              <label for="enableGroupBy1">Enable Group By 1</label>
+            </div>
+
+            <div class="group-by-container" *ngIf="enableGroupBy1">
+              <p-dropdown [options]="groupByTypes" [(ngModel)]="groupBy1SelectionType"
+                [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
+                placeholder="Select Group By Type" (onChange)="onSelectGroupByType(1, $event)">
+              </p-dropdown>
+
+              <p-dropdown *ngIf="groupBy1SelectionType === 'field'" [options]="widgetForm.get('entityConfigType').value === 'multiple' ? commonProperties : getAllAvailableProperties()"
+                optionLabel="columnName" [ngModel]="groupBy1Option?.name" [filter]="true"
+                placeholder="Select a Property" (onChange)="onGroupBy1Change($event)">
+              </p-dropdown>
+
+              <p-dropdown *ngIf="groupBy1SelectionType === 'time'" [options]="timeGroupingOptions"
+                [(ngModel)]="selectedTimeGrouping1" [ngModelOptions]="{standalone: true}" optionLabel="label"
+                optionValue="value" (onChange)="updateTimeGrouping(1, $event)">
+              </p-dropdown>
+            </div>
+          </div>
+
+          <!-- Secondary Group By -->
+          <div class="form-group" *ngIf="enableGroupBy1">
+            <div class="group-by-header">
+              <input type="checkbox" id="enableGroupBy2" [checked]="enableGroupBy2" (change)="toggleGroupBy2($event)">
+              <label for="enableGroupBy2">Enable Group By 2</label>
+            </div>
+
+            <div class="group-by-container" *ngIf="enableGroupBy2">
+              <p-dropdown [options]="groupByTypes" [(ngModel)]="groupBy2SelectionType"
+                [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
+                placeholder="Select Group By Type" (onChange)="onSelectGroupByType(2, $event)">
+              </p-dropdown>
+
+              <p-dropdown *ngIf="groupBy2SelectionType === 'field'" [options]="widgetForm.get('entityConfigType').value === 'multiple' ? commonProperties : getAllAvailableProperties()"
+                [ngModel]="groupBy2Option?.name" optionLabel="columnName" [filter]="true"
+                placeholder="Select a Property" (onChange)="onGroupBy2Change($event)">
+              </p-dropdown>
+
+              <p-dropdown *ngIf="groupBy2SelectionType === 'time'" [options]="timeGroupingOptions"
+                [(ngModel)]="selectedTimeGrouping2" [ngModelOptions]="{standalone: true}" optionLabel="label"
+                optionValue="value" (onChange)="updateTimeGrouping(2, $event)">
+              </p-dropdown>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property Filters Section -->
+        <div class="property-filters" formGroupName="filterConfig" *ngIf="widgetForm.get('dataInputConfig.entitySelect').value || widgetForm.get('dataInputConfig.entities').value?.length > 1">
+          <h3>Property Filters</h3>
+          {{ruleData | json}}
+          <lib-query-builder
+                  style="padding-right: 6px; height: 100%"
+                  [config]="config"
+                  [ngModel]="ruleData"
+                  [ngModelOptions]="{ standalone: true }"
+                  [allowRuleset]="true"
+                  name="name"
+                >
+                  <ng-container
+                    *queryButtonGroup="
+                      let ruleset;
+                      let addRule = addRule;
+                      let addRuleSet = addRuleSet;
+                      let removeRuleSet = removeRuleSet
+                    "
+                  >
+                    <div style="display: flex; gap: 12px; margin-top: 1px">
+                      <button
+                        class="flex-row-center-center i2v-btn-icon medium primary-outline"
+                        (click)="addRule()"
+                        libSvgElement
+                        [appSvg]="'assets/Outline/plus.svg'"
+                        matTooltip="Add rule"
+                      ></button>
+                      <button
+                        class="flex-row-center-center i2v-btn-icon medium primary-outline"
+                        *ngIf="addRuleSet"
+                        (click)="addRuleSet()"
+                        libSvgElement
+                        [appSvg]="'assets/Outline/plus-multiple.svg'"
+                        matTooltip="Add rule set"
+                      ></button>
+                      <button
+                        class="flex-row-center-center i2v-btn-icon medium tertiary-danger"
+                        *ngIf="removeRuleSet"
+                        (click)="removeRuleSet()"
+                        libSvgElement
+                        [appSvg]="'assets/Outline/trash.svg'"
+                        matTooltip="Remove rule set"
+                      ></button>
+                    </div>
+                  </ng-container>
+                  <ng-container
+                    *querySwitchGroup="
+                      let ruleset;
+                      let onChange = onChange;
+                      let index = i
+                    "
+                  >
+                    <div
+                      style="
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        gap: 12px;
+                      "
+                      class="rulesetGroupIndex"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          width: 32px;
+                          height: 32px;
+                          padding: 10px;
+                          flex-direction: column;
+                          justify-content: center;
+                          align-items: center;
+                          gap: 10px;
+                          flex-shrink: 0;
+                          border-radius: 32px;
+                          border: 1px solid #e5e9ec;
+                          background: #fff;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: Proxima Nova;
+                            font-size: 14px;
+                            font-style: normal;
+                            font-weight: 500;
+                            line-height: normal;
+                          "
+                        >
+                          {{ ruleset.id }}
+                        </span>
+                      </div>
+                      <mat-radio-group
+                        *ngIf="ruleset"
+                        [(ngModel)]="ruleset.condition"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onChange($event)"
+                        style="display: flex; align-items: center; gap: 12px; margin: 0px"
+                      >
+                        <mat-radio-button value="and">AND</mat-radio-button>
+                        <mat-radio-button value="or">OR</mat-radio-button>
+                      </mat-radio-group>
+                    </div>
+                  </ng-container>
+                  <ng-container
+                    *queryEntity="
+                      let rule;
+                      let entities = entities;
+                      let onChange = onChange
+                    "
+                  >
+                    <mat-form-field [style.min-width.px]="90" class="m-4">
+                      <mat-select
+                        [(ngModel)]="rule.entity"
+                        (ngModelChange)="onChange($event, rule)"
+                      >
+                        <mat-option
+                          *ngFor="let entity of entities"
+                          [value]="entity.value"
+                        >
+                          {{ entity.name }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </ng-container>
+                  <ng-container
+                    *queryField="
+                      let rule;
+                      let fields = fields;
+                      let onChange = onChange;
+                      let getFields = getFields
+                    "
+                    style="display: flex; flex-direction: row; align-items: center"
+                  >
+                    <div
+                      style="display: flex; align-items: center; height: 65px"
+                      class="rulesetIndex"
+                    >
+                      <div
+                        style="
+                          display: flex;
+                          width: 32px;
+                          height: 32px;
+                          padding: 10px;
+                          flex-direction: column;
+                          justify-content: center;
+                          align-items: center;
+                          gap: 10px;
+                          flex-shrink: 0;
+                          border-radius: 32px;
+                          border: 1px solid #e5e9ec;
+                          background: #fff;
+                        "
+                      >
+                        <span
+                          style="
+                            font-family: Proxima Nova;
+                            font-size: 14px;
+                            font-style: normal;
+                            font-weight: 500;
+                            line-height: normal;
+                          "
+                        >
+                          {{ rule.id }}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium">Property</label>
+                      <select
+                        class="custom-select"
+                        name="gender"
+                        [ngModelOptions]="{ standalone: true }"
+                        style="width: 100%"
+                        [(ngModel)]="rule.field"
+                        (ngModelChange)="onChange($event, rule)"
+                      >
+                        <option
+                          *ngFor="let field of getFields(rule.entity)"
+                          [value]="field.value"
+                        >
+                          {{ field.name }}
+                        </option>
+                      </select>
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryOperator="
+                      let rule;
+                      let operators = operators;
+                      let onChange = onChange
+                    "
+                  >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium">Is</label>
+                      <select
+                        class="custom-select"
+                        name="gender"
+                        style="width: 100%"
+                        [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="rule.operator"
+                        (ngModelChange)="onChange()"
+                      >
+                        <option *ngFor="let value of operators" [value]="value">
+                          {{ value }}
+                        </option>
+                      </select>
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryInput="
+                      let rule;
+                      let field = field;
+                      type: 'String';
+                      let onChange = onChange
+                    "
+                  >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium"
+                        >Property value</label
+                      >
+                      <input
+                        class="i2v-input primary-default medium"
+                        style="
+                          box-sizing: border-box;
+                          width: 100%;
+                          background-color: white !important;
+                          border: 1px solid var(--primary-outline-border-color);
+                        "
+                        autocomplete="off"
+                        matInput
+                        [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange()"
+                        [pattern]="'^\\S.*'"
+                        required
+                      />
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryInput="let rule; type: 'Boolean'; let onChange = onChange; let options = options;"
+                  >
+                    <span style="
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: center;
+                      align-items: flex-start;
+                      gap: 8px;
+                      flex: 1;"
+                    >
+                      <label style="width: 70%" class="form-label medium"
+                        >Property value</label
+                      >
+                      <select
+                        class="custom-select"
+                        [ngModelOptions]="{ standalone: true }"
+                        style="width: 100%"
+                        [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange()"
+                      >
+                        <option *ngFor="let opt of options" [value]="opt">
+                          {{ opt }}
+                        </option>
+                      </select>
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryInput="
+                      let rule;
+                      let field = field;
+                      let options = options;
+                      type: 'SingleSelect';
+                      let onChange = onChange
+                    "
+                  >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium"
+                        >Property value </label
+                      >
+                      <select
+                        class="custom-select"
+                        [ngModelOptions]="{ standalone: true }"
+                        style="width: 100%"
+                        [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange()"
+                      >
+                        <option *ngFor="let opt of options" [value]="opt">
+                          {{ opt }}
+                        </option>
+                      </select>
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryInput="
+                      let rule;
+                      let field = field;
+                      type: 'Integer';
+                      let onChange = onChange
+                    "
+                  >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium"
+                        >Property value</label
+                      >
+                      <input
+                        class="i2v-input primary-default medium"
+                        style="
+                          box-sizing: border-box;
+                          width: 100%;
+                          background-color: white !important;
+                          border: 1px solid var(--primary-outline-border-color);
+                        "
+                        autocomplete="off"
+                        matInput
+                        [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange()"
+                        type="number"
+                        min="0"
+                        step="1"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        required
+                      />
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryInput="
+                      let rule;
+                      let field = field;
+                      type: 'Float';
+                      let onChange = onChange
+                    "
+                  >
+                    <span
+                      style="
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: flex-start;
+                        gap: 8px;
+                        flex: 1;
+                      "
+                    >
+                      <label style="width: 70%" class="form-label medium"
+                        >Property value</label
+                      >
+                      <input
+                        class="i2v-input primary-default medium"
+                        style="
+                          box-sizing: border-box;
+                          width: 100%;
+                          background-color: white !important;
+                          border: 1px solid var(--primary-outline-border-color);
+                        "
+                        autocomplete="off"
+                        matInput
+                        [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="rule.value"
+                        type="number"
+                        (ngModelChange)="onChange()"
+                      />
+                    </span>
+                  </ng-container>
+                  <ng-container
+                    *queryRemoveButton="let rule; let removeRule = removeRule"
+                  >
+                    <button
+                      class="flex-row-center-center i2v-btn-icon medium tertiary-danger"
+                      libSvgElement
+                      [appSvg]="'assets/Outline/trash.svg'"
+                      (click)="removeRule(rule)"
+                      matTooltip="Remove rule"
+                    ></button>
+                  </ng-container>
+                </lib-query-builder>
+
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">Previous</button>
+          <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(3)"
+            (click)="goToNextStep()">Next</button>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 4: Widget Type Selection (for propertiesFirst approach) -->
+      <p-accordionTab *ngIf="widgetForm.get('configurationApproach').value === 'propertiesFirst'"
+        [disabled]="!isStepComplete(3)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">4</span>
+            <h2>Select Widget Type</h2>
+            <span class="step-status" *ngIf="isStepComplete(4)">✓</span>
+          </div>
+        </ng-template>
+
+        <div class="widget-type-selection">
+          <p>Based on your configuration, these widget types are recommended:</p>
+          <div class="widget-cards">
+            <div *ngFor="let widget of recommendedWidgets" class="widget-card"
+              [class.selected]="widgetForm.get('widgetType').value === widget.value"
+              (click)="selectWidget(widget.value)">
+              <div class="widget-icon">
+                <i [class]="'pi pi-chart-' + widget.value"></i>
+              </div>
+              <div class="widget-name">{{ widget.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">Previous</button>
+          <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(4)"
+            (click)="goToNextStep()">Next</button>
+        </div>
+      </p-accordionTab>
+
+      <!-- Review & Submit -->
+      <p-accordionTab [disabled]="!canProceedToReview()">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">{{ getStepLabels().length }}</span>
+            <h2>Review & Submit</h2>
+          </div>
+        </ng-template>
+
+        <div class="widget-summary">
+          <h3>Widget Configuration Summary</h3>
+
+          <div class="summary-section">
+            <h4>Display Settings</h4>
+            <p><strong>Title:</strong> {{ widgetForm.get('displayConfig.heading').value || 'Not set' }}</p>
+            <p><strong>Sub Title:</strong> {{ widgetForm.get('displayConfig.subHeading').value || 'Not set' }}</p>
+            <div class="color-preview">
+              <span>Theme Color:</span>
+              <div class="color-box" [style.background-color]="widgetForm.get('displayConfig.color').value"></div>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <h4>Data Configuration</h4>
+            <p><strong>Widget Type:</strong> {{ getWidgetTypeLabel() }}</p>
+            <p><strong>Entity Type:</strong> {{ widgetForm.get('entityConfigType').value === 'single' ? 'Single Entity'
+              : 'Multiple Entities' }}</p>
+            <p><strong>Selected Properties:</strong> {{ getSelectedPropertiesSummary() }}</p>
+            <p><strong>Grouping:</strong> {{ getGroupingSummary() }}</p>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">Previous</button>
+          <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="!canSubmitForm()">
+            Create Widget
+          </button>
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+
+    <!-- Progress Bar -->
+    <div class="form-progress-bar">
+      <div class="progress-step" *ngFor="let step of getStepLabels(); let i = index"
+        [class.completed]="isStepComplete(i+1)" [class.active]="currentStep === i+1"
+        [class.disabled]="!canNavigateToStep(i+1)" (click)="canNavigateToStep(i+1) && goToStep(i+1)">
+        <div class="step-number">{{ i + 1 }}</div>
+        <div class="step-label">{{ step }}</div>
+      </div>
+    </div>
+
+    <!-- Reset Button -->
+    <div class="form-reset">
+      <button type="button" class="btn btn-outline-secondary" (click)="onReset()">Reset Form</button>
+    </div>
+  </form>
+</div>

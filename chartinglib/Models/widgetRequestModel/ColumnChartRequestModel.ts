@@ -1,7 +1,9 @@
-import { Enum_WidgetType, Widget, WidgetConstructorProps } from "../Widget";
+import { TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../dimension-widgets";
+import { Enum_WidgetType } from "../enums/enums";
 
-export class ColumnChartWidget extends Widget {
-   constructor(params: WidgetConstructorProps) {
+
+export class ColumnChartWidget extends TwoDimensionWidget {
+   constructor(params: TwoDimensionWidgetConstructorProps) {
         // Call the parent constructor with the params
         super({
           widgetType: Enum_WidgetType.ColumnChart,  // Set default widget type

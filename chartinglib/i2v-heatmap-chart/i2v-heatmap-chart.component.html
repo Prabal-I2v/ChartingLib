@@ -65,8 +65,8 @@
       </div>
     </div>
     <kendo-chart [chartArea]="{ background: 'transparent' }" style="height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
-      [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="
-      widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false
+      [pannable]="widgetRequestModel.WidgetInteractivityConfig.isPannable ? { lock: 'y' } : false" [zoomable]="
+      widgetRequestModel.WidgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'y' } } : false
     ">
       <kendo-chart-title text="Heat Map" [margin]="{ left: 40 }"></kendo-chart-title>
       <kendo-chart-tooltip>
@@ -94,7 +94,7 @@
     </kendo-chart>
   </div>
   <div *ngIf="showFilterValues && !isEditModeOn" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
+    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
     </app-details-widget>
   </div>
 </div>

@@ -10,23 +10,14 @@ import {
   SimpleChanges,
   ViewChild,
 } from "@angular/core";
-import {
-  ICustomFilter,
-  ITimeRange,
-  ICustomFilterOutputEmittorModel,
-  CustomFilterValueModel,
-  IDateTimeFilterOutputEmittorModel,
-  ISetIntervalFilterOutputEmittorModel,
-  ICommonFilterOutputEmittorModel,
-  Widget,
-} from "../Models/Widget";
+
 import * as moment from "moment";
-import { EditAnalyticServerComponent } from "src/app/modules/settings/analytic-server-form/editAnalyticServer/edit-analytic-server.component";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
-import { MyContextMenuComponent } from "src/app/shared/context-menu/context-menu.component";
-import { ContextMenuItem } from "src/app/Models/ContextMenuItem.model";
+import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ICommonFilterOutputEmittorModel, ITimeRange, CustomFilterValueModel } from "../Models/types/types";
+import { Widget } from "../Models/Widget";
+import { ThreeDimensionWidget, TwoDimensionWidget } from "../Models/dimension-widgets";
 
 declare let $: any;
 
@@ -49,7 +40,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   showFilter = false;
   hideWidget = false;
   showTimeDurationFilter: boolean = false;
-  isContexMenuOpen:boolean = false;
+  isContexMenuOpen: boolean = false;
   hideWidgetMsg: string = "Hide Widget";
   position = { top: 0, left: 0 };
   @Input() showTimeFilter: boolean = true;
@@ -118,22 +109,24 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     //set properties
-    this.svgIcon = this.widgetModel.svgIcon ? this.widgetModel.svgIcon : "assets/fill/va/default.svg";
-    this.heading = this.widgetModel.heading;
-    this.subHeading = this.widgetModel?.subHeading;
-    this.disableTimeFilter = this.widgetModel.disableTimeFilter;
-    this.hideWidget = this.widgetModel.isWidgetHidden;
-    this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
-    this.customFilterKeys = Object.keys(this.customFilters);
-    // this.customFilters = this.widgetModel.customFilters;
-    if((this.widgetModel.groupBy1 && this.widgetModel.groupBy1.isTime) || (this.widgetModel.groupBy2 && this.widgetModel.groupBy2.isTime)){
-      this.showTimeDurationFilter = true;
-      this.timePeriodValue = this.widgetModel.showablePropertiesLabel[0]?.displayName || "Month";
+    if (this.widgetModel instanceof ThreeDimensionWidget) {
+      this.svgIcon = this.widgetModel.displayConfig.svgIcon ? this.widgetModel.displayConfig.svgIcon : "assets/fill/va/default.svg";
+      this.heading = this.widgetModel.displayConfig.heading;
+      this.subHeading = this.widgetModel?.displayConfig.subHeading;
+      this.disableTimeFilter = this.widgetModel.filterConfig.disableTimeFilter;
+      this.hideWidget = this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
+      this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
+      this.customFilterKeys = Object.keys(this.customFilters);
+      // this.customFilters = this.widgetModel.customFilters;
+      if ((this.widgetModel.dataInputConfig.groupBy1 && this.widgetModel.dataInputConfig.groupBy1.isTime) || (this.widgetModel.dataInputConfig.groupBy2 && this.widgetModel.dataInputConfig.groupBy2.isTime)) {
+        this.showTimeDurationFilter = true;
+        this.timePeriodValue = this.widgetModel.showableProperties[0]?.displayName || "Month";
+      }
+      if (!this.widgetModel.filterConfig.isDashboardFilterApplied) {
+        this.setCustomFilterValuesAsPerWidgetModel();
+      }
+      // this.customFiltersValue = this.widgetModel.customFilters;
     }
-    if (!this.widgetModel.isDashboardFilterApplied) {
-      this.setCustomFilterValuesAsPerWidgetModel();
-    }
-    // this.customFiltersValue = this.widgetModel.customFilters;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -147,14 +140,13 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       this.updateUIFilterModelValues();
     }
 
-    if(changes.isEditModeOn?.previousValue != undefined && changes.isEditModeOn?.currentValue != changes.isEditModeOn?.previousValue)
-      {
-        this.cdr.detectChanges();
-        setTimeout(()=>{
-                  // this.widgetResizeEmittor.emit(changes.isEditModeOn?.currentValue);
-        }, 100)
+    if (changes.isEditModeOn?.previousValue != undefined && changes.isEditModeOn?.currentValue != changes.isEditModeOn?.previousValue) {
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        // this.widgetResizeEmittor.emit(changes.isEditModeOn?.currentValue);
+      }, 100)
 
-      }
+    }
   }
 
   ngAfterViewInit(): void {
@@ -200,7 +192,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       });
     }
   }
-  
+
   onTimeDurationChange(event: { value: string }): void {
     this.timePeriodValue = event.value;
     this.timePeriodOutput.emit(this.timePeriodValue);
@@ -226,9 +218,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     }
   }
 
-  clearCustomFilters(): void { 
-    if(this.showFilterValues)
-    this.toggleShowFilterValues();
+  clearCustomFilters(): void {
+    if (this.showFilterValues)
+      this.toggleShowFilterValues();
     this.clearCustomFiltersValues.emit(true);
   }
 
@@ -279,22 +271,22 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     for (const key of this.customFilterKeys) {
       if (key in this.customFilters) {
         this.selectedCustomFilterkey = key;
-  
+
         const allValues = this.customFilters[this.selectedCustomFilterkey];
-  
+
         // Check if 'videoSources' exists in widget.customFilters
-        if ('Video Sources' in this.widgetModel.customFilters) {
-          const allowedVideoSources = this.widgetModel.customFilters['Video Sources']
+        if ('Video Sources' in this.widgetModel.filterConfig.customFilters) {
+          const allowedVideoSources = this.widgetModel.filterConfig.customFilters['Video Sources']
             .map((item: CustomFilterValueModel) => item.returnValue);
-        
+
           this.selectedCustomFilterValue = allValues
             .filter(x => allowedVideoSources.includes(x.returnValue))
             .map(x => String(x.returnValue));
         } else {
           this.selectedCustomFilterValue = allValues.map(x => String(x.returnValue));
         }
-        
-  
+
+
         outputModel["CustomFilterEmitModel"] = {
           key: this.selectedCustomFilterkey,
           value: this.selectedCustomFilterValue
@@ -408,22 +400,20 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     return date1.getTime() === date2.getTime();
   }
 
-  toggleShowFilter()
-  {
+  toggleShowFilter() {
     this.showFilter = !this.showFilter;
     // this.widgetResizeEmittor.emit(this.showFilter);
   }
 
-  toggleShowFilterValues()
-  {
+  toggleShowFilterValues() {
     this.showFilterValues = !this.showFilterValues;
     this.showFilterValuesChange.emit(this.showFilterValues);
     this.widgetResizeEmittor.emit(this.showFilterValues);
   }
 
-  toggleHideWidget(){
-    this.widgetModel.isWidgetHidden = !this.widgetModel.isWidgetHidden;
-    this.hideWidget = this.widgetModel.isWidgetHidden;
+  toggleHideWidget() {
+    this.widgetModel.WidgetInteractivityConfig.isWidgetHidden = !this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
+    this.hideWidget = this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
     this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
   }
 
@@ -444,11 +434,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       customFilterKeys: this.customFilterKeys,
       enableCustomTime: this.enableCustomTime,
       disableTimeFilter: this.disableTimeFilter,
-      showRefreshInterval : this.showRefreshInterval,
+      showRefreshInterval: this.showRefreshInterval,
       showTimeFilter: this.showTimeFilter,
-      showEntity : this.showEntity,
+      showEntity: this.showEntity,
     };
-  
+
     const dialogData: CommonModalData = {
       event: event,
       width: '500px',
@@ -463,7 +453,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
         },
         {
           Callback: "applyFilters",
-          title: "Update",  
+          title: "Update",
           basedOnChildTemplate: true,
           style: "i2v-btn medium primary-default",
         },
@@ -478,14 +468,14 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       showNextButton: false,
       showBackButton: false,
     };
-  
+
     const ref = this.dialog.open(CommonModalComponent, {
       minHeight: '300px',
       panelClass: 'custom-dialog-container',
       data: dialogData,
     });
-  
-    ref.afterClosed().subscribe((data) => {});
+
+    ref.afterClosed().subscribe((data) => { });
   }
 
   onContextMenuEvent(event) {
@@ -497,33 +487,33 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     }
     event.stopPropagation();
   }
-  
+
   onMenuClosed() {
     this.isContexMenuOpen = false;
   }
 
   setCustomFilterValuesAsPerWidgetModel() {
-        // Set initial filter values from widgetModel
-        if (this.widgetModel.customFilters) {
-          // Initialize filters from widget model
-          for (const key of Object.keys(this.widgetModel.customFilters)) {
-            if (key === 'Time') {
-              const timeFilter = this.widgetModel.customFilters[key][0];
-              this.timeFilterValue = timeFilter.displayName;
-              this.enableCustomTime = timeFilter.displayName === 'Custom';
-              if (timeFilter.returnValue) {
-                const timeRange = timeFilter.returnValue as ITimeRange;
-                this.dateRange = [new Date(timeRange.startTime), new Date(timeRange.endTime)];
-              }
-            } else if (key === 'RefreshInterval') {
-              this.refreshIntervalValue = Number(this.widgetModel.customFilters[key][0].returnValue);
-            } else {
-              // For other custom filters (like Video Sources)
-              this.selectedCustomFilterkey = key;
-              this.selectedCustomFilterValue = this.widgetModel.customFilters[key]
-                .map(item => String(item.returnValue));
-            }
+    // Set initial filter values from widgetModel
+    if (this.widgetModel.filterConfig.customFilters) {
+      // Initialize filters from widget model
+      for (const key of Object.keys(this.widgetModel.filterConfig.customFilters)) {
+        if (key === 'Time') {
+          const timeFilter = this.widgetModel.filterConfig.customFilters[key][0];
+          this.timeFilterValue = timeFilter.displayName;
+          this.enableCustomTime = timeFilter.displayName === 'Custom';
+          if (timeFilter.returnValue) {
+            const timeRange = timeFilter.returnValue as ITimeRange;
+            this.dateRange = [new Date(timeRange.startTime), new Date(timeRange.endTime)];
           }
+        } else if (key === 'RefreshInterval') {
+          this.refreshIntervalValue = Number(this.widgetModel.filterConfig.customFilters[key][0].returnValue);
+        } else {
+          // For other custom filters (like Video Sources)
+          this.selectedCustomFilterkey = key;
+          this.selectedCustomFilterValue = this.widgetModel.filterConfig.customFilters[key]
+            .map(item => String(item.returnValue));
         }
+      }
+    }
   }
 }

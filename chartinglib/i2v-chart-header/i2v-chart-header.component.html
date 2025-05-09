@@ -46,7 +46,7 @@
   </div>
   <ng-content></ng-content>
 
-  <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
+  <div *ngIf="!widgetModel.filterConfig.isDashboardFilterApplied && !isEditModeOn" style="
   display: flex;
   justify-content: center;
   align-items: center;
@@ -59,7 +59,7 @@
   </div>
 
   <div style="position: relative;">
-    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
+    <span *ngIf="isEditModeOn && !widgetModel.filterConfig.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
       [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
     <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement

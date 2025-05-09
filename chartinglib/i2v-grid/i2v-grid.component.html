@@ -1,4 +1,4 @@
-<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
+<div [ngStyle]="{ background:widgetRequestModel?.WidgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
   style="display: flex; flex-direction: column; width: 100%; height: 100%; background: white;">
   <div
     style="display: flex; flex-direction: column; width: 100%; flex: 1; padding: 16px; gap: 10px; overflow-x: auto;">
@@ -98,7 +98,7 @@
 
   </div>
   <div *ngIf="showFilterValues" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
+    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
     </app-details-widget>
   </div>
 </div>

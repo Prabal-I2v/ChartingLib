@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { CustomFilterValueModel } from '../Widget';
 
 @Pipe({
-  name: 'showVideoSourceName'
+  name: 'showVideoSourceName',
+  standalone:false,
 })
 export class ShowVideoSourceNamePipe implements PipeTransform {
   transform(value: CustomFilterValueModel[]): string[] {

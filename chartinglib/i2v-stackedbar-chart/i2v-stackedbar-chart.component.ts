@@ -8,6 +8,7 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
   selector: "i2v-stackedbar-chart",
   templateUrl: "./i2v-stackedbar-chart.component.html",
   styleUrl: "./i2v-stackedbar-chart.component.scss",
+  standalone:false,
 })
 export class I2vStackedbarChartComponent extends I2vChartsComponent {
   constructor(

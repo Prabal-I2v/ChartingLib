@@ -16,6 +16,7 @@ import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetReques
   selector: "i2v-kpi-chart",
   templateUrl: "./i2v-kpi-chart.component.html",
   styleUrl: "./i2v-kpi-chart.component.scss",
+  standalone:false,
 })
 export class I2vKpiChartComponent extends I2vChartsComponent {
   @Input() override widgetRequestModel: KpiWidget = null;

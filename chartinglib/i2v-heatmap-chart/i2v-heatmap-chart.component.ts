@@ -8,6 +8,7 @@ import { ChartingDataService } from "../charting-data.service";
   selector: "i2v-heatmap-chart",
   templateUrl: "./i2v-heatmap-chart.component.html",
   styleUrl: "./i2v-heatmap-chart.component.scss",
+  standalone:false,
 })
 export class I2vHeatmapChartComponent extends I2vChartsComponent {
   constructor(

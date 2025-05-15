@@ -6,6 +6,7 @@ import { ChartingDataService } from "../charting-data.service";
   selector: "i2v-bar-chart",
   templateUrl: "./i2v-bar-chart.component.html",
   styleUrl: "./i2v-bar-chart.component.scss",
+  standalone:false,
 })
 export class I2vBarChartComponent extends I2vChartsComponent {
   constructor(

@@ -12,6 +12,7 @@ import { ChartingDataService } from "../charting-data.service";
   selector: "i2v-column-chart",
   templateUrl: "./i2v-column-chart.component.html",
   styleUrl: "./i2v-column-chart.component.scss",
+  standalone:false,
 })
 export class I2vColumnChartComponent extends I2vChartsComponent {
   constructor(

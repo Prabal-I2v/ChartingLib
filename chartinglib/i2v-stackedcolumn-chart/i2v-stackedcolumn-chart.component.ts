@@ -10,6 +10,7 @@ import { Enum_TimePeriod } from "../Models/Widget";
   selector: "i2v-stackedcolumn-chart",
   templateUrl: "./i2v-stackedcolumn-chart.component.html",
   styleUrl: "./i2v-stackedcolumn-chart.component.scss",
+  standalone:false,
 })
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
   constructor(

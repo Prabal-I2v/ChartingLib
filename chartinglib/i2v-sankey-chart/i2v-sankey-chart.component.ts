@@ -9,7 +9,8 @@ import { Sankey } from '@progress/kendo-charts/dist/npm/sankey'
 @Component({
   selector: 'i2v-sankey-chart',
   templateUrl: './i2v-sankey-chart.component.html',
-  styleUrl: './i2v-sankey-chart.component.css'
+  styleUrl: './i2v-sankey-chart.component.css',
+  standalone:false,
 })
 export class I2vSankeyChartComponent  extends I2vChartsComponent {
   public data = {

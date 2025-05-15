@@ -39,7 +39,8 @@ interface DateRange {
   selector: "i2v-chart-header",
   templateUrl: "./i2v-chart-header.component.html",
   styleUrl: "./i2v-chart-header.component.scss",
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone:false,
 })
 export class I2vChartHeaderComponent implements OnInit, OnChanges {
   svgIcon: string = ""

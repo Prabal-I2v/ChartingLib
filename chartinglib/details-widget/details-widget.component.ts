@@ -4,7 +4,8 @@ import { Component, Input, OnInit } from '@angular/core';
 @Component({
   selector: 'app-details-widget',
   templateUrl: './details-widget.component.html',
-  styleUrls: ['./details-widget.component.scss']
+  styleUrls: ['./details-widget.component.scss'],
+  standalone:false,
 })
 export class DetailsWidgetComponent implements OnInit {
   @Input() commonWidgetCustomFilter: { [key: string]: any };

@@ -31,13 +31,13 @@
             [options]="SelectColumnFilteredList | async" optionLabel="headerName" placeholder="Select Columns"
             (onChange)="updateColumns()"></p-multiSelect>
 
-            <p-dropdown
+            <p-select
             [options]="pageLimitOptions"
             [(ngModel)]="pageLimit"
             placeholder="Page Limit"
             (onChange)="onPageLimitChange($event)"
             styleClass="i2v-dropdown primary-outline medium">
-          </p-dropdown>
+          </p-select>
         </div>
 
       </i2v-chart-header>

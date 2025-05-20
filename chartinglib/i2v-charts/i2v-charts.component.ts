@@ -34,6 +34,7 @@ import { TableOutputModel } from "../Models/TableOutputModel";
   selector: "i2v-charts",
   templateUrl: "./i2v-charts.component.html",
   styleUrl: "./i2v-charts.component.scss",
+  standalone:false,
 })
 export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;

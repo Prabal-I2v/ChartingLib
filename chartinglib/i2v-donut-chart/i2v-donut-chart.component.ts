@@ -14,6 +14,7 @@ import { DonutChartWidget } from "../Models/widgetRequestModel/DonutChartRequest
   selector: "i2v-donut-chart",
   templateUrl: "./i2v-donut-chart.component.html",
   styleUrl: "./i2v-donut-chart.component.scss",
+  standalone:false,
 })
 export class I2vDonutChartComponent extends I2vChartsComponent {
   @Input() override widgetRequestModel: DonutChartWidget = null;

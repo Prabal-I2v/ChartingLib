@@ -1,12 +1,12 @@
 :host {
-    ::ng-deep .p-dropdown {
+    ::ng-deep .p-select {
       font-size: 13px;
       font-weight: 400;
-      .p-dropdown-label {
+      .p-select-label {
         font-size: 13px;
         font-weight: 400;
       }
-      .p-dropdown-item {
+      .p-select-item {
         font-size: 13px;
         font-weight: 400;
       }
@@ -51,7 +51,7 @@
 }
 
 :host ::ng-deep {
-  .p-dropdown, .p-multiselect, .p-calendar {
+  .p-select, .p-multiselect, .p-calendar {
     min-width: 200px;
     max-width: 200px;
     font-size: 13px;

@@ -1,24 +1,24 @@
 <div mat-dialog-content class="filter-dialog-content">
-    <p-dropdown *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" placeholder="Select Time Duration"
-    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-dropdown>
-    
+    <p-select *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" placeholder="Select Time Duration"
+    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-select>
+
     <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
       (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
     </p-calendar>
-    
-    <p-dropdown *ngIf="showTimeFilter || disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
+
+    <p-select *ngIf="showTimeFilter || disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
       placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
-    </p-dropdown>
-  
-    <p-dropdown *ngIf="showRefreshInterval || refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
+    </p-select>
+
+    <p-select *ngIf="showRefreshInterval || refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
       placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
       (onChange)="setIntervalTime($event)" [appendTo]="'body'">
-    </p-dropdown>
-  
-    <p-dropdown *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+    </p-select>
+
+    <p-select *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
       [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
-    </p-dropdown>
-  
+    </p-select>
+
     <p-multiSelect *ngIf="showEntity && selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
       [(ngModel)]="selectedFilterValues"
       optionLabel="displayName" optionValue="returnValue"

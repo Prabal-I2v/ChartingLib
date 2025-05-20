@@ -5,7 +5,8 @@ import { I2vChartHeaderComponent } from '../i2v-chart-header/i2v-chart-header.co
 @Component({
   selector: 'app-custom-filter-dialog',
   templateUrl: './custom-filter-dialog.component.html',
-  styleUrl: './custom-filter-dialog.component.css'
+  styleUrl: './custom-filter-dialog.component.css',
+  standalone:false,
 })
 export class CustomFilterDialogComponent {
   showTimeFilter: boolean = true;

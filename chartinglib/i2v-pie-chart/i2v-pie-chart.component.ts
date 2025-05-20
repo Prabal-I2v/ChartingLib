@@ -8,6 +8,7 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
   selector: "i2v-pie-chart",
   templateUrl: "./i2v-pie-chart.component.html",
   styleUrl: "./i2v-pie-chart.component.scss",
+  standalone:false,
 })
 export class I2vPieChartComponent extends I2vChartsComponent {
   public labelContent(args: any): string {

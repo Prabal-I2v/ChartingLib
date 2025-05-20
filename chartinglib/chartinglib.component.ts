@@ -12,6 +12,7 @@ interface Query {
   selector: "charting-lib",
   templateUrl: "./chartinglib.component.html",
   styleUrls: ["./chartinglib.component.scss"],
+  standalone:false,
 })
 export class ChartingComponent {
   title = "charting";

@@ -12,7 +12,8 @@ import { totalData } from 'src/app/modules/report/attendance-report/attendance-r
 @Component({
   selector: 'i2v-table-grid',
   templateUrl: './i2v-grid.component.html',
-  styleUrl: './i2v-grid.component.scss'
+  styleUrl: './i2v-grid.component.scss',
+  standalone:false,
 })
 export class I2vGridComponent extends I2vChartsComponent {
 

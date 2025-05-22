@@ -32,7 +32,7 @@
           font-size: 18px;
           width: 100%; /* Makes it take full width of parent */
         " [title]="heading" *ngIf="heading">
-        {{ heading }}
+        {{ heading | translate }}
       </span>
       <span style="
         margin: 0;
@@ -41,7 +41,7 @@
         text-overflow: ellipsis;
         font-size: 14px;
         width: 100%; /* Makes it take full width of parent */
-      " [title]="subHeading" *ngIf="subHeading">({{ subHeading }})</span>
+      " [title]="subHeading" *ngIf="subHeading">({{ subHeading | translate}})</span>
     </div>
   </div>
   <ng-content></ng-content>

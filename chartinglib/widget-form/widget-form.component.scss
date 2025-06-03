@@ -200,6 +200,27 @@
   }
 }
 
+.property-filters-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+
+  input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  label {
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+}
+
+.property-filters {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
 .group-by-container {
   margin-top: 10px;
   padding-left: 24px;
@@ -699,4 +720,10 @@
       color: #666;
     }
   }
+}
+
+::ng-deep .q-tree .q-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
 }

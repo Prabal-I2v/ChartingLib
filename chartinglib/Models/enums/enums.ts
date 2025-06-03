@@ -104,10 +104,10 @@ export enum Enum_WidgetType {
 
 // Dimension-based Widget Types
 export enum WidgetDimension {
-  OneDimensional = "1D",
-  TwoDimensional = "2D",
-  ThreeDimensional = "3D",
-  nthDimesnion = "nD",
+  OneDimensional,
+  TwoDimensional,
+  ThreeDimensional,
+  NoDimension,
 }
 
 // Map widget types to their dimension
@@ -119,10 +119,10 @@ export const widgetTypeDimensionMap: Record<Enum_WidgetType, WidgetDimension> = 
   [Enum_WidgetType.Donut]: WidgetDimension.TwoDimensional,
   [Enum_WidgetType.LineChart]: WidgetDimension.TwoDimensional,
   [Enum_WidgetType.AreaChart]: WidgetDimension.TwoDimensional,
-  [Enum_WidgetType.StackedBarChart]: WidgetDimension.TwoDimensional,
-  [Enum_WidgetType.StackedColumnChart]: WidgetDimension.TwoDimensional,
+  [Enum_WidgetType.StackedBarChart]: WidgetDimension.ThreeDimensional,
+  [Enum_WidgetType.StackedColumnChart]: WidgetDimension.ThreeDimensional,
   [Enum_WidgetType.HeatMapChart]: WidgetDimension.ThreeDimensional,
-  [Enum_WidgetType.Table]: WidgetDimension.nthDimesnion,
+  [Enum_WidgetType.Table]: WidgetDimension.NoDimension,
 };
 
   // Lists for dropdowns

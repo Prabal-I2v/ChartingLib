@@ -124,6 +124,7 @@ export class groupByConf {
   name: string;
   type: EventPropertyType;
   projectionName?: string;
+  subColumnName?: string;
   isTime?: boolean = false;
 }
 

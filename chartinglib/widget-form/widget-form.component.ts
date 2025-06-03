@@ -5,11 +5,15 @@ import * as moment from 'moment';
 import { Enum_WidgetType, Enum_Method, Enum_Entity, Enum_Schema, WidgetDimension, Enum_TimePeriod, Enum_Entity_With_Labels, getWidgetTypesByDimension, getWidgetDropdownItemsByDimension, allWidgetTypes } from '../Models/enums/enums';
 import {
   BaseWidgetConstructorProps,
+  OneDimensionDataInputConfig,
   ShowableProperty,
-  WidgetDataConfig
+  ThreeDimensionDataInputConfig,
+  TwoDimensionDataInputConfig,
+  WidgetDataConfig,
+  WidgetFieldNameConfig
 } from '../Models/interfaces/interfaces';
 import { EventPropertyType } from 'src/app/Models/eventPropertyType.model';
-import { groupByConf, RuleSet } from '../Models/types/types';
+import { groupByConf, Rule, RuleSet } from '../Models/types/types';
 import { Property } from 'src/app/Models/property.model';
 import { AnalyticService } from 'src/app/services/analytic.service';
 import { Operators, RuleType } from '@i2v-systems/common-components';
@@ -19,6 +23,8 @@ import { QueryBuilderConfig } from '@i2v-systems/i2v-query-builder';
 import { VideoSourceClientManager } from 'src/app/Managers/VideoSourceClientManager';
 import { WidgetFactory } from '../Models/widget-factory';
 import { Widget } from '../Models/Widget';
+import { OneDimensionWidget } from '../Models/dimension-widgets';
+import { rule } from 'src/app/Models/rule.model';
 
 export const OperatorsLabelKey: Record<Operators, any> = {
   [Operators.EQUAL]: { label: 'Equal', value: Operators.EQUAL },
@@ -33,13 +39,13 @@ export const OperatorsLabelKey: Record<Operators, any> = {
 
 // Define RuleOperators with type safety and reduced redundancy
 export const RuleOperators = {
-  [EventPropertyType.Float]: ["Equal", "NotEqual", "GreaterThan", "LessThan"],
-  [EventPropertyType.Integer]: ["Equal", "NotEqual", "GreaterThan", "LessThan"],
+  [EventPropertyType.Float]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
+  [EventPropertyType.Integer]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
   [EventPropertyType.String]: ["Equal", "NotEqual", "Contains", "NotContains"],
   [EventPropertyType.Guid]: ["Equal", "NotEqual", "Contains", "NotContains"],
   [EventPropertyType.SingleSelect]: ["Equal", "NotEqual"],
   [EventPropertyType.Boolean]: ["Equal"],
-  [EventPropertyType.Date]: ["Equal", "NotEqual", "GreaterThan", "LessThan"],
+  [EventPropertyType.Date]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
   [EventPropertyType.MultiSelect]: ["Equal", "NotEqual"]
 };
 
@@ -49,7 +55,7 @@ export const RuleOperators = {
   styleUrls: ['./widget-form.component.scss']
 })
 export class WidgetFormComponent implements OnInit {
-  @Input() finalWidget : Widget;
+  @Input() finalWidget: Widget;
   @Output() finalWidgetChange = new EventEmitter<Widget>();
   widgetForm: FormGroup;
   columnArray: any = {
@@ -61,6 +67,9 @@ export class WidgetFormComponent implements OnInit {
   config: QueryBuilderConfig;
   Enum_method = Enum_Method;
 
+  RuleOperators = RuleOperators;
+
+  EventPropertyType = EventPropertyType;
   // Accordion step control
   currentStep = 1;
   stepsCompleted = { 1: false, 2: false, 3: false, 4: false };
@@ -85,9 +94,6 @@ export class WidgetFormComponent implements OnInit {
 
     return labels;
   }
-
-
-
 
   singleEntityAggregationMethods = [
     { value: Enum_Method.Count, label: 'Count' },
@@ -141,11 +147,10 @@ export class WidgetFormComponent implements OnInit {
   get eventSchemaEntities() {
     return this.entities.filter(entity => entity.schema === Enum_Schema.Events);
   }
-  
+
   get publicSchemaEntities() {
     return this.entities.filter(entity => entity.schema === Enum_Schema.Public);
   }
-  
 
   timeGroupingOptions = [
     { label: 'Hour', value: Enum_TimePeriod.hour },
@@ -187,10 +192,15 @@ export class WidgetFormComponent implements OnInit {
   selectedTimeGrouping1: string = 'day'; // Default
   selectedTimeGrouping2: string = 'day'; // Default
 
+  enablePropertyFilters: boolean = false;
+
   // For recommending widget types
   recommendedWidgets = [];
 
   isFormInitialized = false;
+
+  // Field-specific rules management
+  ruleDataForEachField: { [fieldName: string]: { rule: Rule; enabled: boolean } } = {};
 
   constructor(private fb: FormBuilder, private analyticService: AnalyticService, private eventService: EventService, private videoSourceManager: VideoSourceClientManager) { }
 
@@ -234,7 +244,7 @@ export class WidgetFormComponent implements OnInit {
       dataInputConfig: this.fb.group({
         method: [Enum_Method.Count],
         isDistinct: [false],
-        entityTypeSelect : ['events'],
+        entityTypeSelect: ['events'],
         entitySelect: [null], // For single entity selection
         fieldNames: [[]], // For single entity properties
         entities: [[]], // For multiple entities
@@ -331,16 +341,102 @@ export class WidgetFormComponent implements OnInit {
     } else {
       this.entityProperties = [];
     }
+
+    // Clear field-specific rules when entity changes
+    this.ruleDataForEachField = {};
+
     this.createRuleGroupQueryBuilder(this.entityProperties);
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
 
   onFieldNamesChange(event: any): void {
-    this.widgetForm.get('dataInputConfig.fieldNames').setValue(event.value);
+    const selectedFields = event.value;
+    this.widgetForm.get('dataInputConfig.fieldNames').setValue(selectedFields);
+
+    // Initialize or update rules for each selected field
+    this.initializeFieldRules(selectedFields);
+
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
+
+  // New method to initialize rules for each field
+  initializeFieldRules(selectedFields: any[]): void {
+    // Clear existing rules
+    this.ruleDataForEachField = {};
+
+    if (!selectedFields || selectedFields.length === 0) {
+      return;
+    }
+
+    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
+    if (!entityValue || !this.entityPropertiesMap[entityValue]) {
+      return;
+    }
+
+    // Initialize rules for each selected field
+    selectedFields.forEach(field => {
+      const fieldName = field.name;
+
+      // Create a new RuleSet for this field
+      const fieldRuleSet = new Rule();
+
+      // Initialize with disabled state by default
+      this.ruleDataForEachField[fieldName] = {
+        rule: fieldRuleSet,
+        enabled: false
+      };
+    });
+  }
+
+  // Method to toggle rules for a specific field
+  toggleFieldRules(fieldName: string, enabled: boolean): void {
+    if (this.ruleDataForEachField[fieldName]) {
+      this.ruleDataForEachField[fieldName].enabled = enabled;
+
+      if (!enabled) {
+        // Reset the rule set when disabled
+        this.ruleDataForEachField[fieldName].rule = new Rule();
+      }
+    }
+  }
+
+  // Method to get rules for a specific field
+  getFieldRules(fieldName: string): Rule {
+    return this.ruleDataForEachField[fieldName]?.rule || new Rule();
+  }
+
+  // Method to check if rules are enabled for a field
+  areFieldRulesEnabled(fieldName: string): boolean {
+    return this.ruleDataForEachField[fieldName]?.enabled || false;
+  }
+
+  // Method to update field rules when query builder changes
+  onFieldRulesChange(fieldName: string, newRule: Rule): void {
+    if (this.ruleDataForEachField[fieldName]) {
+      this.ruleDataForEachField[fieldName].rule = newRule;
+    }
+  }
+
+  onFieldRuleOperatorChange(fieldName: string, event: any): void {
+    var value = event.value;
+    if (this.ruleDataForEachField[fieldName]) {
+      const rule = this.ruleDataForEachField[fieldName].rule;
+      rule.operator = value;
+      this.onFieldRulesChange(fieldName, rule);
+    }
+  }
+
+  onFieldRuleValueChange(fieldName: string, event: any): void {
+    var value = event.target.value;
+    if (this.ruleDataForEachField[fieldName]) {
+      const rule = this.ruleDataForEachField[fieldName].rule;
+      rule.value = value;
+      this.onFieldRulesChange(fieldName, rule);
+    }
+  }
+
 
   onEntitiesChange(event: any): void {
     const values = event.value;
@@ -364,8 +460,6 @@ export class WidgetFormComponent implements OnInit {
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
-
-
 
   // DataConfig FormArray utility methods
   get dataConfigArray(): FormArray {
@@ -399,8 +493,20 @@ export class WidgetFormComponent implements OnInit {
   }
 
   aggregationMethodChange(event): void {
-    const method = (event.target as HTMLSelectElement).value;
+    const method = Number((event.target as HTMLSelectElement).value) as Enum_Method;
+    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
     this.widgetForm.get('dataInputConfig.method').setValue(method);
+    if (entityValue && this.entityPropertiesMap[entityValue]) {
+      if (method === Enum_Method.Sum) {
+        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type == EventPropertyType.Float || prop.type == EventPropertyType.Integer);
+      }
+      else {
+        // For Count or other methods, we can show all properties
+        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type === EventPropertyType.String);
+      }
+    } else {
+      this.entityProperties = [];
+    }
     this.widgetForm.get('dataInputConfig.fieldNames').setValue([], { emitEvent: false });
     // this.updateStepCompletion(3);
   }
@@ -456,9 +562,16 @@ export class WidgetFormComponent implements OnInit {
 
   onEntityChange(): void {
     const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
+    const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
 
     if (entityValue && this.entityPropertiesMap[entityValue]) {
-      this.entityProperties = this.entityPropertiesMap[entityValue];
+      if (aggregationMethod === Enum_Method.Sum) {
+        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type == EventPropertyType.Float || prop.type == EventPropertyType.Integer);
+      }
+      else {
+        // For Count or other methods, we can show all properties
+        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type === EventPropertyType.String);
+      }
     } else {
       this.entityProperties = [];
     }
@@ -506,21 +619,31 @@ export class WidgetFormComponent implements OnInit {
         break;
 
       case 3:
-        // Step 3: Data Configuration & Filters
+        // Step 3: Data Configuration & Filters (Enhanced with field rules)
+        let step3Complete = false;
+
         if (this.widgetForm.get('entityConfigType').value === 'single') {
           const entity = this.widgetForm.get('dataInputConfig.entitySelect').value;
           const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
+
           if (aggregationMethod === Enum_Method.Sum) {
             const properties = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-            this.stepsCompleted[3] = !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
+            step3Complete = !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
+          } else {
+            step3Complete = !!entity;
           }
-          else {
-            this.stepsCompleted[3] = !!entity
+
+          // Additional validation for field rules if any are enabled
+          if (step3Complete && this.hasEnabledFieldRules()) {
+            step3Complete = this.validateAllEnabledFieldRules();
           }
+
         } else {
           const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-          this.stepsCompleted[3] = entities.length > 0;
+          step3Complete = entities.length > 0;
         }
+
+        this.stepsCompleted[3] = step3Complete;
         break;
 
       case 4:
@@ -530,6 +653,29 @@ export class WidgetFormComponent implements OnInit {
         }
         break;
     }
+  }
+
+  // Helper method to check if any field rules are enabled
+  hasEnabledFieldRules(): boolean {
+    return Object.values(this.ruleDataForEachField).some(fieldRule => fieldRule.enabled);
+  }
+
+  // Helper method to validate all enabled field rules
+  validateAllEnabledFieldRules(): boolean {
+    for (const fieldName in this.ruleDataForEachField) {
+      const fieldRules = this.ruleDataForEachField[fieldName];
+      if (fieldRules.enabled) {
+        // Check if the field has at least one rule configured
+        const ruleCount = this.getFieldRuleCount(fieldName);
+        if (ruleCount === 0) {
+          // Field is enabled but has no rules - this might be considered incomplete
+          // You can decide whether this should block progress or just show a warning
+          console.warn(`Field ${fieldName} has rules enabled but no rules configured`);
+          // For now, we'll allow it to proceed, but you can change this behavior
+        }
+      }
+    }
+    return true; // Allow progression even if some enabled fields have no rules
   }
 
   canRecommendWidgets(): boolean {
@@ -547,7 +693,7 @@ export class WidgetFormComponent implements OnInit {
         }
       } else {
         const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-          return entities.length > 0
+        return entities.length > 0
         // // Check if at least one entity has properties selected
         // const dataConfigs = this.getDataConfigControls();
         // for (const config of dataConfigs) {
@@ -570,33 +716,33 @@ export class WidgetFormComponent implements OnInit {
     const entityConfigType = this.widgetForm.get('entityConfigType').value;
     const groupBy1 = this.widgetForm.get('dataInputConfig.groupBy1').value;
     const groupBy2 = this.widgetForm.get('dataInputConfig.groupBy2').value;
+    const fieldNames = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
     const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
 
     // Default available widgets
     let availableWidgets = [...allWidgetTypes];
 
-    // Multiple entities
-    if (groupBy1 && groupBy2) {
+    if (fieldNames.length > 0 && groupBy1 && groupBy2) {
+      availableWidgets = availableWidgets.filter(w =>
+        [Enum_WidgetType.StackedBarChart, Enum_WidgetType.StackedColumnChart].includes(w.value)
+      );
+    }
+    else if (fieldNames.length == 0 && groupBy1 && groupBy2) {
       availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
     }
-    else if (groupBy1) {
-      // One groupBy field
-      const groupByProp = this.getAllAvailableProperties().find(p => p.name === groupBy1);
-      availableWidgets = availableWidgets.filter(w =>
-        [Enum_WidgetType.BarChart, Enum_WidgetType.PieChart, Enum_WidgetType.Donut, Enum_WidgetType.AreaChart, Enum_WidgetType.ColumnChart, Enum_WidgetType.LineChart, Enum_WidgetType.HeatMapChart, Enum_WidgetType.KPI].includes(w.value)
-      );
+    else if (groupBy1 || fieldNames.length > 0) {
+      if (groupBy1) {
+        availableWidgets = [...getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional), ...getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional)];
+      }
+      else {
+        availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
+      }
 
     } else {
       // No groupBy fields
       availableWidgets = availableWidgets.filter(w =>
-        [Enum_WidgetType.Table, Enum_WidgetType.KPI].includes(w.value)
+        [Enum_WidgetType.KPI].includes(w.value)
       );
-    }
-
-
-    // Always ensure Table option is available
-    if (!availableWidgets.some(w => w.value === Enum_WidgetType.Table)) {
-      availableWidgets.push(this.widgetTypes.find(w => w.value === Enum_WidgetType.Table));
     }
 
     this.recommendedWidgets = availableWidgets;
@@ -614,19 +760,27 @@ export class WidgetFormComponent implements OnInit {
     }
 
     // Single/Multiple entity validation based on entity configuration type
+    let entityValidation = false;
+
     if (this.widgetForm.get('entityConfigType').value === 'single') {
       const entity = this.widgetForm.get('dataInputConfig.entitySelect').value;
       const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
+
       if (aggregationMethod === Enum_Method.Sum) {
         const properties = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-        return !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
+        entityValidation = !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
+      } else {
+        entityValidation = !!entity;
       }
-      else {
-        return !!entity
+
+      // Validate field rules if any are enabled
+      if (entityValidation && this.hasEnabledFieldRules()) {
+        // You can add stricter validation here if needed
+        entityValidation = this.validateAllEnabledFieldRules();
       }
     } else {
       const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-        return entities.length > 0
+      entityValidation = entities.length > 0;
       // // Check if at least one entity has properties selected
       // const dataConfigs = this.getDataConfigControls();
       // for (const config of dataConfigs) {
@@ -635,6 +789,8 @@ export class WidgetFormComponent implements OnInit {
       //   }
       // }
     }
+
+    return entityValidation;
   }
 
   onSubmit(): void {
@@ -643,59 +799,75 @@ export class WidgetFormComponent implements OnInit {
       alert('Please complete all required fields before submitting.');
       return;
     }
-  
+
+    // Show validation warnings if any
+    this.showValidationWarnings();
+
     // Determine dimension based on data configuration
     let dimension = WidgetDimension.OneDimensional;
-  
+
     if (this.widgetForm.get('dataInputConfig.groupBy1').value) {
       dimension = this.widgetForm.get('dataInputConfig.groupBy2').value ?
         WidgetDimension.ThreeDimensional :
         WidgetDimension.TwoDimensional;
     }
-  
+
     // Create fieldNames
-    const fieldNames: Record<string, EventPropertyType> = {};
-  
+    const fieldNames: WidgetFieldNameConfig[] = [];
+
     // Gather fieldNames properties based on entity configuration
     if (this.widgetForm.get('entityConfigType').value === 'single') {
       const props = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
       const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-  
+
       // Create fieldNames objects
       props.forEach(propValue => {
-        const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name === propValue);
+        const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name === propValue.name);
         if (propInfo) {
-          fieldNames[propValue.name] = propInfo.type;
+          const fieldConfig: WidgetFieldNameConfig = {
+            name: propValue.name,
+            type: propInfo.type,
+          };
+
+          // Add field-specific rules if enabled
+          if (this.ruleDataForEachField[propValue.name]?.enabled) {
+            fieldConfig.rule = this.ruleDataForEachField[propValue.name].rule;
+          }
+
+          fieldNames.push(fieldConfig);
         }
       });
     } else {
       // For multiple entities, gather from all entity configurations
       const dataConfigs = this.getDataConfigControls();
-  
+
       // Add common properties if selected
       const commonProps = this.widgetForm.get('dataInputConfig.commonProperties').value || [];
       commonProps.forEach(propValue => {
         const propInfo = this.commonProperties.find(p => p.name === propValue);
         if (propInfo) {
-          fieldNames[propValue] = propInfo.type;
+          fieldNames.push({
+            name: propValue.name,
+            type: propInfo.type,
+          });
         }
       });
     }
-  
+
     // Create showable properties array
     const showableProperties: ShowableProperty[] = [];
-  
+
     // Gather showable properties based on entity configuration
     if (this.widgetForm.get('entityConfigType').value === 'single') {
       const props = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
       const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-  
+
       // Create ShowableProperty objects
       props.forEach(propValue => {
         const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name === propValue.name);
         if (propInfo) {
           showableProperties.push({
-            name: propValue,
+            name: propValue.name,
             displayName: propInfo.columnName,
             isMultiValued: false,
             isLabel: propInfo.type === EventPropertyType.String
@@ -705,7 +877,7 @@ export class WidgetFormComponent implements OnInit {
     } else {
       // For multiple entities, gather from all entity configurations
       const dataConfigs = this.getDataConfigControls();
-  
+
       // Add common properties if selected
       const commonProps = this.widgetForm.get('dataInputConfig.commonProperties').value || [];
       commonProps.forEach(propValue => {
@@ -720,10 +892,10 @@ export class WidgetFormComponent implements OnInit {
         }
       });
     }
-  
+
     // Prepare the data configuration
     let dataConfig: WidgetDataConfig[] = [];
-  
+
     if (this.widgetForm.get('entityConfigType').value === 'single') {
       dataConfig = [{
         entity: this.widgetForm.get('dataInputConfig.entitySelect').value as Enum_Entity,
@@ -732,8 +904,8 @@ export class WidgetFormComponent implements OnInit {
     } else {
       // For multiple entities, gather from all entity configurations
       const dataConfigs = this.getDataConfigControls();
-  
-      dataConfigs.forEach(config => { 
+
+      dataConfigs.forEach(config => {
         if (config.get('schemaName').value) {
           dataConfig.push({
             entity: config.get('entity').value as Enum_Entity,
@@ -742,7 +914,7 @@ export class WidgetFormComponent implements OnInit {
         }
       });
     }
-  
+
     // Create the base widget configuration
     const baseWidgetConfig: BaseWidgetConstructorProps = {
       id: this.generateUUID(),
@@ -750,80 +922,90 @@ export class WidgetFormComponent implements OnInit {
       displayConfig: this.widgetForm.get('displayConfig').value,
       showableProperties: showableProperties,
       widgetTileConf: this.widgetForm.get('widgetTileConf').value,
-      WidgetInteractivityConfig : {
-        isWidgetHidden : false
+      WidgetInteractivityConfig: {
+        isWidgetHidden: false
       },
       filterConfig: {
         customFilters: {},
-        propertyFilters: this.convertRulesToPropertyFilters(),
+        propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
         disableTimeFilter: false,
         startTime: this.getCurrentDayStart(),
         endTime: moment(new Date()).valueOf(),
         isDashboardFilterApplied: true
       }
     };
-  
+
     // Create appropriate data input config based on dimension
-    let dataInputConfig: any; // Using any temporarily to solve the type issue
-  
+    let dataInputConfig: OneDimensionDataInputConfig | TwoDimensionDataInputConfig | ThreeDimensionDataInputConfig;
+
     switch (dimension) {
-      case WidgetDimension.OneDimensional:
-        dataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct').value,
-          method: this.widgetForm.get('dataInputConfig.method').value,
-          dataConfig: dataConfig
-        };
-        break;
-  
-      case WidgetDimension.TwoDimensional:
-        dataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct').value,
-          method: this.widgetForm.get('dataInputConfig.method').value,
+      case WidgetDimension.OneDimensional: {
+        const config: OneDimensionDataInputConfig = {
+          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
+          method: this.widgetForm.get('dataInputConfig.method')?.value,
           dataConfig: dataConfig,
-          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1').value,
-          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime').value
+          fieldNames: fieldNames
         };
+        dataInputConfig = config;
         break;
-  
-      case WidgetDimension.ThreeDimensional:
-        dataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct').value,
-          method: this.widgetForm.get('dataInputConfig.method').value,
+      }
+
+      case WidgetDimension.TwoDimensional: {
+        const config: TwoDimensionDataInputConfig = {
+          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
+          method: this.widgetForm.get('dataInputConfig.method')?.value,
+          fieldNames: fieldNames,
           dataConfig: dataConfig,
-          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1').value,
-          groupBy2: this.widgetForm.get('dataInputConfig.groupBy2').value,
-          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime').value
+          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1')?.value,
+          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime')?.value,
         };
+        dataInputConfig = config;
         break;
+      }
+
+      case WidgetDimension.ThreeDimensional: {
+        const config: ThreeDimensionDataInputConfig = {
+          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
+          method: this.widgetForm.get('dataInputConfig.method')?.value,
+          dataConfig: dataConfig,
+          fieldNames: fieldNames,
+          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1')?.value,
+          groupBy2: this.widgetForm.get('dataInputConfig.groupBy2')?.value,
+          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime')?.value,
+        };
+        dataInputConfig = config;
+        break;
+      }
     }
-  
+
     try {
       // Create a complete constructor props object
       const constructorProps = {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig
       };
-  
+
       // Validate the configuration for the selected widget type
       const validation = WidgetFactory.validateWidgetConfiguration(
-        this.widgetForm.get('widgetType').value, 
+        this.widgetForm.get('widgetType').value,
         dataInputConfig
       );
-  
+
       if (!validation.isValid) {
         alert(`Invalid widget configuration: ${validation.errors.join(', ')}`);
         return;
       }
-  
+
       // Use the factory to create the appropriate widget
       const finalWidget = WidgetFactory.createWidget(constructorProps);
-  
+      finalWidget.dimension = dimension;
+
       // In a real application, you would save this widget or pass it to a service
       console.log('Widget created:', finalWidget);
       this.finalWidget = finalWidget;
       this.finalWidgetChange.emit(this.finalWidget);
       alert('Widget created successfully!');
-      
+
       // Optional: Reset the form or navigate to another page
       // this.onReset();
       // this.router.navigate(['/dashboard']);
@@ -851,7 +1033,24 @@ export class WidgetFormComponent implements OnInit {
     });
   }
 
+  togglePropertyFilters(event: any): void {
+    this.enablePropertyFilters = event.target.checked;
+
+    if (!this.enablePropertyFilters) {
+      // Clear property filters when disabled
+      this.ruleData = new RuleSet();
+      this.widgetForm.get('filterConfig.propertyFilters').setValue(null);
+    }
+
+    this.updateStepCompletion(3);
+  }
+
   convertRulesToPropertyFilters(): any {
+
+    if (!this.enablePropertyFilters) {
+      return null;
+    }
+
     // Convert the rule groups to a format the widget can use
     const propertyFilters = this.ruleData;
     return propertyFilters;
@@ -890,6 +1089,12 @@ export class WidgetFormComponent implements OnInit {
     this.widgetForm.get('dataInputConfig.method').setValue(Enum_Method.Count);
     this.widgetForm.get('dataInputConfig.isDistinct').setValue(false);
     this.widgetForm.get('displayConfig.color').setValue('#3498db');
+
+    this.enablePropertyFilters = false;
+    this.ruleData = new RuleSet();
+
+    // Clear field-specific rules
+    this.ruleDataForEachField = {};
 
     // Reset accordion state
     this.currentStep = 1;
@@ -1095,6 +1300,22 @@ export class WidgetFormComponent implements OnInit {
     this.updateStepCompletion(3);
   }
 
+  getAvailableGroupByTypes(groupByNumber: number): any[] {
+    // For group by 1, always return all options
+    if (groupByNumber === 1) {
+      return this.groupByTypes;
+    }
+
+    // For group by 2, check if group by 1 is time-based
+    if (groupByNumber === 2 && this.groupBy1SelectionType === 'time') {
+      // If group by 1 is time-based, only return 'field' option
+      return this.groupByTypes.filter(type => type.value === 'field');
+    }
+
+    // Otherwise return all options
+    return this.groupByTypes;
+  }
+
   onGroupBy1Change(event: any): void {
 
     var prop = event.value as Property;
@@ -1134,8 +1355,8 @@ export class WidgetFormComponent implements OnInit {
   updateTimeGrouping(groupByNumber: number, event): void {
     // Create groupByConf object
     const groupByModel = new groupByConf();
-    groupByModel.name = event.Value;
-    groupByModel.projectionName = this.capitalizeFirstWord(event.Value);
+    groupByModel.name = event.value;
+    groupByModel.projectionName = this.capitalizeFirstWord(event.value);
     groupByModel.type = EventPropertyType.String;
     groupByModel.isTime = true;
 
@@ -1166,8 +1387,17 @@ export class WidgetFormComponent implements OnInit {
 
   onSelectGroupByType(groupByNumber: number, event): void {
     const selectedValue = event.value;
+
     if (groupByNumber === 1) {
       this.groupBy1SelectionType = selectedValue;
+
+      // If group by 1 is changed to time and group by 2 is also time, reset group by 2
+      if (selectedValue === 'time' && this.groupBy2SelectionType === 'time') {
+        this.groupBy2SelectionType = null;
+        this.groupBy2Model = null;
+        this.groupBy2Option = null;
+        this.widgetForm.get('dataInputConfig.groupBy2')?.setValue(null);
+      }
     } else if (groupByNumber === 2) {
       this.groupBy2SelectionType = selectedValue;
     }
@@ -1237,5 +1467,93 @@ export class WidgetFormComponent implements OnInit {
       return [true, false];
     }
     return options;
+  }
+
+  // Method to get configuration for a specific field's query builder
+  getConfigForField(fieldName: string): QueryBuilderConfig {
+    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
+
+    if (!entityValue || !this.entityPropertiesMap[entityValue]) {
+      return { fields: {} };
+    }
+
+    const entityProperties = this.entityPropertiesMap[entityValue];
+    const config: QueryBuilderConfig = { fields: {} };
+
+    // Build configuration for the specific field
+    var property = entityProperties.find(prop => prop.name === fieldName);
+    if (property) {
+      if (property.type !== EventPropertyType.Guid) {
+        const operators = this.getOpertorByType(property.type);
+        const options = this.setDefaultValuesByType(property.name, property.defaultValues, property.type);
+
+        let fieldConfig;
+        if (options == null) {
+          fieldConfig = {
+            name: property.columnName,
+            type: EventPropertyType[property.type],
+            operators: operators
+          };
+        } else {
+          fieldConfig = {
+            name: property.columnName,
+            type: EventPropertyType[property.type],
+            options: options,
+            operators: operators,
+          };
+        }
+
+        config.fields[property.name] = fieldConfig;
+      }
+    }
+
+
+    return config;
+  }
+
+  // Method to get count of rules for a specific field
+  getFieldRuleCount(fieldName: string): number {
+    const fieldRules = this.ruleDataForEachField[fieldName];
+    if (!fieldRules || !fieldRules.enabled || !fieldRules.rule) {
+      return 0;
+    }
+
+    return 1;
+
+  }
+
+  // Method to get validation warnings (non-blocking issues)
+  getValidationWarnings(): string[] {
+    const warnings: string[] = [];
+
+    // Check for enabled field rules without actual rules
+    for (const fieldName in this.ruleDataForEachField) {
+      const fieldRules = this.ruleDataForEachField[fieldName];
+      if (fieldRules.enabled) {
+        const ruleCount = this.getFieldRuleCount(fieldName);
+        if (ruleCount === 0) {
+          warnings.push(`Field "${fieldName}" has rules enabled but no rules configured`);
+        }
+      }
+    }
+
+    // // Check for global property filters enabled but no rules
+    // if (this.enablePropertyFilters && this.getGlobalFilterRuleCount() === 0) {
+    //   warnings.push('Global property filters are enabled but no filter rules are configured');
+    // }
+
+    return warnings;
+  }
+
+  // Method to show validation warnings to user
+  showValidationWarnings(): void {
+    const warnings = this.getValidationWarnings();
+    if (warnings.length > 0) {
+      const warningMessage = 'Please note the following:\n\n' + warnings.join('\n');
+      // You can show this in a more user-friendly way, like a toast or modal
+      console.warn('Validation warnings:', warnings);
+      // Optionally show to user:
+      // alert(warningMessage);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { dashboard } from "../DashboardModel";
 import { TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../dimension-widgets";
 import { Enum_Method_Aggregation, Enum_WidgetType } from "../enums/enums";
-import { TwoDimensionDataInputConfig, WidgetDisplayConfig, WidgetFilterConfig, WidgetDataOutputConfig, WidgetPaginationConfig, ShowableProperty } from "../interfaces/interfaces";
+import { TwoDimensionDataInputConfig, WidgetDisplayConfig, WidgetFilterConfig, WidgetDataOutputConfig, ShowableProperty } from "../interfaces/interfaces";
 import { WidgetTileConf } from "../types/types";
 
 export interface DonutConf {
@@ -16,7 +16,6 @@ export class DonutWidgetConstructorProps implements TwoDimensionWidgetConstructo
   displayConfig: WidgetDisplayConfig;
   filterConfig?: WidgetFilterConfig;
   dataOutputConfig?: WidgetDataOutputConfig;
-  paginationConfig?: WidgetPaginationConfig;
   showableProperties?: ShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;

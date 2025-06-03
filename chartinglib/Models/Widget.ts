@@ -2,7 +2,7 @@
 import * as moment from "moment";
 import { dashboard } from "./DashboardModel";
 import { Enum_WidgetType, WidgetDimension } from "./enums/enums";
-import { WidgetDisplayConfig, WidgetFilterConfig, WidgetPaginationConfig, ShowableProperty, OneDimensionDataInputConfig, TwoDimensionDataInputConfig, ThreeDimensionDataInputConfig, WidgetInteractivityConfig } from "./interfaces/interfaces";
+import { WidgetDisplayConfig, WidgetFilterConfig, ShowableProperty, OneDimensionDataInputConfig, TwoDimensionDataInputConfig, ThreeDimensionDataInputConfig, WidgetInteractivityConfig } from "./interfaces/interfaces";
 import { WidgetTileConf, WidgetConstructorProps } from "./types/types";
 
 
@@ -15,7 +15,7 @@ export abstract class Widget {
   widgetTileConf: WidgetTileConf;
   displayConfig: WidgetDisplayConfig;
   filterConfig: WidgetFilterConfig;
-  paginationConfig: WidgetPaginationConfig;
+
   showableProperties: ShowableProperty[];
   isPreview?: boolean | null;
   allowRefresh?: boolean;
@@ -57,13 +57,6 @@ export abstract class Widget {
       isDashboardFilterApplied: props.filterConfig?.isDashboardFilterApplied ?? true
     };
 
-    // Pagination configuration
-    this.paginationConfig = {
-      pagination: props.paginationConfig?.pagination,
-      pageLimit: props.paginationConfig?.pageLimit,
-      pageNumber: props.paginationConfig?.pageNumber
-    };
-    
     // Widget Interactivity configuration
     this.WidgetInteractivityConfig = props.WidgetInteractivityConfig ?? null;
 

@@ -57,8 +57,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
 
     //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
-    if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType != null) {
-      if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
+    if (this.widgetRequestModel.dataInputConfig?.clubbingAggregationType != null) {
+      if (this.widgetRequestModel.dataInputConfig?.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
         const greatestSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "greatest";
         });
@@ -71,7 +71,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.setData(chartData.series[maxValuesSeriesIndex], 0);
         this.PropName = chartData.series[maxValuesSeriesIndex].name;
       }
-      else if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Lowest) {
+      else if (this.widgetRequestModel.dataInputConfig?.clubbingAggregationType == Enum_Method_Aggregation.Lowest) {
         const lowestSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "lowest";
         });
@@ -86,7 +86,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.PropName = chartData.series[minValuesSeriesIndex].name;
       }
 
-      else if (this.widgetRequestModel.dataInputConfig.DataOutputConfig.clubbingAggregationType == Enum_Method_Aggregation.Total) {
+      else if (this.widgetRequestModel.dataInputConfig?.clubbingAggregationType == Enum_Method_Aggregation.Total) {
         const totalSeries = chartData.series.find((x) => {
           return x.name.toLowerCase() == "total";
         });

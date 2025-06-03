@@ -1,6 +1,6 @@
 // dimension-widgets.ts - Contains dimension-specific widget classes
 import { WidgetDimension, Enum_Method, Enum_WidgetType } from "./enums/enums";
-import { OneDimensionDataInputConfig, TwoDimensionDataInputConfig, ThreeDimensionDataInputConfig, BaseWidgetConstructorProps } from "./interfaces/interfaces";
+import { OneDimensionDataInputConfig, TwoDimensionDataInputConfig, ThreeDimensionDataInputConfig, BaseWidgetConstructorProps, NoDimensionDataInputConfig } from "./interfaces/interfaces";
 import { Widget } from "./Widget";
 
 
@@ -30,7 +30,7 @@ export class TwoDimensionWidget extends Widget {
     this.dataInputConfig = {
       isDistinct: props.dataInputConfig?.isDistinct ?? false,
       clubbingTime: props.dataInputConfig?.clubbingTime ?? false,
-      fieldNames: props.dataInputConfig?.fieldNames ?? {},
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
       getColumnNameWithAggregationMethod: props.dataInputConfig?.getColumnNameWithAggregationMethod ?? false,
       groupBy1: props.dataInputConfig?.groupBy1 ?? null,
       dataConfig: props.dataInputConfig?.dataConfig ?? [],
@@ -50,13 +50,27 @@ export class ThreeDimensionWidget extends Widget {
     this.dataInputConfig = {
       isDistinct: props.dataInputConfig?.isDistinct ?? false,
       clubbingTime: props.dataInputConfig?.clubbingTime ?? false,
-      fieldNames: props.dataInputConfig?.fieldNames ?? {},
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
       getColumnNameWithAggregationMethod: props.dataInputConfig?.getColumnNameWithAggregationMethod ?? false,
       groupBy1: props.dataInputConfig?.groupBy1 ?? null,
       groupBy2: props.dataInputConfig?.groupBy2 ?? null,
       dataConfig: props.dataInputConfig?.dataConfig ?? [],
       method: props.dataInputConfig?.method ?? Enum_Method.Count,
       DataOutputConfig: props.dataInputConfig?.DataOutputConfig
+    };
+  }
+}
+export class NoDimensionWidget extends Widget {
+  dimension = WidgetDimension.NoDimension;
+  dataInputConfig: NoDimensionDataInputConfig;
+
+  constructor(props: ThreeDimensionWidgetConstructorProps) {
+    super(props);
+    
+    this.dataInputConfig = {
+      isDistinct: props.dataInputConfig?.isDistinct ?? false,
+      dataConfig: props.dataInputConfig?.dataConfig ?? null,
+      method: props.dataInputConfig?.method ?? Enum_Method.Count
     };
   }
 }
@@ -74,4 +88,7 @@ export interface TwoDimensionWidgetConstructorProps extends BaseWidgetConstructo
 
 export interface ThreeDimensionWidgetConstructorProps extends BaseWidgetConstructorProps {
   dataInputConfig: ThreeDimensionDataInputConfig;
+}
+export interface NoDimensionWidgetConstructorProps extends BaseWidgetConstructorProps {
+  dataInputConfig: NoDimensionDataInputConfig;
 }

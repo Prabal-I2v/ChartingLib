@@ -1,7 +1,7 @@
 import { dashboard } from "../DashboardModel";
 import { OneDimensionWidget, OneDimensionWidgetConstructorProps, TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../dimension-widgets";
 import { Enum_Method_Aggregation, Enum_WidgetType } from "../enums/enums";
-import { OneDimensionDataInputConfig, ShowableProperty, TwoDimensionDataInputConfig, WidgetDataOutputConfig, WidgetDisplayConfig, WidgetFilterConfig, WidgetPaginationConfig } from "../interfaces/interfaces";
+import { OneDimensionDataInputConfig, ShowableProperty, TwoDimensionDataInputConfig, WidgetDataOutputConfig, WidgetDisplayConfig, WidgetFilterConfig } from "../interfaces/interfaces";
 import { WidgetTileConf } from "../types/types";
 
 export interface KPIConf {
@@ -18,7 +18,6 @@ export class KPIWidgetConstructorProps implements TwoDimensionWidgetConstructorP
   displayConfig: WidgetDisplayConfig;
   filterConfig?: WidgetFilterConfig;
   dataOutputConfig?: WidgetDataOutputConfig;
-  paginationConfig?: WidgetPaginationConfig;
   showableProperties?: ShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;

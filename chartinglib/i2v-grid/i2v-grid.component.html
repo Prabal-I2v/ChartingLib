@@ -15,7 +15,7 @@
         <div class="noConfExist">
           <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
             [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-          <span class="major-heading">No Configurations found</span>
+          <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       <i2v-chart-header *ngIf="isModel" style="width: 100%;" [(showFilterValues)]="showFilterValues"
@@ -28,11 +28,8 @@
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled" [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
         <div *ngIf="columnDefs.length>0" style="display : flex; gap : 10px">
           <p-multiSelect class="column-multiselect" [(ngModel)]="selectedColumnDefs"
-            [options]="SelectColumnFilteredList | async" optionLabel="headerName" placeholder="Select Columns"
+            [options]="SelectColumnFilteredList | async" optionLabel="translatedHeader" placeholder="Select Columns" dataKey="headerName"
             (onChange)="updateColumns()">
-            <ng-template let-selected pTemplate="selectedItem">
-              <span>{{ selected.headerName | translate }}</span>
-            </ng-template>
           </p-multiSelect>
 
             <p-dropdown

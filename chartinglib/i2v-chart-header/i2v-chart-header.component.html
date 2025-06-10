@@ -1,124 +1,79 @@
-<div
-  style="
+<div style="
     display: flex;
     gap: 10px;
     width: 100%;
     justify-content: space-between;
     align-items: center;
-  "
->
-  <div
-    style="
+  ">
+  <div style="
       display: flex;
-      width: 25%;
-      flex-wrap: wrap;
+      width: 40%;
       align-self: start;
       gap: 5px;
       align-items: center;
-    "
-  >
-    <h3
-      style="
+      flex: 1;
+    ">
+    <div *ngIf="svgIcon" class="icon-box" style="align-self: start;">
+      <span libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></span>
+    </div>
+    <div style="
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+        min-width: 0; /* This is crucial */
+        overflow: hidden; /* Ensures content doesn't overflow */
+      ">
+      <span style="
+          margin: 0;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 18px;
+          width: 100%; /* Makes it take full width of parent */
+        " [title]="heading" *ngIf="heading">
+        {{ heading }}
+      </span>
+      <span style="
         margin: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-      "
-      [title]="heading"
-      *ngIf="heading"
-    >
-      {{ heading }}
-    </h3>
-    <span
-      style="
-        margin: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      "
-      [title]="subHeading"
-      *ngIf="subHeading"
-      >({{ subHeading }})</span
-    >
+        font-size: 14px;
+        width: 100%; /* Makes it take full width of parent */
+      " [title]="subHeading" *ngIf="subHeading">({{ subHeading }})</span>
+    </div>
+  </div>
+  <ng-content></ng-content>
+
+  <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+">
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
+      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'"
+      (click)="toggleShowFilterValues()">
+    </button>
   </div>
 
-  <div
-    *ngIf="customFilters"
-    style="
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: flex-end;
-      align-self: start;
-    "
-  >
-    <p-calendar
-      *ngIf="enableCustomTime"
-      [(ngModel)]="DateRange"
-      selectionMode="range"
-      [showTime]="true"
-      #customTimeFilterRef
-      (onClose)="onCustomTimeSelected()"
-      [appendTo]="'body'"
-    >
-    </p-calendar>
-    <!-- <input  *ngIf="enableCustomTime" type="text" #customTimeFilterRef class="dateInput"
-             ngxDaterangepickerMd
-             [timePicker]="true"
-             [timePickerSeconds]="true"
-             [timePickerIncrement]="15"
-             [timePicker24Hour]="true"
-             opens="center"
-             startKey="startTime" endKey="endTime"
-             [locale]="{format: 'DD/MM/YYYY HH:mm:ss', firstDay: 1}"
-             [(ngModel)]="DateRange"
-             (ngModelChange)="onCustomTimeSelected($event)"/> -->
-
-    <p-dropdown
-      *ngIf="!disableTimeFilter"
-      [options]="TimeFilter"
-      [(ngModel)]="TimeFilterValue"
-      placeholder="Select Time"
-      [editable]="false"
-      (onChange)="onTimeChange($event)"
-      [appendTo]="'body'"
-    >
-    </p-dropdown>
-    <span style="display: none">
-      <p-dropdown
-        *ngIf="refreshIntervalValue"
-        [options]="refreshInterval"
-        [(ngModel)]="refreshIntervalValue"
-        placeholder="Select Interval Time"
-        optionLabel="displayName"
-        #refreshIntervalRef
-        optionValue="returnValue"
-        (onChange)="setIntervalTime($event)"
-        [appendTo]="'body'"
-      >
-      </p-dropdown>
+  <div style="position: relative;">
+    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
+      [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
-    <p-dropdown
-      [options]="CustomFilterKeys"
-      [(ngModel)]="selectedCustomFilterkey"
-      placeholder="Select an Entity"
-      [editable]="false"
-      #keySelectRef
-      (onChange)="onCustomFilterKeyChange($event)"
-      [appendTo]="'body'"
-    >
-    </p-dropdown>
-    <p-multiSelect
-      [options]="customFilters[selectedCustomFilterkey]"
-      optionLabel="displayName"
-      optionValue="returnValue"
-      #multiselectRef
-      placeholder="Select {{ selectedCustomFilterkey }}"
-      [showClear]="true"
-      (onClear)="onCustomFilterValuesChange($event)"
-      (onChange)="onCustomFilterValuesChange($event)"
-      [appendTo]="'body'"
-    >
-    </p-multiSelect>
+    <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+      appSvg="assets/Outline/menu.svg" [size]="'20'"
+      (click)="onContextMenuEvent($event)">
+    </button>
+
   </div>
+ 
 </div>
+
+<i2v-context-menu [open]="isContexMenuOpen" (menuClosed)="onMenuClosed()" [position]="position">
+  <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
+    (click)="onMenuClick()"></i2v-context-menu-item>
+    <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+    [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+</i2v-context-menu>

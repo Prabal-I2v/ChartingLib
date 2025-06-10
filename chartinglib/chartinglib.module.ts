@@ -26,7 +26,6 @@ import { LayoutModule } from "@progress/kendo-angular-layout";
 import { MultiSelectModule } from "primeng/multiselect";
 import { DropdownModule } from "primeng/dropdown";
 import { CalendarModule } from "primeng/calendar";
-import { I2vChartsComponent } from "./i2v-charts/i2v-charts.component";
 import { I2vBarChartComponent } from "./i2v-bar-chart/i2v-bar-chart.component";
 import { I2vChartHeaderComponent } from "./i2v-chart-header/i2v-chart-header.component";
 import { FormsModule } from "@angular/forms";
@@ -40,12 +39,26 @@ import { I2vAreaChartComponent } from "./i2v-area-chart/i2v-area-chart.component
 import { HttpClientModule } from "@angular/common/http";
 import { I2vKpiChartComponent } from "./i2v-kpi-chart/i2v-kpi-chart.component";
 import { I2vDonutChartComponent } from "./i2v-donut-chart/i2v-donut-chart.component";
+import { FormatTimePipe } from "./Models/pipes/formatTime.pipe";
+import { ShowVideoSourceNamePipe } from "./Models/pipes/showVideoSourceName.pipe";
+import { DetailsWidgetComponent } from "./details-widget/details-widget.component";
+import { MatBadgeModule } from "@angular/material/badge";
+import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.component";
+import { GridstackModule } from 'gridstack/dist/angular';
 import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
+import { MatTooltip } from "@angular/material/tooltip";
+import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
+import { i2vContextMenuModule } from "@i2v-systems/context-menu";
+import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
+import { GetImagePipe } from "src/app/pipes/getImage.pipe";
+import { SharedModule } from "../../shared.module";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
 @NgModule({
   declarations: [
+    FormatTimePipe,
+    ShowVideoSourceNamePipe,
     ChartingComponent,
     // FusionChartComponent,
     // I2vChartsComponent,
@@ -60,10 +73,13 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
+    DetailsWidgetComponent,
+    I2vSankeyChartComponent,
+    CustomFilterDialogComponent,
+    I2vGridComponent
   ],
   imports: [
     CommonModule,
-    FormsModule,
     // BrowserAnimationsModule,
     // EchartsxModule,
     // FusionChartsModule,
@@ -78,9 +94,13 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     MultiSelectModule,
     DropdownModule,
     HttpClientModule,
-    i2vUtilityModule,
+    MatBadgeModule,
+    GridstackModule,
+    MatTooltip,
     
-    // NgxDaterangepickerMd
+    // NgxDaterangepickerMd,
+    i2vContextMenuModule,
+    SharedModule
   ],
   exports: [
     // FusionChartComponent,
@@ -95,6 +115,8 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     I2vStackedbarChartComponent,
     I2vLineChartComponent,
     I2vAreaChartComponent,
+    I2vSankeyChartComponent,
+    I2vGridComponent,
     ChartsModule,
     LayoutModule,
     GridModule,
@@ -103,6 +125,11 @@ import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
     CalendarModule,
     DropdownModule,
     MultiSelectModule,
+    FormatTimePipe,
+    ShowVideoSourceNamePipe,
+    DetailsWidgetComponent,
+    GridstackModule
+
   ],
 })
 export class ChartinglibModule {}

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
@@ -11,24 +11,18 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 })
 export class I2vStackedbarChartComponent extends I2vChartsComponent {
   constructor(
-    private chartingDataService: ChartingDataService,
-    private cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
+    cd: ChangeDetectorRef,
+    elementRef: ElementRef
   ) {
-    super();
+    super(cd, chartingDataService,elementRef);
   }
 
   ngOnInit(): void {
-    if (this.widgetRequestModel) {
-      this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.init(this.cd, this.chartingDataService);
-      }
-    } else {
-      this.isModel = false;
-    }
+    super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     const chartData = new ClientChartModel();
 
     chartData.series = data.data.map((x) => {

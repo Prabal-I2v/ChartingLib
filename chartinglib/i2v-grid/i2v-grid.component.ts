@@ -33,7 +33,7 @@ export class I2vGridComponent extends I2vChartsComponent {
     chartingDataService: ChartingDataService,
     public cd: ChangeDetectorRef,
     elementRef: ElementRef,
-    private translateService: TranslateService 
+    private translate: TranslateService 
   ) {
     super(cd, chartingDataService, elementRef);
     this.configuration.columnDefs = this.columnDefs;
@@ -139,7 +139,7 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
   addTranslatedFilterValue(){
     this.columnToSelected.forEach(column => {
-      this.translateService.get(column.headerName).subscribe(translatedData => {
+      this.translate.get(column.headerName).subscribe(translatedData => {
         column.translatedHeader = translatedData || column.headerName; // Fallback to original
       });
     });

@@ -56,17 +56,10 @@
       display: flex;
       flex-direction: column;
       padding: 10px 15px;
-      background-color: #fff;
-    "
-  >
-    <div class="nowatchlistexist">
-      <div
-        class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
-        libSvgElement
-        [appSvg]="'assets/Outline/table.svg'"
-        [size]="'48'"
-        [fill-color]="'white'"
-      ></div>
+    ">
+    <div class="noConfExist">
+      <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+        [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
       <span class="major-heading">{{'No Data found' | translate}}</span>
     </div>
   </div>
@@ -91,11 +84,7 @@
     </ng-template>
 
     <kendo-chart-tooltip>
-      <ng-template
-        kendoChartSeriesTooltipTemplate
-        let-value="value"
-        let-category="category"
-      >
+      <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
         {{ value | translate }}
       </ng-template>
     </kendo-chart-tooltip>

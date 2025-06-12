@@ -14,7 +14,7 @@
       flex: 1;
     ">
     <div *ngIf="svgIcon" class="icon-box" style="align-self: start;">
-      <span libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></span>
+      <span><lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg></span>
     </div>
     <div style="
         display: flex;
@@ -52,20 +52,15 @@
   align-items: center;
   position: relative;
 ">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" libSvgElement [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
-      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'"
-      (click)="toggleShowFilterValues()">
-    </button>
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'" (click)="toggleShowFilterValues()">
+    <lib-svg [path]="'assets/Outline/filter.svg'" [size]="'20'"></lib-svg></button>
   </div>
 
   <div style="position: relative;">
-    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG" libSvgElement
-      [appSvg]="'assets/Solid/status.svg'" [size]="'8'" [fill-color]="'rgba(0, 153, 237, 1)'">
-    </span>
-    <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-      appSvg="assets/Outline/menu.svg" [size]="'20'"
-      (click)="onContextMenuEvent($event)">
-    </button>
+    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG">
+    <lib-svg [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'rgba(0, 153, 237, 1)'"></lib-svg></span>
+    <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
+    <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'"></lib-svg></button>
 
   </div>
  

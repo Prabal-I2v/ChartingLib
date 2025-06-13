@@ -19,7 +19,7 @@
         <div class="noConfExist">
           <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
             [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-          <span class="major-heading">No Configurations found</span>
+          <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
@@ -60,7 +60,7 @@
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
           [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-        <span class="major-heading">No Data found</span>
+        <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
 

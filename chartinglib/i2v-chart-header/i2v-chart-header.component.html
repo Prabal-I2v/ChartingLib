@@ -13,9 +13,9 @@
       align-items: center;
       flex: 1;
     ">
-    <div *ngIf="svgIcon" class="icon-box" style="align-self: start;">
-      <span><lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg></span>
-    </div>
+    <span *ngIf="svgIcon" class="icon-box" style="align-self: start;">
+      <lib-svg [path]="svgIcon" [size]="'20'" [color]="'rgb(95, 111, 148)'"></lib-svg>
+    </span>
     <div style="
         display: flex;
         flex-wrap: wrap;

@@ -27,6 +27,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
 import { MyContextMenuComponent } from "src/app/shared/context-menu/context-menu.component";
 import { ContextMenuItem } from "src/app/Models/ContextMenuItem.model";
+import { SvgComponent } from "@i2v-systems/i2v-utility";
 
 declare let $: any;
 
@@ -42,7 +43,7 @@ interface DateRange {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class I2vChartHeaderComponent implements OnInit, OnChanges {
-  svgIcon: string = ""
+  svgIcon: string = 'assets/fill/va/default.svg'
   heading = "";
   subHeading = "";
   disableTimeFilter = false;

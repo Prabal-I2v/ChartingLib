@@ -20,7 +20,7 @@
           <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
             <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
           </div>
-          <span class="major-heading">No Configurations found</span>
+          <span class="major-heading">{{'No Configurations found' |  translate}}</span>
         </div>
       </div>
       <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues"
@@ -62,7 +62,7 @@
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
           <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
         </div>
-        <span class="major-heading">No Data found</span>
+        <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
     <kendo-chart [chartArea]="{ background: 'transparent' }" style=" height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"

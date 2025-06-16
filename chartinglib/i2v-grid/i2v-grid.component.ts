@@ -8,6 +8,7 @@ import { KendoGridComponent } from 'src/app/kendo-grid/kendo-grid.component';
 import { ReplaySubject } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
 import { totalData } from 'src/app/modules/report/attendance-report/attendance-report.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'i2v-table-grid',
@@ -31,7 +32,8 @@ export class I2vGridComponent extends I2vChartsComponent {
   constructor(
     chartingDataService: ChartingDataService,
     public cd: ChangeDetectorRef,
-    elementRef: ElementRef
+    elementRef: ElementRef,
+    private translate: TranslateService 
   ) {
     super(cd, chartingDataService, elementRef);
     this.configuration.columnDefs = this.columnDefs;
@@ -132,9 +134,17 @@ export class I2vGridComponent extends I2vChartsComponent {
         checked: isSelected,
       };
     });
+    this.addTranslatedFilterValue();
     this.SelectColumnFilteredList.next(this.columnToSelected);
   }
-
+  addTranslatedFilterValue(){
+    this.columnToSelected.forEach(column => {
+      this.translate.get(column.headerName).subscribe(translatedData => {
+        column.translatedHeader = translatedData || column.headerName; // Fallback to original
+      });
+    });
+  
+  }
   public transformTableData(data: TableOutputModel): TableOutputModel {
     var data  = super.transformTableData(data);
     this.columnDefs = data.columns

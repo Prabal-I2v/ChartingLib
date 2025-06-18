@@ -11,8 +11,9 @@
         background-color: #fff;
       ">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+            <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+          </div>
           <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
@@ -52,15 +53,18 @@
       padding: 10px 15px;
     ">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+        </div>
         <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
     <div *ngIf="isModel && !isLoading && dataExists" class="top">
       <div class="data-box">
         <div *ngIf="svgIcon" class="icon-box">
-          <div libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></div>
+          <div >
+            <lib-svg [path]="svgIcon" [size]="'20'" [color]="'#5F6F94'"></lib-svg>
+          </div>
         </div>
 
         <div style="display: flex; flex-direction: row; gap: 14px; justify-content: center; align-items: flex-start;">
@@ -71,8 +75,9 @@
               {{ PropValue }}
             </div>
           </div>
-          <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
-            [fill-color]="ResSvgIconColor" [size]="'60'"></div>
+          <div *ngIf="widgetRequestModel.findResultSvgIcon" >
+            <lib-svg [isMonochrome]="false" [path]="ResSvgIcon" [size]="'60'" [color]="ResSvgIconColor"></lib-svg>
+          </div>
           <img style="height: 60px; width: 60px; border-radius: 20px;" *ngIf="propImage" [src]="propImage" (click)="showDetail()">
         </div>
       </div>

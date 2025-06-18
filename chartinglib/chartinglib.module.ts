@@ -98,6 +98,7 @@ import { TranslateModule } from "@ngx-translate/core";
     MatBadgeModule,
     GridstackModule,
     MatTooltip,
+    
     // NgxDaterangepickerMd,
     i2vContextMenuModule,
     SharedModule,

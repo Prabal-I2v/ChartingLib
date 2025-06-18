@@ -17,8 +17,9 @@
         background-color: #fff;
       ">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+            <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+          </div>
           <span class="major-heading">{{'No Configurations found' |  translate}}</span>
         </div>
       </div>
@@ -58,8 +59,9 @@
       padding: 10px 15px;
     ">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+        </div>
         <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
@@ -87,7 +89,7 @@
         </kendo-chart-series-item>
       </kendo-chart-series>
     </kendo-chart>
-  </div>
+  </div> 
   <div *ngIf="showFilterValues && !isEditModeOn" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
     <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
     </app-details-widget>

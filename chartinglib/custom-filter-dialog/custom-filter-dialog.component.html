@@ -1,21 +1,42 @@
 <div mat-dialog-content class="filter-dialog-content">
-    <p-dropdown *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" placeholder="Select Time Duration"
-    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-dropdown>
+    <p-dropdown *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" [placeholder]="'Select Time Duration' | translate"
+    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true">
+    <ng-template let-option pTemplate="item">
+      {{ option  |translate}}
+    </ng-template>
+    <ng-template let-selectedOption pTemplate="selectedItem">
+      {{ selectedOption | translate }}
+    </ng-template>
+  </p-dropdown>
     
     <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
       (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
     </p-calendar>
     
     <p-dropdown *ngIf="showTimeFilter || disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
-      placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
+      [placeholder]="'Select Time' | translate" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
+      <ng-template let-option pTemplate="item">
+        {{ option  |translate}}
+      </ng-template>
+      <ng-template let-selectedOption pTemplate="selectedItem">
+        {{ selectedOption | translate }}
+      </ng-template>
     </p-dropdown>
   
     <p-dropdown *ngIf="showRefreshInterval || refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
       placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
       (onChange)="setIntervalTime($event)" [appendTo]="'body'">
+      <ng-template let-item pTemplate="item">
+        <div class="custom-item">
+          <span>{{ item.displayName | translate }}</span>
+        </div>
+      </ng-template>
+      <ng-template let-selected pTemplate="selectedItem">
+        <span>{{ selected.displayName | translate }}</span>
+      </ng-template> 
     </p-dropdown>
   
-    <p-dropdown *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+    <p-dropdown *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" [placeholder]="'Select an Entity' | translate"
       [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
     </p-dropdown>
   

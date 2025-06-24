@@ -13,9 +13,8 @@
           background-color: #fff;
         ">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-          <span class="major-heading">No Configurations found</span>
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg></div>
+          <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       <i2v-chart-header *ngIf="isModel" style="width: 100%;" [(showFilterValues)]="showFilterValues"
@@ -28,8 +27,9 @@
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled" [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
         <div *ngIf="columnDefs.length>0" style="display : flex; gap : 10px">
           <p-multiSelect class="column-multiselect" [(ngModel)]="selectedColumnDefs"
-            [options]="SelectColumnFilteredList | async" optionLabel="headerName" placeholder="Select Columns"
-            (onChange)="updateColumns()"></p-multiSelect>
+            [options]="SelectColumnFilteredList | async" optionLabel="translatedHeader" placeholder="Select Columns" dataKey="headerName"
+            (onChange)="updateColumns()">
+          </p-multiSelect>
 
             <p-dropdown
             [options]="pageLimitOptions"
@@ -71,9 +71,8 @@
         padding: 10px 15px;
       ">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-        <span class="major-heading">No Data found</span>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg></div>
+        <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
     <div *ngIf="isModel && !isLoading && dataExists && selectedColumnDefs.length == 0" class="data-container" style="
@@ -85,9 +84,8 @@
         padding: 10px 15px;
       ">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-        <span class="major-heading">Please select a column</span>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'white'"></lib-svg></div>
+        <span class="major-heading">{{'Please select a column' | translate}}</span>
       </div>
 
     </div>

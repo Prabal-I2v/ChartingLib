@@ -36,6 +36,7 @@ import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filte
 import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
 import { SharedModule } from "../../shared.module";
+import { TranslateModule } from "@ngx-translate/core";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -81,9 +82,11 @@ import { SharedModule } from "../../shared.module";
     MatBadgeModule,
     GridstackModule,
     MatTooltip,
+    
     // NgxDaterangepickerMd,
     i2vContextMenuModule,
-    SharedModule
+    SharedModule,
+    TranslateModule
   ],
   exports: [
     // FusionChartComponent,

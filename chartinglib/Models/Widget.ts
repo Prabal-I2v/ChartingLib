@@ -1,7 +1,7 @@
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { dashboard } from "./DashboardModel";
 import { GridStackOptions, GridStackWidget } from "gridstack";
-import * as moment from "moment";
+import  moment from "moment";
 
 declare let $: any;
 

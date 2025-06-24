@@ -20,7 +20,7 @@ import {
   ICommonFilterOutputEmittorModel,
   Widget,
 } from "../Models/Widget";
-import * as moment from "moment";
+import  moment from "moment";
 import { EditAnalyticServerComponent } from "src/app/modules/settings/analytic-server-form/editAnalyticServer/edit-analytic-server.component";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";

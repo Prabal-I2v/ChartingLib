@@ -1,52 +1,15 @@
 // types.ts - Contains common interfaces and type definitions
 import { GridStackWidget } from "gridstack";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
-import { Enum_Entity, Enum_Schema, Enum_WidgetType, WidgetDimension } from "../enums/enums";
-import { OneDimensionWidgetConstructorProps, TwoDimensionWidgetConstructorProps, ThreeDimensionWidgetConstructorProps } from "../dimension-widgets";
-
-
-// Filter types
-export class ICustomFilter {
-  [key: string]: CustomFilterValueModel[];
-}
-
-export interface ICustomFilterKeyModel {
-  displayName: string;
-  returnValue: string;
-}
+import { Enum_Entity, Enum_Schema } from "../enums/enums";
+import { OneDimensionWidgetConstructorProps, TwoDimensionWidgetConstructorProps, ThreeDimensionWidgetConstructorProps } from "../Widget";
+import { ITimeRange } from "../interfaces/interfaces";
 
 export class CustomFilterValueModel {
   displayName: string;
   returnValue: string | ITimeRange | number | boolean;
 }
 
-export interface ITimeRange {
-  startTime: number; // Unix timestamp in milliseconds
-  endTime: number; // Unix timestamp in milliseconds
-}
-
-// Filter output models
-export interface ISetIntervalFilterOutputEmittorModel {
-  key: string;
-  value: number;
-}
-
-export interface IDateTimeFilterOutputEmittorModel {
-  key: string;
-  value: ITimeRange;
-}
-
-export interface ICustomFilterOutputEmittorModel {
-  key: string;
-  value: string[];
-}
-
-export interface ICommonFilterOutputEmittorModel {
-  [key: string]:
-  | ISetIntervalFilterOutputEmittorModel
-  | IDateTimeFilterOutputEmittorModel
-  | ICustomFilterOutputEmittorModel;
-}
 
 // Rules and conditions
 export class RuleSet {
@@ -65,15 +28,15 @@ export class Rule {
 
 // Widget tile configuration
 export class WidgetTileConf implements GridStackWidget {
-  x?: number;
-  y?: number;
-  w?: number;
-  h?: number;
-  initialMinH?: number;
-  initialMaxH?: number;
-  initialMinW?: number;
-  initialMaxW?: number;
-  autoPosition?: boolean;
+  id?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  initialMinHeight?: number;
+  initialMaxHeight?: number;
+  initialMinWidth?: number;
+  initialMaxWidth?: number;
   minW?: number;
   maxW?: number;
   minH?: number;
@@ -81,12 +44,12 @@ export class WidgetTileConf implements GridStackWidget {
   noResize?: boolean;
   noMove?: boolean;
   locked?: boolean;
-  id?: string;
   content?: string;
   lazyLoad?: boolean;
   sizeToContent?: boolean | number;
   resizeToContentParent?: string;
   subGridOpts?: any;
+  autoPosition?: boolean;
 }
 
 // Columns and range configurations
@@ -104,20 +67,6 @@ export class ColumnRangeCondition {
   greaterThan: string;
   lessThan: string;
   type: EventPropertyType;
-}
-
-// Join entities
-export class JoinableEntity {
-  entity: Enum_Entity;
-  joinOn: string;
-  joinWith: string;
-  schema: Enum_Schema;
-  properties: JoinableEntityProperty[];
-}
-
-export class JoinableEntityProperty {
-  name: string;
-  displayName: string;
 }
 
 export class groupByConf {

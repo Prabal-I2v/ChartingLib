@@ -1,29 +1,30 @@
 // widget-base.ts - Contains the base Widget class
 import * as moment from "moment";
 import { dashboard } from "./DashboardModel";
-import { Enum_WidgetType, WidgetDimension } from "./enums/enums";
-import { WidgetDisplayConfig, WidgetFilterConfig, ShowableProperty, OneDimensionDataInputConfig, TwoDimensionDataInputConfig, ThreeDimensionDataInputConfig, WidgetInteractivityConfig } from "./interfaces/interfaces";
+import { Enum_Method, Enum_Method_Aggregation, Enum_WidgetType, WidgetDimension } from "./enums/enums";
+import { IWidgetDisplayConfig, IWidgetFilterConfig, IShowableProperty, IOneDimensionDataInputConfig, ITwoDimensionDataInputConfig, IThreeDimensionDataInputConfig, IWidgetInteractivityConfig, IBaseWidgetConstructorProps, IWidgetDataOutputConfig, INoDimensionDataInputConfig } from "./interfaces/interfaces";
 import { WidgetTileConf, WidgetConstructorProps } from "./types/types";
 
 
 // Abstract base widget class
 export abstract class Widget {
   id: string;
-  dashboardId: string | null;
-  dashboard: dashboard | null;
+  dashboardId?: string;
+  dashboard?: dashboard;
   widgetType: Enum_WidgetType;
   widgetTileConf: WidgetTileConf;
-  displayConfig: WidgetDisplayConfig;
-  filterConfig: WidgetFilterConfig;
+  displayConfig: IWidgetDisplayConfig;
+  filterConfig: IWidgetFilterConfig;
 
-  showableProperties: ShowableProperty[];
-  isPreview?: boolean | null;
+  showableProperties: IShowableProperty[];
+  isPreview?: boolean;
   allowRefresh?: boolean;
   refreshInterval?: number;
-  WidgetInteractivityConfig?: WidgetInteractivityConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
   query?: string;
+  widgetSpecificConfig? : string;
   abstract dimension: WidgetDimension;
-  abstract dataInputConfig: OneDimensionDataInputConfig | TwoDimensionDataInputConfig | ThreeDimensionDataInputConfig; // Placeholder for data input configuration
+  abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
   protected static getCurrentDayStart(): number {
     const now = new Date();
@@ -32,10 +33,9 @@ export abstract class Widget {
 
   constructor(props: WidgetConstructorProps) {
     // Core initialization
-    this.id = props.id ?? '00000000-0000-0000-0000-000000000000';
+    this.id = props.id
     this.dashboardId = props.dashboardId ?? null;
     this.dashboard = props.dashboard ?? null;
-    this.widgetType = props.widgetType;
     this.widgetTileConf = props.widgetTileConf;
     
     // Display configuration
@@ -58,7 +58,7 @@ export abstract class Widget {
     };
 
     // Widget Interactivity configuration
-    this.WidgetInteractivityConfig = props.WidgetInteractivityConfig ?? null;
+    this.widgetInteractivityConfig = props.widgetInteractivityConfig ?? null;
 
     // Showable properties
     this.showableProperties = props.showableProperties ?? [];
@@ -67,7 +67,155 @@ export abstract class Widget {
     this.isPreview = props.isPreview;
     this.allowRefresh = props.allowRefresh ?? false;
     this.refreshInterval = props.refreshInterval ?? 0;
-    this.WidgetInteractivityConfig = props.WidgetInteractivityConfig ?? null;
+    this.widgetInteractivityConfig = props.widgetInteractivityConfig ?? null;
     this.query = props.query ?? null;
+    this.widgetSpecificConfig = props.widgetSpecificConfig ?? null;
   }
+}
+
+
+// Dimension-specific widget classes
+export class OneDimensionWidget extends Widget {
+  dimension = WidgetDimension.OneDimensional;
+  dataInputConfig: IOneDimensionDataInputConfig;
+
+  constructor(props: OneDimensionWidgetConstructorProps) {
+    super(props);
+    this.dataInputConfig = {
+      isDistinct: props.dataInputConfig?.isDistinct ?? false,
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
+      dataConfig: props.dataInputConfig.dataConfig ?? null,
+      method: props.dataInputConfig.method ?? Enum_Method.Count,
+      DataOutputConfig: props.dataInputConfig?.DataOutputConfig,
+      fieldsAggregationType: props.dataInputConfig.fieldsAggregationType ?? Enum_Method_Aggregation.None,
+    };
+  }
+}
+
+export class TwoDimensionWidget extends Widget {
+  dimension = WidgetDimension.TwoDimensional;
+  dataInputConfig: ITwoDimensionDataInputConfig;
+
+  constructor(props: TwoDimensionWidgetConstructorProps) {
+    super(props);
+    this.dataInputConfig = {
+      isDistinct: props.dataInputConfig?.isDistinct ?? false,
+      clubbingTime: props.dataInputConfig?.clubbingTime ?? false,
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
+      groupBy1: props.dataInputConfig?.groupBy1 ?? null,
+      dataConfig: props.dataInputConfig?.dataConfig ?? [],
+      method: props.dataInputConfig?.method ?? Enum_Method.Count,
+      DataOutputConfig: props.dataInputConfig?.DataOutputConfig,
+      fieldsAggregationType: props.dataInputConfig?.fieldsAggregationType ?? Enum_Method_Aggregation.None
+    };
+  }
+}
+
+export class ThreeDimensionWidget extends Widget {
+  dimension = WidgetDimension.ThreeDimensional;
+  dataInputConfig: IThreeDimensionDataInputConfig;
+
+  constructor(props: ThreeDimensionWidgetConstructorProps) {
+    super(props);
+    this.dataInputConfig = {
+      isDistinct: props.dataInputConfig?.isDistinct ?? false,
+      clubbingTime: props.dataInputConfig?.clubbingTime ?? false,
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
+      groupBy1: props.dataInputConfig?.groupBy1 ?? null,
+      groupBy2: props.dataInputConfig?.groupBy2 ?? null,
+      dataConfig: props.dataInputConfig?.dataConfig ?? [],
+      method: props.dataInputConfig?.method ?? Enum_Method.Count,
+      DataOutputConfig: props.dataInputConfig?.DataOutputConfig,
+      fieldsAggregationType: props.dataInputConfig?.fieldsAggregationType ?? Enum_Method_Aggregation.None
+    };
+  }
+}
+export class NoDimensionWidget extends Widget {
+  dimension = WidgetDimension.NoDimension;
+  dataInputConfig: INoDimensionDataInputConfig;
+
+  constructor(props: ThreeDimensionWidgetConstructorProps) {
+    super(props);
+    this.dataInputConfig = {
+      isDistinct: props.dataInputConfig?.isDistinct ?? false,
+      dataConfig: props.dataInputConfig?.dataConfig ?? null,
+      fieldNames: props.dataInputConfig?.fieldNames ?? [],
+      DataOutputConfig: props.dataInputConfig?.DataOutputConfig,
+      method: props.dataInputConfig?.method ?? Enum_Method.Count,
+      fieldsAggregationType: props.dataInputConfig?.fieldsAggregationType ?? Enum_Method_Aggregation.None,
+    };
+  }
+}
+
+
+// Dimension-specific Widget Constructor Props
+export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
+  displayConfig: IWidgetDisplayConfig;
+  filterConfig?: IWidgetFilterConfig;
+  dataOutputConfig?: IWidgetDataOutputConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  showableProperties: IShowableProperty[];
+  widgetTileConf: WidgetTileConf;
+  id?: string;
+  dashboardId?: string;
+  dashboard?: dashboard;
+  isPreview?: boolean;
+  allowRefresh: boolean;
+  refreshInterval: number;
+  query?: string;
+  dataInputConfig: IOneDimensionDataInputConfig;
+  widgetSpecificConfig?: string;
+}
+
+export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
+  displayConfig: IWidgetDisplayConfig;
+  filterConfig?: IWidgetFilterConfig;
+  dataOutputConfig?: IWidgetDataOutputConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  showableProperties: IShowableProperty[];
+  widgetTileConf: WidgetTileConf;
+  id?: string;
+  dashboardId?: string;
+  dashboard?: dashboard;
+  isPreview?: boolean;
+  allowRefresh: boolean;
+  refreshInterval: number;
+  query?: string;
+  dataInputConfig: ITwoDimensionDataInputConfig;
+  widgetSpecificConfig?: string;
+}
+
+export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
+  displayConfig: IWidgetDisplayConfig;
+  filterConfig?: IWidgetFilterConfig;
+  dataOutputConfig?: IWidgetDataOutputConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  showableProperties: IShowableProperty[];
+  widgetTileConf: WidgetTileConf;
+  id?: string;
+  dashboardId?: string;
+  dashboard?: dashboard;
+  isPreview?: boolean;
+  allowRefresh: boolean;
+  refreshInterval: number;
+  query?: string;
+  dataInputConfig: IThreeDimensionDataInputConfig;
+  widgetSpecificConfig?: string;
+}
+export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
+  displayConfig: IWidgetDisplayConfig;
+  filterConfig?: IWidgetFilterConfig;
+  dataOutputConfig?: IWidgetDataOutputConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  showableProperties: IShowableProperty[];
+  widgetTileConf: WidgetTileConf;
+  id?: string;
+  dashboardId?: string;
+  dashboard?: dashboard;
+  isPreview?: boolean;
+  allowRefresh: boolean;
+  refreshInterval: number;
+  query?: string;
+  dataInputConfig: INoDimensionDataInputConfig;
+  widgetSpecificConfig?: string;
 }

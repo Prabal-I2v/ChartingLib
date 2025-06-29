@@ -7,8 +7,9 @@ import {
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
-import { DonutChartWidget } from "../Models/widgetRequestModel/DonutChartRequestModel";
 import { Enum_Method_Aggregation } from "../Models/enums/enums";
+import { DonutChart2DWidget } from "../Models/widgetRequestModel/DonutChart2DModel";
+import { DonutChart1DWidget } from "../Models/widgetRequestModel/DonutChart1DModel";
 
 @Component({
   selector: "i2v-donut-chart",
@@ -16,54 +17,56 @@ import { Enum_Method_Aggregation } from "../Models/enums/enums";
   styleUrl: "./i2v-donut-chart.component.scss",
 })
 export class I2vDonutChartComponent extends I2vChartsComponent {
-  @Input() override widgetRequestModel: DonutChartWidget = null;
+  @Input() override widgetRequestModel: DonutChart1DWidget | DonutChart2DWidget = null;
   resultHeading: string;
   resultLabel: string;
   resultData: string;
   totalData: number = 0;
-  seriesDataIndexArray : boolean[] = [];
+  seriesDataIndexArray: boolean[] = [];
   public labelContent(e: SeriesLabelsContentArgs): string {
     return e.category;
   }
+
+  chartData: ClientChartModel;
 
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
     elementRef: ElementRef
   ) {
-    super(cd, chartingDataService,elementRef);
+    super(cd, chartingDataService, elementRef);
   }
 
   ngOnInit(): void {
     super.ngOnInit();
   }
 
-  transformChartData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel) {
     this.dataExists = false;
     this.resultLabel = this.widgetRequestModel.donutConf.resultLabel;
     const chartData = new ClientChartModel();
-    this.seriesDataIndexArray = [] 
-    chartData.series = data.data.map((x) => {
+    this.seriesDataIndexArray = []
+    chartData.series = data.seriesData.map((x) => {
       this.seriesDataIndexArray.push(true);
-      return new ChartSeries({ value: Number(x.data[0]), name: x.label });
+      return new ChartSeries({ data: x.data, name: x.label });
     });
     var conf = this.widgetRequestModel.donutConf;
 
     if (conf.seriesAggregation == Enum_Method_Aggregation.Greatest) {
       var maxValue = -Infinity;
       chartData.series.forEach((seriesData) => {
-        var res = maxValue < seriesData.value
-        maxValue = res ? seriesData.value : maxValue;
+        var res = maxValue < Number(seriesData.data[0])
+        maxValue = res ? Number(seriesData.data[0]) : maxValue;
         if (conf.showSeriesLabelValue)
           this.resultHeading = res ? seriesData.name : "";
       })
       this.resultData = maxValue.toString();
     }
-    else if (conf.seriesAggregation == Enum_Method_Aggregation.Lowest) {
+    else if (conf.seriesAggregation == Enum_Method_Aggregation.Least) {
       var minValue = Infinity;
       chartData.series.forEach((seriesData, index) => {
-        var res = minValue > seriesData.value
-        minValue = res ? seriesData.value : minValue;
+        var res = minValue > Number(seriesData.data[0])
+        minValue = res ? Number(seriesData.data[0]) : minValue;
         if (conf.showSeriesLabelValue)
           this.resultHeading = res ? seriesData.name : "";
       })
@@ -73,11 +76,11 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     else {
       var value = 0;
       chartData.series.forEach((seriesData) => {
-        value += seriesData.value;
+        value += Number(seriesData.data[0]);
       })
     }
 
-    chartData.chartCategories = data.data.map((x) => {
+    chartData.xAxisFields = data.seriesData.map((x) => {
       return x.label;
     });
 
@@ -85,7 +88,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
       this.dataExists = true;
     }
 
-    return chartData;
+    this.chartData = chartData;
   }
 
   onLegendItemClick(event) {
@@ -94,13 +97,13 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     });
 
     if (index != -1) {
-      
-      var chartData =  JSON.parse(JSON.stringify(this.chartData));
+
+      var chartData = JSON.parse(JSON.stringify(this.chartData));
       this.seriesDataIndexArray[index] = !this.seriesDataIndexArray[index]
       this.seriesDataIndexArray.forEach((x, index) => {
-        if(!x) delete chartData.series[index];
+        if (!x) delete chartData.series[index];
       })
-      
+
       var conf = this.widgetRequestModel.donutConf;
 
       if (conf.seriesAggregation == Enum_Method_Aggregation.Greatest) {
@@ -113,7 +116,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
         })
         this.resultData = maxValue.toString();
       }
-      else if (conf.seriesAggregation == Enum_Method_Aggregation.Lowest) {
+      else if (conf.seriesAggregation == Enum_Method_Aggregation.Least) {
         var minValue = Infinity;
         chartData.series.forEach((seriesData) => {
           var res = minValue >= seriesData.value
@@ -122,7 +125,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
             this.resultHeading = seriesData.name;
         })
         this.resultData = minValue.toString();
-  
+
       }
       else {
         var value = 0;

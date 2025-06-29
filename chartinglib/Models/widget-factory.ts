@@ -1,51 +1,87 @@
 // widget-factory.ts - Refactored to create widget-specific configurations first
-import { OneDimensionWidget, TwoDimensionWidget, ThreeDimensionWidget } from "./dimension-widgets";
-import { WidgetDimension, Enum_WidgetType, Enum_Method_Aggregation, widgetTypeDimensionMap } from "./enums/enums";
-import { ThreeDimensionDataInputConfig, OneDimensionDataInputConfig, TwoDimensionDataInputConfig, NoDimensionDataInputConfig } from "./interfaces/interfaces";
+import { WidgetDimension, Enum_WidgetType, widgetTypeDimensionMap } from "./enums/enums";
+import { IThreeDimensionDataInputConfig, IOneDimensionDataInputConfig, ITwoDimensionDataInputConfig, INoDimensionDataInputConfig } from "./interfaces/interfaces";
 import { Widget } from "./Widget";
-import { KpiWidget, KPIWidgetConstructorProps, KPIConf } from "./widgetRequestModel/KpiWidgetRequestModel";
-import { BarChartWidget } from "./widgetRequestModel/BarChartRequestModel";
-import { ColumnChartWidget } from "./widgetRequestModel/ColumnChartRequestModel";
-import { LineChartWidget } from "./widgetRequestModel/LineChartRequestModel";
-import { PieChartWidget } from "./widgetRequestModel/PieChartRequestModel";
-import { DonutChartWidget, DonutWidgetConstructorProps, DonutConf } from "./widgetRequestModel/DonutChartRequestModel";
-import { AreaChartWidget } from "./widgetRequestModel/AreaChartRequestModel";
-import { HeatMapChartWidget } from "./widgetRequestModel/HeatMapChartRequestModel";
+
 import { TableConf, TableWidget } from "./widgetRequestModel/TableWidgetRequestModel";
 import { StackedBarChartWidget } from "./widgetRequestModel/StackedBarChartRequestModel";
 import { StackedColumnChartWidget } from "./widgetRequestModel/StackedColumnChartRequestModel";
 import { WidgetConstructorProps } from "./types/types";
+import { Kpi1DWidget, KPI1DWidgetConstructorProps } from "./widgetRequestModel/KpiWidget1DModel";
+import { Kpi2DWidget, KPI2DWidgetConstructorProps, KPIConf } from "./widgetRequestModel/KpiWidget2DModel";
+import { AreaChart2DWidget } from "./widgetRequestModel/AreaChart2DModel";
+import { DonutConf, DonutChart2DWidget, Donut2DWidgetConstructorProps } from "./widgetRequestModel/DonutChart2DModel";
+import { DonutChart1DWidget, Donut1DWidgetConstructorProps } from "./widgetRequestModel/DonutChart1DModel";
+import { BarChart1DWidget } from "./widgetRequestModel/BarChart1DModel";
+import { BarChart2DWidget } from "./widgetRequestModel/BarChart2DModel";
+import { ColumnChart1DWidget } from "./widgetRequestModel/ColumnChart1DModel";
+import { LineChart1DWidget } from "./widgetRequestModel/LineChart1DModel";
+import { PieChart1DWidget } from "./widgetRequestModel/PieChart1DModel";
+import { AreaChart1DWidget } from "./widgetRequestModel/AreaChart1DModel";
+import { HeatMapChart1DWidget } from "./widgetRequestModel/HeatMapChart1DModel";
+import { ColumnChart2DWidget } from "./widgetRequestModel/ColumnChart2DModel";
+import { LineChart2DWidget } from "./widgetRequestModel/LineChart2DModel";
+import { PieChart2DWidget } from "./widgetRequestModel/PieChart2DModel";
+import { HeatMapChart2DWidget } from "./widgetRequestModel/HeatMapChart2DModel";
+import { HeatMapChart3DWidget } from "./widgetRequestModel/HeatMapChart3DModel";
 
 // Factory for creating specific widget types
 export class WidgetFactory {
   // Create a widget based on its type and base properties
-  static createWidget(baseProps: WidgetConstructorProps): Widget {
-    const widgetType = baseProps.widgetType;
+  static createWidget(baseProps: WidgetConstructorProps, type: Enum_WidgetType): Widget {
+    const widgetType = type;
 
     switch (widgetType) {
-      case Enum_WidgetType.KPI:
-        return this.createKpiWidget(baseProps);
+      case Enum_WidgetType.KPI1D:
+        return this.createKpi1DWidget(baseProps);
 
-      case Enum_WidgetType.BarChart:
-        return this.createBarChartWidget(baseProps);
+      case Enum_WidgetType.KPI2D:
+        return this.createKpi2DWidget(baseProps);
 
-      case Enum_WidgetType.ColumnChart:
-        return this.createColumnChartWidget(baseProps);
+      case Enum_WidgetType.BarChart1D:
+        return this.createBarChart1DWidget(baseProps);
 
-      case Enum_WidgetType.LineChart:
-        return this.createLineChartWidget(baseProps);
+      case Enum_WidgetType.BarChart2D:
+        return this.createBarChart2DWidget(baseProps);
 
-      case Enum_WidgetType.PieChart:
-        return this.createPieChartWidget(baseProps);
+      case Enum_WidgetType.ColumnChart1D:
+        return this.createColumnChart1DWidget(baseProps);
 
-      case Enum_WidgetType.Donut:
-        return this.createDonutChartWidget(baseProps);
+      case Enum_WidgetType.ColumnChart2D:
+        return this.createColumnChart2DWidget(baseProps);
 
-      case Enum_WidgetType.AreaChart:
-        return this.createAreaChartWidget(baseProps);
+      case Enum_WidgetType.LineChart1D:
+        return this.createLineChart1DWidget(baseProps);
 
-      case Enum_WidgetType.HeatMapChart:
-        return this.createHeatMapChartWidget(baseProps);
+      case Enum_WidgetType.LineChart2D:
+        return this.createLineChart2DWidget(baseProps);
+
+      case Enum_WidgetType.PieChart1D:
+        return this.createPieChart1DWidget(baseProps);
+
+      case Enum_WidgetType.PieChart2D:
+        return this.createPieChart2DWidget(baseProps);
+
+      case Enum_WidgetType.Donut1D:
+        return this.createDonutChart1DWidget(baseProps);
+
+      case Enum_WidgetType.Donut2D:
+        return this.createDonutChart2DWidget(baseProps);
+
+      case Enum_WidgetType.AreaChart1D:
+        return this.createAreaChart1DWidget(baseProps);
+
+      case Enum_WidgetType.AreaChart2D:
+        return this.createAreaChart2DWidget(baseProps);
+
+      case Enum_WidgetType.HeatMapChart1D:
+        return this.createHeatMapChart1DWidget(baseProps);
+
+      case Enum_WidgetType.HeatMapChart2D:
+        return this.createHeatMapChart2DWidget(baseProps);
+
+      case Enum_WidgetType.HeatMapChart3D:
+        return this.createHeatMapChart3DWidget(baseProps);
 
       case Enum_WidgetType.Table:
         return this.createTableWidget(baseProps);
@@ -58,86 +94,144 @@ export class WidgetFactory {
 
       default:
         // Fall back to a dimension-based widget
-        return this.createDimensionWidget(baseProps);
+        throw new Error("Invalid Widget Type")
     }
   }
 
-  // Helper methods for each widget type
-  private static createKpiWidget(baseProps: WidgetConstructorProps): KpiWidget {
-    // Create KPI-specific configuration
-    const kpiConf: KPIConf = {
-      CountValueColumnName: 'count',
-      DisplayValueColumnName: 'value',
-      showChart: false
-    };
 
+  private static createKpi1DWidget(baseProps: WidgetConstructorProps): Kpi1DWidget {
     // Create proper constructor props
-    const kpiProps: KPIWidgetConstructorProps = {
+    const kpiProps: KPI1DWidgetConstructorProps = {
       ...baseProps,
-      widgetType: Enum_WidgetType.KPI,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig,
-      kpiConf: kpiConf
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig,
+      kpiConf: baseProps['kpiConf'] as KPIConf,
     };
 
-    return new KpiWidget(kpiProps);
+    return new Kpi1DWidget(kpiProps);
   }
 
-  private static createDonutChartWidget(baseProps: WidgetConstructorProps): DonutChartWidget {
+  private static createKpi2DWidget(baseProps: WidgetConstructorProps): Kpi2DWidget {
     // Create proper constructor props
-    const donutProps: DonutWidgetConstructorProps = {
+    const kpiProps: KPI2DWidgetConstructorProps = {
       ...baseProps,
-      widgetType: Enum_WidgetType.Donut,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig,
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig,
+      kpiConf: baseProps['kpiConf'] as KPIConf,
     };
 
-    return new DonutChartWidget(donutProps);
+    return new Kpi2DWidget(kpiProps);
   }
 
-  private static createBarChartWidget(baseProps: WidgetConstructorProps): BarChartWidget {
-    return new BarChartWidget({
+
+  private static createDonutChart1DWidget(baseProps: WidgetConstructorProps): DonutChart1DWidget {
+    // Create proper constructor props
+    const donutProps: Donut1DWidgetConstructorProps = {
       ...baseProps,
-      widgetType: Enum_WidgetType.BarChart,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig,
+      donutConf: baseProps['donutConf'] as DonutConf
+    };
+
+    return new DonutChart1DWidget(donutProps);
+  }
+
+  private static createDonutChart2DWidget(baseProps: WidgetConstructorProps): DonutChart2DWidget {
+    // Create proper constructor props
+    const donutProps: Donut2DWidgetConstructorProps = {
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig,
+      donutConf: baseProps['donutConf'] as DonutConf
+    };
+
+    return new DonutChart2DWidget(donutProps);
+  }
+
+  private static createBarChart1DWidget(baseProps: WidgetConstructorProps): BarChart1DWidget {
+    return new BarChart1DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
     });
   }
 
-  private static createColumnChartWidget(baseProps: WidgetConstructorProps): ColumnChartWidget {
-    return new ColumnChartWidget({
+  private static createBarChart2DWidget(baseProps: WidgetConstructorProps): BarChart2DWidget {
+    return new BarChart2DWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.ColumnChart,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
     });
   }
 
-  private static createLineChartWidget(baseProps: WidgetConstructorProps): LineChartWidget {
-    return new LineChartWidget({
+  private static createColumnChart1DWidget(baseProps: WidgetConstructorProps): ColumnChart1DWidget {
+    return new ColumnChart1DWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.LineChart,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
     });
   }
 
-  private static createPieChartWidget(baseProps: WidgetConstructorProps): PieChartWidget {
-    return new PieChartWidget({
+  private static createColumnChart2DWidget(baseProps: WidgetConstructorProps): ColumnChart2DWidget {
+    return new ColumnChart2DWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.PieChart,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
     });
   }
 
-  private static createAreaChartWidget(baseProps: WidgetConstructorProps): AreaChartWidget {
-    return new AreaChartWidget({
+  private static createLineChart1DWidget(baseProps: WidgetConstructorProps): LineChart1DWidget {
+    return new LineChart1DWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.AreaChart,
-      dataInputConfig: baseProps.dataInputConfig as TwoDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
     });
   }
 
-  private static createHeatMapChartWidget(baseProps: WidgetConstructorProps): HeatMapChartWidget {
-    return new HeatMapChartWidget({
+  private static createLineChart2DWidget(baseProps: WidgetConstructorProps): LineChart2DWidget {
+    return new LineChart2DWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.HeatMapChart,
-      dataInputConfig: baseProps.dataInputConfig as ThreeDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
+    });
+  }
+
+  private static createPieChart1DWidget(baseProps: WidgetConstructorProps): PieChart1DWidget {
+    return new PieChart1DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
+    });
+  }
+
+  private static createPieChart2DWidget(baseProps: WidgetConstructorProps): PieChart2DWidget {
+    return new PieChart2DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
+    });
+  }
+
+  private static createAreaChart1DWidget(baseProps: WidgetConstructorProps): AreaChart1DWidget {
+    return new AreaChart1DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
+    });
+  }
+
+  private static createAreaChart2DWidget(baseProps: WidgetConstructorProps): AreaChart2DWidget {
+    return new AreaChart2DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
+    });
+  }
+
+  private static createHeatMapChart1DWidget(baseProps: WidgetConstructorProps): HeatMapChart1DWidget {
+    return new HeatMapChart1DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as IOneDimensionDataInputConfig
+    });
+  }
+
+  private static createHeatMapChart2DWidget(baseProps: WidgetConstructorProps): HeatMapChart2DWidget {
+    return new HeatMapChart2DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as ITwoDimensionDataInputConfig
+    });
+  }
+
+  private static createHeatMapChart3DWidget(baseProps: WidgetConstructorProps): HeatMapChart3DWidget {
+    return new HeatMapChart3DWidget({
+      ...baseProps,
+      dataInputConfig: baseProps.dataInputConfig as IThreeDimensionDataInputConfig
     });
   }
 
@@ -151,8 +245,7 @@ export class WidgetFactory {
 
     return new TableWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.Table,
-      dataInputConfig: baseProps.dataInputConfig as NoDimensionDataInputConfig,
+      dataInputConfig: baseProps.dataInputConfig as INoDimensionDataInputConfig,
       tableConf: tableConf
     });
   }
@@ -160,32 +253,15 @@ export class WidgetFactory {
   private static createStackedBarChartWidget(baseProps: WidgetConstructorProps): StackedBarChartWidget {
     return new StackedBarChartWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.StackedBarChart,
-      dataInputConfig: baseProps.dataInputConfig as ThreeDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as IThreeDimensionDataInputConfig
     });
   }
 
   private static createStackedColumnChartWidget(baseProps: WidgetConstructorProps): StackedColumnChartWidget {
     return new StackedColumnChartWidget({
       ...baseProps,
-      widgetType: Enum_WidgetType.StackedColumnChart,
-      dataInputConfig: baseProps.dataInputConfig as ThreeDimensionDataInputConfig
+      dataInputConfig: baseProps.dataInputConfig as IThreeDimensionDataInputConfig
     });
-  }
-
-  private static createDimensionWidget(props: WidgetConstructorProps): Widget {
-    const dimension = widgetTypeDimensionMap[props.widgetType];
-
-    switch (dimension) {
-      case WidgetDimension.OneDimensional:
-        return new OneDimensionWidget(props);
-      case WidgetDimension.TwoDimensional:
-        return new TwoDimensionWidget(props as any);
-      case WidgetDimension.ThreeDimensional:
-        return new ThreeDimensionWidget(props as any);
-      default:
-        throw new Error(`Unknown widget dimension for type: ${props.widgetType}`);
-    }
   }
 
   public static validateWidgetConfiguration(
@@ -206,37 +282,35 @@ export class WidgetFactory {
     // Check if the provided dimension is compatible with the widget type
     // Higher dimension widgets can use lower dimension data, but not vice versa
     if (actualDimension > targetDimension) {
-      errors.push(`${Enum_WidgetType[widgetType]} (${targetDimension}D) cannot use ${actualDimension}D data configuration. Remove excess groupBy fields.`);
+      errors.push(`${Enum_WidgetType[widgetType]} (${targetDimension + 1} Dimensional) cannot use ${actualDimension + 1} Dimensional data configuration. Remove excess groupBy fields.`);
     }
 
     // Widget-specific validations
     switch (widgetType) {
-      case Enum_WidgetType.KPI:
-        // KPI widgets only need 1D data, but can work with higher dimensions
+      case Enum_WidgetType.KPI1D || Enum_WidgetType.AreaChart1D || Enum_WidgetType.BarChart1D ||
+        Enum_WidgetType.ColumnChart1D || Enum_WidgetType.LineChart1D || Enum_WidgetType.PieChart1D ||
+        Enum_WidgetType.Donut1D || Enum_WidgetType.HeatMapChart1D:
+        if (targetDimension != WidgetDimension.OneDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires no groupby's field`);
+        }
         break;
 
       case Enum_WidgetType.Table:
         // Table widgets can work with any data configuration
         break;
 
-      case Enum_WidgetType.BarChart:
-      case Enum_WidgetType.ColumnChart:
-      case Enum_WidgetType.LineChart:
-      case Enum_WidgetType.PieChart:
-      case Enum_WidgetType.Donut:
-      case Enum_WidgetType.AreaChart:
-      case Enum_WidgetType.HeatMapChart:
-      case Enum_WidgetType.StackedBarChart:
-      case Enum_WidgetType.StackedColumnChart:
-        // These are 3D widgets and need both groupBy1 and groupBy2
-        if (targetDimension === WidgetDimension.ThreeDimensional) {
-          // if (!dataConfig.groupBy1) {
-          //   errors.push(`${Enum_WidgetType[widgetType]} requires groupBy1 field`);
-          // }
-          // if (!dataConfig.groupBy2) {
-          //   errors.push(`${Enum_WidgetType[widgetType]} requires groupBy2 field`);
-          // }
+      case Enum_WidgetType.BarChart2D || Enum_WidgetType.ColumnChart2D ||
+        Enum_WidgetType.LineChart2D || Enum_WidgetType.PieChart2D || Enum_WidgetType.Donut2D ||
+        Enum_WidgetType.AreaChart2D || Enum_WidgetType.HeatMapChart2D:
+        if (targetDimension != WidgetDimension.TwoDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires only 1 group by's field`);
         }
+        break;
+      case Enum_WidgetType.HeatMapChart3D || Enum_WidgetType.StackedBarChart || Enum_WidgetType.StackedColumnChart:
+        if (targetDimension != WidgetDimension.ThreeDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires 2 group by's fields`);
+        }
+
         break;
     }
 

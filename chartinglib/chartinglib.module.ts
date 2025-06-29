@@ -54,6 +54,7 @@ import { GetImagePipe } from "src/app/pipes/getImage.pipe";
 import { SharedModule } from "../../shared.module";
 import { WidgetFormComponent } from './widget-form/widget-form.component';
 import { AccordionModule } from 'primeng/accordion';
+import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-preview.component';
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -79,7 +80,8 @@ import { AccordionModule } from 'primeng/accordion';
     I2vSankeyChartComponent,
     CustomFilterDialogComponent,
     I2vGridComponent,
-    WidgetFormComponent
+    WidgetFormComponent,
+    WidgetFormPreviewComponent
   ],
   imports: [
     CommonModule,

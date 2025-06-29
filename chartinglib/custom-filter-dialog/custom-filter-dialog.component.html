@@ -1,30 +1,42 @@
 <div mat-dialog-content class="filter-dialog-content">
-    <p-dropdown *ngIf="showTimeDurationFilter" [options]="timePeriodOptions" placeholder="Select Time Duration"
-    [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-dropdown>
+    @if (showTimeDurationFilter) {
+      <p-dropdown [options]="timePeriodOptions" placeholder="Select Time Duration"
+        [editable]="false" (onChange)="onTimeDurationChange($event)" [showClear]="true"></p-dropdown>
+    }
     
-    <p-calendar *ngIf="enableCustomTime" [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
-      (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
-    </p-calendar>
+    @if (enableCustomTime) {
+      <p-calendar [(ngModel)]="dateRange" selectionMode="range" [showTime]="true"
+        (onClose)="onCustomTimeSelected()" [appendTo]="'body'">
+      </p-calendar>
+    }
     
-    <p-dropdown *ngIf="showTimeFilter || disableTimeFilter" [options]="timeFilter" [(ngModel)]="timeFilterValue"
-      placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
-    </p-dropdown>
+    @if (showTimeFilter || disableTimeFilter) {
+      <p-dropdown [options]="timeFilter" [(ngModel)]="timeFilterValue"
+        placeholder="Select Time" [editable]="false" (onChange)="onTimeChange($event)" [appendTo]="'body'">
+      </p-dropdown>
+    }
   
-    <p-dropdown *ngIf="showRefreshInterval || refreshIntervalValue" [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
-      placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
-      (onChange)="setIntervalTime($event)" [appendTo]="'body'">
-    </p-dropdown>
+    @if (showRefreshInterval || refreshIntervalValue) {
+      <p-dropdown [options]="refreshInterval" [(ngModel)]="refreshIntervalValue"
+        placeholder="Select Interval Time" optionLabel="displayName" optionValue="returnValue"
+        (onChange)="setIntervalTime($event)" [appendTo]="'body'">
+      </p-dropdown>
+    }
   
-    <p-dropdown *ngIf="showEntity" [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
-      [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
-    </p-dropdown>
+    @if (showEntity) {
+      <p-dropdown [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" placeholder="Select an Entity"
+        [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
+      </p-dropdown>
+    }
   
-    <p-multiSelect *ngIf="showEntity && selectedCustomFilterkey" [options]="customFilters[selectedCustomFilterkey]"
-      [(ngModel)]="selectedFilterValues"
-      optionLabel="displayName" optionValue="returnValue"
-      placeholder="Select {{ selectedCustomFilterkey }}"
-      [showClear]="true"
-      (onChange)="onCustomFilterValuesChange($event)"
-      [appendTo]="'body'">
-    </p-multiSelect>
+    @if (showEntity && selectedCustomFilterkey) {
+      <p-multiSelect [options]="customFilters[selectedCustomFilterkey]"
+        [(ngModel)]="selectedFilterValues"
+        optionLabel="displayName" optionValue="returnValue"
+        placeholder="Select {{ selectedCustomFilterkey }}"
+        [showClear]="true"
+        (onChange)="onCustomFilterValuesChange($event)"
+        [appendTo]="'body'">
+      </p-multiSelect>
+    }
 </div>

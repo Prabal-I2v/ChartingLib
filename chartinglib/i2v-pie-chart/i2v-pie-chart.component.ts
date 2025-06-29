@@ -10,6 +10,9 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
   styleUrl: "./i2v-pie-chart.component.scss",
 })
 export class I2vPieChartComponent extends I2vChartsComponent {
+
+  chartData: ClientChartModel;
+
   public labelContent(args: any): string {
     var x = `${args.dataItem.name}`;
     return x;
@@ -27,15 +30,15 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     super.ngOnInit();
   }
 
-  transformChartData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({ value: Number(x.data[0]), name: x.label });
+    chartData.series = data.seriesData.map((x) => {
+      return new ChartSeries({ data :x.data, name: x.label });
     });
 
-    chartData.chartCategories = data.data.map((x) => {
+    chartData.xAxisFields = data.seriesData.map((x) => {
       return x.label;
     });
-    return chartData;
+   this.chartData = chartData;
   }
 }

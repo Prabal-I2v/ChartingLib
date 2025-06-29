@@ -1,6 +1,6 @@
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { Enum_WidgetType, WidgetDimension, Enum_Method, Enum_Schema, Enum_Entity } from "./enums/enums";
-import { WidgetDisplayConfig, WidgetInteractivityConfig, WidgetFilterConfig, WidgetDataConfig, ShowableProperty } from "./interfaces/interfaces";
+import { IWidgetDisplayConfig, IWidgetInteractivityConfig, IWidgetFilterConfig, IWidgetDataConfig, IShowableProperty } from "./interfaces/interfaces";
 import { groupByConf } from "./types/types";
 
 export class WidgetFormDto {
@@ -10,7 +10,7 @@ export class WidgetFormDto {
   dimension: WidgetDimension;
   
   // Display configuration
-  displayConfig: WidgetDisplayConfig;
+  displayConfig: IWidgetDisplayConfig;
   
   // Widget tile configuration
   widgetTileConf: {
@@ -21,10 +21,10 @@ export class WidgetFormDto {
   };
   
   // Widget interactivity configuration
-  widgetInteractivityConfig?: WidgetInteractivityConfig;
+  widgetInteractivityConfig?: IWidgetInteractivityConfig;
   
   // Filter configuration
-  filterConfig: WidgetFilterConfig;
+  filterConfig: IWidgetFilterConfig;
   
   // Entity & Configuration approach information
   configurationApproach: 'widgetFirst' | 'propertiesFirst';
@@ -35,7 +35,7 @@ export class WidgetFormDto {
     // Common properties for all dimensions
     isDistinct: boolean;
     method: Enum_Method;
-    dataConfig: WidgetDataConfig[];
+    dataConfig: IWidgetDataConfig[];
     
     // For single entity (used internally during form state)
     entityTypeSelect?: Enum_Schema;
@@ -58,7 +58,7 @@ export class WidgetFormDto {
   };
   
   // Showable properties for the widget
-  showableProperties: ShowableProperty[];
+  showableProperties: IShowableProperty[];
   
   // Optional properties
   isPreview?: boolean;

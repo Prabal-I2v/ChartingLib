@@ -1,7 +1,7 @@
 export class ChartsOutputModel {
   widgetQuery?: string;
-  labels: ChartsLabelModel[];
-  data: ChartsDataModel[];
+  labels: ChartsLabelModel;
+  seriesData: ChartsDataModel[];
 }
 
 class ChartsDataModel {
@@ -10,6 +10,10 @@ class ChartsDataModel {
 }
 
 class ChartsLabelModel {
-  value: string[];
-  key: string;
+  xAxisLabel: string;
+  xAxisFields: string[];
+  yAxisLabel: string;
+  yAxisFields: string[];
+  categories : string [];
+  useXAxisFieldValue: boolean = false;
 }

@@ -15,9 +15,10 @@ import * as moment from "moment";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
-import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ICommonFilterOutputEmittorModel, ITimeRange, CustomFilterValueModel } from "../Models/types/types";
-import { Widget } from "../Models/Widget";
-import { ThreeDimensionWidget, TwoDimensionWidget } from "../Models/dimension-widgets";
+import { CustomFilterValueModel } from "../Models/types/types";
+import { ThreeDimensionWidget, Widget } from "../Models/Widget";
+import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ICommonFilterOutputEmittorModel, ITimeRange } from "../Models/interfaces/interfaces";
+import { Enum_WidgetFormOperation, IWidgetFormDataRequestModel, IWidgetFormDataResponseModel, WidgetFormComponent } from "../widget-form/widget-form.component";
 
 declare let $: any;
 
@@ -59,6 +60,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() timePeriodOutput = new EventEmitter<string>();
   @Output() widgetResizeEmittor = new EventEmitter<boolean>();
   @Output() clearCustomFiltersValues = new EventEmitter<boolean>();
+  @Output() editWidgetOutput = new EventEmitter();
 
   @ViewChild("multiselectRef") multiselectRef: any;
   @ViewChild("keySelectRef") keySelectRef: any;
@@ -109,16 +111,16 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     //set properties
-    if (this.widgetModel instanceof ThreeDimensionWidget) {
+    if (this.widgetModel) {
       this.svgIcon = this.widgetModel.displayConfig.svgIcon ? this.widgetModel.displayConfig.svgIcon : "assets/fill/va/default.svg";
       this.heading = this.widgetModel.displayConfig.heading;
       this.subHeading = this.widgetModel?.displayConfig.subHeading;
       this.disableTimeFilter = this.widgetModel.filterConfig.disableTimeFilter;
-      this.hideWidget = this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
+      this.hideWidget = this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
       this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
       this.customFilterKeys = Object.keys(this.customFilters);
       // this.customFilters = this.widgetModel.customFilters;
-      if ((this.widgetModel.dataInputConfig.groupBy1 && this.widgetModel.dataInputConfig.groupBy1.isTime) || (this.widgetModel.dataInputConfig.groupBy2 && this.widgetModel.dataInputConfig.groupBy2.isTime)) {
+      if (this.widgetModel instanceof ThreeDimensionWidget && ((this.widgetModel.dataInputConfig.groupBy1 && this.widgetModel.dataInputConfig.groupBy1.isTime) || (this.widgetModel.dataInputConfig.groupBy2 && this.widgetModel.dataInputConfig.groupBy2.isTime))) {
         this.showTimeDurationFilter = true;
         this.timePeriodValue = this.widgetModel.showableProperties[0]?.displayName || "Month";
       }
@@ -412,8 +414,8 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   }
 
   toggleHideWidget() {
-    this.widgetModel.WidgetInteractivityConfig.isWidgetHidden = !this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
-    this.hideWidget = this.widgetModel.WidgetInteractivityConfig.isWidgetHidden;
+    this.widgetModel.widgetInteractivityConfig.isWidgetHidden = !this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
+    this.hideWidget = this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
     this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
   }
 
@@ -476,6 +478,10 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     });
 
     ref.afterClosed().subscribe((data) => { });
+  }
+
+  onEditWidget() {
+    this.editWidgetOutput.next(null)
   }
 
   onContextMenuEvent(event) {

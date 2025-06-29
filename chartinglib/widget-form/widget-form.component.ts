@@ -1,53 +1,237 @@
-// widget-form.component.ts
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '@angular/forms';
+// widget-form.component.ts - Complete TypeScript file with strong typing
+import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
+import { async, forkJoin } from 'rxjs';
 import * as moment from 'moment';
-import { Enum_WidgetType, Enum_Method, Enum_Entity, Enum_Schema, WidgetDimension, Enum_TimePeriod, Enum_Entity_With_Labels, getWidgetTypesByDimension, getWidgetDropdownItemsByDimension, allWidgetTypes } from '../Models/enums/enums';
+
+// Enums and Models
 import {
-  BaseWidgetConstructorProps,
-  OneDimensionDataInputConfig,
-  ShowableProperty,
-  ThreeDimensionDataInputConfig,
-  TwoDimensionDataInputConfig,
-  WidgetDataConfig,
-  WidgetFieldNameConfig
-} from '../Models/interfaces/interfaces';
-import { EventPropertyType } from 'src/app/Models/eventPropertyType.model';
+  Enum_WidgetType,
+  Enum_Method,
+  Enum_Entity,
+  Enum_Schema,
+  WidgetDimension,
+  Enum_TimePeriod,
+  Enum_Entity_With_Labels,
+  getWidgetTypesByDimension,
+  getWidgetDropdownItemsByDimension,
+  allWidgetTypes,
+  Enum_Method_Aggregation
+} from '../Models/enums/enums';
+
+import { EventPropertyType, RuleOperators } from 'src/app/Models/eventPropertyType.model';
 import { groupByConf, Rule, RuleSet } from '../Models/types/types';
 import { Property } from 'src/app/Models/property.model';
-import { AnalyticService } from 'src/app/services/analytic.service';
-import { Operators, RuleType } from '@i2v-systems/common-components';
-import { forkJoin } from 'rxjs';
-import { EventService } from 'src/app/services/event.service';
-import { QueryBuilderConfig } from '@i2v-systems/i2v-query-builder';
-import { VideoSourceClientManager } from 'src/app/Managers/VideoSourceClientManager';
-import { WidgetFactory } from '../Models/widget-factory';
-import { Widget } from '../Models/Widget';
-import { OneDimensionWidget } from '../Models/dimension-widgets';
-import { rule } from 'src/app/Models/rule.model';
 
-export const OperatorsLabelKey: Record<Operators, any> = {
-  [Operators.EQUAL]: { label: 'Equal', value: Operators.EQUAL },
-  [Operators.NOTEQUAL]: { label: 'Not Equal', value: Operators.NOTEQUAL },
-  [Operators.GREATERTHAN]: { label: 'Greater Than', value: Operators.GREATERTHAN },
-  [Operators.GREATERTHANOREQUAL]: { label: 'Greater Than or Equal', value: Operators.GREATERTHANOREQUAL },
-  [Operators.SMALLERTHAN]: { label: 'Smaller Than', value: Operators.SMALLERTHAN },
-  [Operators.CONTAINS]: { label: 'Contains', value: Operators.CONTAINS },
-  [Operators.NOTCONTAINS]: { label: 'Not Contains', value: Operators.NOTCONTAINS },
-  [Operators.SMALLERTHANOREQUAL]: { label: 'Smaller Than or Equal', value: Operators.SMALLERTHANOREQUAL },
+// Services
+import { AnalyticService } from 'src/app/services/analytic.service';
+import { EventService } from 'src/app/services/event.service';
+import { VideoSourceClientManager } from 'src/app/Managers/VideoSourceClientManager';
+
+// Widget Models
+import { WidgetFactory } from '../Models/widget-factory';
+import {
+  OneDimensionWidgetConstructorProps,
+  ThreeDimensionWidgetConstructorProps,
+  TwoDimensionWidgetConstructorProps,
+  Widget
+} from '../Models/Widget';
+
+import { DonutConf, DonutChart1DWidget } from '../Models/widgetRequestModel/DonutChart1DModel';
+import { DonutChart2DWidget } from '../Models/widgetRequestModel/DonutChart2DModel';
+import { Kpi2DWidget, KPI2DWidgetConstructorProps, KPIConf } from '../Models/widgetRequestModel/KpiWidget2DModel';
+import { TableWidgetConstructorProps, TableConf, TableWidget } from '../Models/widgetRequestModel/TableWidgetRequestModel';
+import { Kpi1DWidget, KPI1DWidgetConstructorProps } from '../Models/widgetRequestModel/KpiWidget1DModel';
+
+// Interfaces
+import {
+  IBaseWidgetConstructorProps,
+  IOneDimensionDataInputConfig,
+  IShowableProperty,
+  IThreeDimensionDataInputConfig,
+  ITwoDimensionDataInputConfig,
+  IWidgetDataConfig,
+  IWidgetFieldNameConfig,
+  IWidgetDisplayConfig,
+  IWidgetFilterConfig,
+  IWidgetInteractivityConfig
+} from '../Models/interfaces/interfaces';
+
+// Utils and Constants
+import {
+  entities,
+  entityTypes,
+  EVENT_ENTITIES,
+  fieldsAggregationMethods,
+  groupByTypes,
+  multipleEntitiesAggregationMethods,
+  seriesAggregationOptions,
+  singleEntityAggregationMethods,
+  timeGroupingOptions,
+  WidgetFormUtils,
+  ValidationRules,
+  WIDGET_FORM_CONSTANTS,
+  ERROR_MESSAGES,
+  SUCCESS_MESSAGES,
+  validateWidgetCompatibility
+} from './widget-form-utils';
+
+// Query Builder
+import { QueryBuilderConfig } from '@i2v-systems/i2v-query-builder';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { WidgetTileConf } from '../Models/types/types';
+import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from '@i2v-systems/common-components';
+import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
+
+// Form value interfaces (what the form contains)
+interface WidgetFormValue {
+  configurationApproach: 'widgetFirst' | 'propertiesFirst';
+  entityConfigType: 'single' | 'multiple';
+  widgetType: Enum_WidgetType | null;
+
+  displayConfig: {
+    heading: string;
+    subHeading: string;
+    color: string;
+  };
+
+  dataInputConfig: {
+    method: Enum_Method;
+    isDistinct: boolean;
+    entityTypeSelect: Enum_Schema;
+    entitySelect: Enum_Entity | null;
+    fieldNames: Property[];
+    entities: Enum_Entity[];
+    dataConfig: IWidgetDataConfig[];
+    groupBy1: groupByConf | null;
+    groupBy2: groupByConf | null;
+    commonProperties: Property[];
+    clubbingTime: boolean;
+    fieldsAggregationType: Enum_Method_Aggregation;
+  };
+
+  filterConfig: {
+    customFilters: Record<string, any>;
+    propertyFilters: RuleSet | null;
+  };
+
+  widgetSpecificConfig: {
+    kpiConf: {
+      CountValueColumnName: string;
+      DisplayValueColumnName: string;
+      ImageColumnName: string;
+      seriesAggregation: Enum_Method_Aggregation;
+      showChart: boolean;
+    };
+    donutConf: {
+      resultLabel: string;
+      seriesAggregation: Enum_Method_Aggregation;
+      showSeriesLabelValue: boolean;
+    };
+    tableConf: {
+      pagination: boolean;
+      pageLimit: number;
+      pageNumber: number;
+    };
+  };
+
+  widgetTileConf: WidgetTileConf;
+  showableProperties: IShowableProperty[];
 }
 
-// Define RuleOperators with type safety and reduced redundancy
-export const RuleOperators = {
-  [EventPropertyType.Float]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
-  [EventPropertyType.Integer]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
-  [EventPropertyType.String]: ["Equal", "NotEqual", "Contains", "NotContains"],
-  [EventPropertyType.Guid]: ["Equal", "NotEqual", "Contains", "NotContains"],
-  [EventPropertyType.SingleSelect]: ["Equal", "NotEqual"],
-  [EventPropertyType.Boolean]: ["Equal"],
-  [EventPropertyType.Date]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
-  [EventPropertyType.MultiSelect]: ["Equal", "NotEqual"]
-};
+// Form control interfaces (what FormGroup expects)
+interface WidgetFormControls {
+  configurationApproach: FormControl<'widgetFirst' | 'propertiesFirst'>;
+  entityConfigType: FormControl<'single' | 'multiple'>;
+  widgetType: FormControl<Enum_WidgetType | null>;
+
+  displayConfig: FormGroup<{
+    heading: FormControl<string>;
+    subHeading: FormControl<string>;
+    color: FormControl<string>;
+  }>;
+
+  dataInputConfig: FormGroup<{
+    method: FormControl<Enum_Method>;
+    isDistinct: FormControl<boolean>;
+    entityTypeSelect: FormControl<Enum_Schema>;
+    entitySelect: FormControl<Enum_Entity | null>;
+    fieldNames: FormControl<IWidgetFieldNameConfig[]>;
+    entities: FormControl<Enum_Entity[]>;
+    dataConfig: FormArray<FormGroup<{
+      entity: FormControl<Enum_Entity>;
+      schemaName: FormControl<Enum_Schema>;
+    }>>;
+    groupBy1: FormControl<groupByConf | null>;
+    groupBy2: FormControl<groupByConf | null>;
+    clubbingTime: FormControl<boolean>;
+    fieldsAggregationType: FormControl<Enum_Method_Aggregation>;
+  }>;
+
+  filterConfig: FormGroup<{
+    customFilters: FormControl<Record<string, any>>;
+    propertyFilters: FormControl<RuleSet | null>;
+  }>;
+
+  enableWidgetSpecificConfig: FormControl<boolean>;
+
+  widgetSpecificConfig: FormGroup<{
+    kpiConf: FormGroup<{
+      CountValueColumnName: FormControl<string>;
+      DisplayValueColumnName: FormControl<string>;
+      ImageColumnName: FormControl<string>;
+      seriesAggregation: FormControl<Enum_Method_Aggregation>;
+      showChart: FormControl<boolean>;
+    }>;
+    donutConf: FormGroup<{
+      resultLabel: FormControl<string>;
+      seriesAggregation: FormControl<Enum_Method_Aggregation>;
+      showSeriesLabelValue: FormControl<boolean>;
+    }>;
+    tableConf: FormGroup<{
+      pagination: FormControl<boolean>;
+      pageLimit: FormControl<number>;
+      pageNumber: FormControl<number>;
+    }>;
+  }>;
+
+  allowRefresh: FormControl<boolean>;
+  refreshInterval: FormControl<number>;
+
+  widgetTileConf: FormGroup<any>; // Using any for WidgetTileConf due to complexity
+  showableProperties: FormArray<FormGroup<{
+    name: FormControl<string>;
+    displayName: FormControl<string>;
+    isMultiValued: FormControl<boolean>;
+    isLabel: FormControl<boolean>;
+  }>>;
+}
+
+interface StepCompletion {
+  [key: number]: boolean;
+}
+
+interface WidgetRecommendation {
+  value: Enum_WidgetType;
+  label: string;
+}
+
+export interface IWidgetFormDataRequestModel {
+  data?: Widget;
+  dashboardId?: string;
+  operation: Enum_WidgetFormOperation;
+}
+
+export enum Enum_WidgetFormOperation {
+  add,
+  edit,
+  none
+}
+
+export interface IWidgetFormDataResponseModel {
+  widgetData: Widget;
+  operation: Enum_WidgetFormOperation;
+}
 
 @Component({
   selector: 'app-widget-form',
@@ -55,468 +239,294 @@ export const RuleOperators = {
   styleUrls: ['./widget-form.component.scss']
 })
 export class WidgetFormComponent implements OnInit {
+  // Input/Output
   @Input() finalWidget: Widget;
   @Output() finalWidgetChange = new EventEmitter<Widget>();
-  widgetForm: FormGroup;
-  columnArray: any = {
-    fields: {}
-  };
 
+  // Form Configuration - Now strongly typed
+  dashboardId: string;
+  widgetForm: FormGroup<WidgetFormControls>;
+  columnArray: any = { fields: {} };
   ruleData: RuleSet = new RuleSet();
-
   config: QueryBuilderConfig;
-  Enum_method = Enum_Method;
-
-  RuleOperators = RuleOperators;
-
-  EventPropertyType = EventPropertyType;
-  // Accordion step control
-  currentStep = 1;
-  stepsCompleted = { 1: false, 2: false, 3: false, 4: false };
-  widgetTypes = allWidgetTypes;
-
-  // Dynamic step labels method instead of static array
-  getStepLabels(): string[] {
-    // Base steps that are always the same
-    const labels = [
-      'Choose Approach',
-      'Display Config',
-      'Data Config & Filters'
-    ];
-
-    // Add "Widget Type" step only for propertiesFirst approach
-    if (this.widgetForm.get('configurationApproach').value === 'propertiesFirst') {
-      labels.push('Widget Type');
-    }
-
-    // Add "Review & Submit" as the final step
-    labels.push('Review & Submit');
-
-    return labels;
+  get isFormValid() {
+    return this.canSubmitForm();
   }
 
-  singleEntityAggregationMethods = [
-    { value: Enum_Method.Count, label: 'Count' },
-    { value: Enum_Method.Sum, label: 'Sum' },
-    { value: Enum_Method.Average, label: 'Average' },
-    { value: Enum_Method.Min, label: 'Minimum' },
-    { value: Enum_Method.Max, label: 'Maximum' },
-    { value: Enum_Method.NoAggregation, label: 'No Aggregation' }
-  ];
+  // Enums for template access
+  readonly Enum_method = Enum_Method;
+  readonly Enum_WidgetType = Enum_WidgetType;
+  readonly RuleOperators = RuleOperators;
+  readonly EventPropertyType = EventPropertyType;
+  readonly Enum_Schema = Enum_Schema;
 
-  multipleEntitiesAggregationMethods = [
-    { value: Enum_Method.Count, label: 'Count' },
-  ];
+  // Step Management
+  currentStep = 1;
+  stepsCompleted: StepCompletion = { 1: false, 2: false, 3: false, 4: false, 5: false };
 
-  entityTypes = [
-    { label: 'Events', value: Enum_Schema.Events },
-    { label: 'Resource', value: Enum_Schema.Public }
-  ];
+  // Widget Configuration
+  widgetTypes = allWidgetTypes;
+  recommendedWidgets: WidgetRecommendation[] = [];
 
-  selectedEntites = [];
+  // Data Options
+  readonly singleEntityAggregationMethods = singleEntityAggregationMethods;
+  readonly multipleEntitiesAggregationMethods = multipleEntitiesAggregationMethods;
+  readonly entityTypes = entityTypes;
+  readonly fieldsAggregationMethods = fieldsAggregationMethods;
+  readonly groupByTypes = groupByTypes;
+  readonly seriesAggregationOptions = seriesAggregationOptions;
+  readonly EVENT_ENTITIES = EVENT_ENTITIES;
+  readonly timeGroupingOptions = timeGroupingOptions;
 
-  entities = [
-    { value: Enum_Entity_With_Labels.Highway_ATCC, label: 'Highway ATCC', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.VIDS, label: 'VIDS', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Vehicle_Stopped, label: 'Vehicle Stopped', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.ANPR, label: 'ANPR', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Wrong_Way_Detected, label: 'Wrong Way Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Human_Crossing_Road, label: 'Human Crossing Road', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Reverse_Traffic_Detected, label: 'Reverse Traffic Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Lane_Changed, label: 'Lane Changed', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Illegal_Vehicle, label: 'Illegal Vehicle', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Safe_Distance_Violated, label: 'Safe Distance Violated', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Intrusion_Detected, label: 'Intrusion Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Human_Detected, label: 'Human Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Deacceleration_Detected, label: 'Deacceleration Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Vehicle_Accelerated, label: 'Vehicle Accelerated', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Vehicle_Occupancy, label: 'Vehicle Occupancy', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Fire_Detected, label: 'Fire Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Smoke_Detected, label: 'Smoke Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Abandoned_Object_Detected, label: 'Abandoned Object Detected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Face_Recognition, label: 'Face Recognition', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Server_Status, label: 'Server Status', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.Pipeline_State, label: 'Pipeline State', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.DEVICE_CONNECTED, label: 'Device Connected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.DEVICE_DISCONNECTED, label: 'Device Disconnected', schema: Enum_Schema.Events },
-    { value: Enum_Entity_With_Labels.VideoSources, label: 'Video Sources', schema: Enum_Schema.Public },
-    { value: Enum_Entity_With_Labels.Persons, label: 'Persons', schema: Enum_Schema.Public },
-    { value: Enum_Entity_With_Labels.FacePoint, label: 'Face Point', schema: Enum_Schema.Public },
-  ];
+  // Configuration Mode
+  isAdvancedMode: boolean = false;
+  selectedEntities: any[] = []; // For dropdown options
+  isWidgetTypeSelectedInitially: boolean = false;
 
+  // Property Management - Now strongly typed
+  entityPropertiesMap: { [label: string]: Property[] } = {};
+  commonProperties: Property[] = [];
+  entityProperties: Property[] = []; // Available properties for current selection
+  allFieldNames: IWidgetFieldNameConfig[] = []; // All field names for current entity
+  commonFieldNames: IWidgetFieldNameConfig[] = []; // Common field names for selection
+
+  // Group By Configuration
+  enableGroupBy1: boolean = false;
+  enableGroupBy2: boolean = false;
+  groupBy1SelectionType: string | null = null;
+  groupBy2SelectionType: string | null = null;
+  groupBy1Option: Property | null = null;
+  groupBy2Option: Property | null = null;
+  groupBy1Model: groupByConf | null = null;
+  groupBy2Model: groupByConf | null = null;
+  selectedTimeGrouping1: string = 'day';
+  selectedTimeGrouping2: string = 'day';
+
+  // Filters
+  enablePropertyFilters: boolean = false;
+
+  // State Management
+  isFormInitialized = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private analyticService: AnalyticService,
+    private eventService: EventService,
+    private videoSourceManager: VideoSourceClientManager,
+    private dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public modalData: { event: { data: IWidgetFormDataRequestModel } },
+    public dialogRef: MatDialogRef<WidgetFormComponent, IWidgetFormDataResponseModel>,
+  ) {
+    if (modalData.event?.data?.data) {
+      this.finalWidget = modalData.event?.data?.data;
+    }
+    if (modalData.event?.data?.dashboardId) {
+      this.dashboardId = modalData.event?.data?.dashboardId;
+    }
+  }
+
+  async ngOnInit() {
+
+    if (this.finalWidget && this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit) {
+      await this.initializeFormWithExistingWidget();
+    }
+    else {
+      await this.initializeForm();
+    }
+  }
+
+  // Computed Properties
   get eventSchemaEntities() {
-    return this.entities.filter(entity => entity.schema === Enum_Schema.Events);
+    return entities.filter(entity => entity.schema === Enum_Schema.Events);
   }
 
   get publicSchemaEntities() {
-    return this.entities.filter(entity => entity.schema === Enum_Schema.Public);
+    return entities.filter(entity => entity.schema === Enum_Schema.Public);
   }
 
-  timeGroupingOptions = [
-    { label: 'Hour', value: Enum_TimePeriod.hour },
-    { label: 'Day', value: Enum_TimePeriod.day },
-    { label: 'Week', value: Enum_TimePeriod.week },
-    { label: 'Month', value: Enum_TimePeriod.month },
-    { label: 'Year', value: Enum_TimePeriod.year }
-  ];
-
-  // Property maps for each entity type
-  entityPropertiesMap: {
-    [label: string]: Property[];
+  get dataConfigArray(): FormArray {
+    return this.widgetForm.controls.dataInputConfig.controls.dataConfig;
   }
 
-  // Common properties across entities
-  commonProperties: Property[] = [
-  ];
+  // Property getters for template access
+  get selectedFieldNames(): IWidgetFieldNameConfig[] {
+    return this.widgetForm.controls.dataInputConfig.controls.fieldNames.value || [];
+  }
 
-  // Current entity properties for display
-  entityProperties: Property[] = [];
+  get allowRefresh(): boolean {
+    return this.widgetForm.controls.allowRefresh.value;
+  }
 
-  groupByTypes = [
-    { label: 'Field', value: 'field' },
-    { label: 'Time', value: 'time' }
-  ];
+  get isSpecificConfigEnabled(): boolean {
+    return this.widgetForm.controls.enableWidgetSpecificConfig.value;
+  }
 
-  enableGroupBy1: boolean = false;
-  enableGroupBy2: boolean = false;
+  // get selectedCommonProperties(): IWidgetFieldNameConfig[] {
+  //   return this.widgetForm.controls.dataInputConfig.controls.commonProperties.value || [];
+  // }
 
-  groupBy1SelectionType: string = null;
-  groupBy2SelectionType: string = null;
-
-  groupBy1Option: Property = null;
-  groupBy2Option: Property = null;
-
-  groupBy1Model: groupByConf = null;
-  groupBy2Model: groupByConf = null;
-
-  selectedTimeGrouping1: string = 'day'; // Default
-  selectedTimeGrouping2: string = 'day'; // Default
-
-  enablePropertyFilters: boolean = false;
-
-  // For recommending widget types
-  recommendedWidgets = [];
-
-  isFormInitialized = false;
-
-  // Field-specific rules management
-  ruleDataForEachField: { [fieldName: string]: { rule: Rule; enabled: boolean } } = {};
-
-  constructor(private fb: FormBuilder, private analyticService: AnalyticService, private eventService: EventService, private videoSourceManager: VideoSourceClientManager) { }
-
-  ngOnInit(): void {
-    // Show loader
+  // Form Initialization
+  private async initializeForm(): Promise<void> {
     this.isFormInitialized = false;
 
-    forkJoin({
-      commonProperties: this.eventService.getAllCommonProperties(),
-      analytics: this.analyticService.getAllAnalytics()
-    }).subscribe(({ commonProperties, analytics }) => {
-      if (commonProperties && commonProperties.length && analytics && analytics.length) {
+    try {
+      const { commonProperties, analytics } = await forkJoin({
+        commonProperties: this.eventService.getAllCommonProperties(),
+        analytics: this.analyticService.getAllAnalytics()
+      }).toPromise();
+
+      if (commonProperties?.length && analytics?.length) {
         this.commonProperties = commonProperties || [];
+        this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
+          name: prop.name,
+          type: prop.type,
+          rule: null // Initialize with no rule
+        }));
+
         this.entityPropertiesMap = analytics.reduce((acc, entity) => {
           acc[entity.name] = [...entity.properties, ...commonProperties];
           return acc;
         }, {});
 
         this.createForm();
+        this.onEntityTypeSelectChange();
         this.createRuleGroupQueryBuilder([]);
-
         this.isFormInitialized = true;
       }
-    });
-
+    } catch (error) {
+      console.error('Error initializing form:', error);
+      this.isFormInitialized = true;
+    }
   }
 
-
-  createForm(): void {
-    this.widgetForm = this.fb.group({
-      configurationApproach: ['widgetFirst', Validators.required],
-      entityConfigType: ['single'], // New control for entity configuration type
-      widgetType: [null],
+  private createForm(): void {
+    this.widgetForm = this.fb.group<WidgetFormControls>({
+      configurationApproach: this.fb.control('widgetFirst', {
+        validators: [Validators.required],
+        nonNullable: true
+      }),
+      entityConfigType: this.fb.control('single', {
+        nonNullable: true
+      }),
+      widgetType: this.fb.control<Enum_WidgetType | null>(null),
 
       displayConfig: this.fb.group({
-        heading: ['', Validators.required],
-        subHeading: ['s'],
-        color: ['#3498db'],
+        heading: this.fb.control('', {
+          validators: [Validators.required],
+          nonNullable: true
+        }),
+        subHeading: this.fb.control(''),
+        color: this.fb.control<string>(WIDGET_FORM_CONSTANTS.DEFAULT_COLORS[0], {
+          nonNullable: true
+        }),
       }),
 
       dataInputConfig: this.fb.group({
-        method: [Enum_Method.Count],
-        isDistinct: [false],
-        entityTypeSelect: ['events'],
-        entitySelect: [null], // For single entity selection
-        fieldNames: [[]], // For single entity properties
-        entities: [[]], // For multiple entities
-        dataConfig: this.fb.array([]), // For multiple entity configurations
-        groupBy1: [null],
-        groupBy2: [null],
-        commonProperties: [[]], // For common properties
-        clubbingTime: [false]
+        method: this.fb.control(Enum_Method.Count, { nonNullable: true }),
+        isDistinct: this.fb.control(false, { nonNullable: true }),
+        entityTypeSelect: this.fb.control(Enum_Schema.Events, { nonNullable: true }),
+        entitySelect: this.fb.control<Enum_Entity | null>(null),
+        fieldNames: this.fb.control<IWidgetFieldNameConfig[]>([], { nonNullable: true }),
+        entities: this.fb.control<Enum_Entity[]>([], { nonNullable: true }),
+        dataConfig: this.fb.array<FormGroup<{
+          entity: FormControl<Enum_Entity>;
+          schemaName: FormControl<Enum_Schema>;
+        }>>([]),
+        groupBy1: this.fb.control<groupByConf | null>(null),
+        groupBy2: this.fb.control<groupByConf | null>(null),
+        clubbingTime: this.fb.control<boolean>(false, { nonNullable: true }),
+        fieldsAggregationType: this.fb.control<Enum_Method_Aggregation>(Enum_Method_Aggregation.None, {
+          nonNullable: true
+        }),
       }),
 
+
       filterConfig: this.fb.group({
-        customFilters: [{}],
-        propertyFilters: [null]
+        customFilters: this.fb.control<Record<string, any>>({}, { nonNullable: true }),
+        propertyFilters: this.fb.control<RuleSet | null>(null)
+      }),
+
+      enableWidgetSpecificConfig: this.fb.control(false),
+
+      widgetSpecificConfig: this.fb.group({
+        kpiConf: this.fb.group({
+          CountValueColumnName: this.fb.control('count', { nonNullable: true }),
+          DisplayValueColumnName: this.fb.control(''),
+          ImageColumnName: this.fb.control(''),
+          seriesAggregation: this.fb.control(Enum_Method_Aggregation.None),
+          showChart: this.fb.control(false)
+        }),
+
+        donutConf: this.fb.group({
+          resultLabel: this.fb.control('Result', { nonNullable: true }),
+          seriesAggregation: this.fb.control(Enum_Method_Aggregation.None),
+          showSeriesLabelValue: this.fb.control(true)
+        }),
+
+        tableConf: this.fb.group({
+          pagination: this.fb.control(true, { nonNullable: true }),
+          pageLimit: this.fb.control<number>(WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT, { nonNullable: true }),
+          pageNumber: this.fb.control(1, { nonNullable: true })
+        })
       }),
 
       widgetTileConf: this.fb.group({
-        w: [4],
-        h: [4],
-        x: [0],
-        y: [0]
-      }),
+        x: this.fb.control(0, { nonNullable: true }),
+        y: this.fb.control(0, { nonNullable: true }),
+        w: this.fb.control(4, { nonNullable: true }),
+        h: this.fb.control(4, { nonNullable: true }),
+        ...WIDGET_FORM_CONSTANTS.DEFAULT_DIMENSIONS
+      } as any),
 
-      showableProperties: this.fb.array([]) // Store showable property configurations
+      showableProperties: this.fb.array<FormGroup<{
+        name: FormControl<string>;
+        displayName: FormControl<string>;
+        isMultiValued: FormControl<boolean>;
+        isLabel: FormControl<boolean>;
+      }>>([]),
+
+      allowRefresh: this.fb.control<boolean>(false),
+      refreshInterval: this.fb.control<number>(300),
     });
   }
 
-  onConfigurationApproachChange(): void {
-    const value = this.widgetForm.get('configurationApproach').value;
+  accordionTabOpened(event: any): void {
+    this.currentStep = event.index + 1;
+  }
 
-    if (value === 'widgetFirst') {
-      this.widgetForm.get('widgetType').setValidators(Validators.required);
-    } else {
-      this.widgetForm.get('entityConfigType').setValidators(Validators.required);
+  // Step Management Methods
+  getStepLabels(): string[] {
+    const labels = ['Choose Approach', 'Display Config', 'Data Config & Filters'];
+
+    if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+      labels.push('Widget Type');
     }
 
-    // Reset related values
-    this.widgetForm.get('widgetType').setValue(null);
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(1);
-  }
-
-  onWidgetTypeChange(): void {
-    if (this.widgetForm.get('configurationApproach').value === 'widgetFirst') {
-      this.updateStepCompletion(1);
-    } else {
-      this.updateStepCompletion(4);
-    }
-  }
-
-
-  onEntityTypeSelectChange(event: any): void {
-    var entityType = event.value;
-    this.widgetForm.get('dataInputConfig.entityTypeSelect').setValue(entityType);
-    this.widgetForm.get('dataInputConfig.entities').setValue([]);
-    this.widgetForm.get('dataInputConfig.entitySelect').setValue(null);
-    this.widgetForm.get('dataInputConfig.fieldNames').setValue([]);
-    this.widgetForm.get('dataInputConfig.commonProperties').setValue([]);
-    this.widgetForm.get('dataInputConfig.method').setValue(Enum_Method.Count);
-    if (entityType == Enum_Schema.Events) {
-      this.selectedEntites = this.eventSchemaEntities;
-    } else {
-      this.selectedEntites = this.publicSchemaEntities;
-    }
-  }
-
-  setConfig() {
-    this.config = this.columnArray;
-  }
-
-  onEntityConfigTypeChange(): void {
-    const value = this.widgetForm.get('entityConfigType').value;
-
-    // Reset entity-related values
-    if (value === 'single') {
-      this.widgetForm.get('dataInputConfig.entitySelect').reset();
-      this.clearDataConfigArray();
-    } else {
-      // Multiple entities
-      this.widgetForm.get('dataInputConfig.entities').setValue([]);
-      this.widgetForm.get('dataInputConfig.entitySelect').reset();
+    if (this.widgetForm.controls.widgetType.value && this.requiresWidgetSpecificConfig()) {
+      labels.push('Widget Configuration');
     }
 
-    // Reset group by selections
-    this.widgetForm.get('dataInputConfig.groupBy1').reset();
-    this.widgetForm.get('dataInputConfig.groupBy2').reset();
-
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(1);
+    labels.push('Review & Submit');
+    return labels;
   }
 
-  onEntitySelectChange(event: any): void {
-    if (event.value) {
-      this.onEntityChange();
-    } else {
-      this.entityProperties = [];
-    }
-
-    // Clear field-specific rules when entity changes
-    this.ruleDataForEachField = {};
-
-    this.createRuleGroupQueryBuilder(this.entityProperties);
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
+  isStepComplete(step: number): boolean {
+    return this.stepsCompleted[step] === true;
   }
 
-  onFieldNamesChange(event: any): void {
-    const selectedFields = event.value;
-    this.widgetForm.get('dataInputConfig.fieldNames').setValue(selectedFields);
+  canNavigateToStep(step: number): boolean {
+    if (step === 1) return true;
 
-    // Initialize or update rules for each selected field
-    this.initializeFieldRules(selectedFields);
-
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  // New method to initialize rules for each field
-  initializeFieldRules(selectedFields: any[]): void {
-    // Clear existing rules
-    this.ruleDataForEachField = {};
-
-    if (!selectedFields || selectedFields.length === 0) {
-      return;
-    }
-
-    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-    if (!entityValue || !this.entityPropertiesMap[entityValue]) {
-      return;
-    }
-
-    // Initialize rules for each selected field
-    selectedFields.forEach(field => {
-      const fieldName = field.name;
-
-      // Create a new RuleSet for this field
-      const fieldRuleSet = new Rule();
-
-      // Initialize with disabled state by default
-      this.ruleDataForEachField[fieldName] = {
-        rule: fieldRuleSet,
-        enabled: false
-      };
-    });
-  }
-
-  // Method to toggle rules for a specific field
-  toggleFieldRules(fieldName: string, enabled: boolean): void {
-    if (this.ruleDataForEachField[fieldName]) {
-      this.ruleDataForEachField[fieldName].enabled = enabled;
-
-      if (!enabled) {
-        // Reset the rule set when disabled
-        this.ruleDataForEachField[fieldName].rule = new Rule();
+    for (let i = 1; i < step; i++) {
+      if (!this.isStepComplete(i)) {
+        return false;
       }
     }
+    return true;
   }
 
-  // Method to get rules for a specific field
-  getFieldRules(fieldName: string): Rule {
-    return this.ruleDataForEachField[fieldName]?.rule || new Rule();
-  }
-
-  // Method to check if rules are enabled for a field
-  areFieldRulesEnabled(fieldName: string): boolean {
-    return this.ruleDataForEachField[fieldName]?.enabled || false;
-  }
-
-  // Method to update field rules when query builder changes
-  onFieldRulesChange(fieldName: string, newRule: Rule): void {
-    if (this.ruleDataForEachField[fieldName]) {
-      this.ruleDataForEachField[fieldName].rule = newRule;
-    }
-  }
-
-  onFieldRuleOperatorChange(fieldName: string, event: any): void {
-    var value = event.value;
-    if (this.ruleDataForEachField[fieldName]) {
-      const rule = this.ruleDataForEachField[fieldName].rule;
-      rule.operator = value;
-      this.onFieldRulesChange(fieldName, rule);
-    }
-  }
-
-  onFieldRuleValueChange(fieldName: string, event: any): void {
-    var value = event.target.value;
-    if (this.ruleDataForEachField[fieldName]) {
-      const rule = this.ruleDataForEachField[fieldName].rule;
-      rule.value = value;
-      this.onFieldRulesChange(fieldName, rule);
-    }
-  }
-
-
-  onEntitiesChange(event: any): void {
-    const values = event.value;
-
-    if (values && values.length) {
-      this.setupEntityConfigs(values);
-      this.updateRecommendedWidgets();
-    } else {
-      this.clearDataConfigArray();
-    }
-    this.createRuleGroupQueryBuilder(this.commonProperties);
-    this.updateStepCompletion(3);
-  }
-
-  onHeadingChange(): void {
-    this.updateStepCompletion(2);
-  }
-
-  onCommonPropertiesChange(event: any): void {
-    this.widgetForm.get('dataInputConfig.commonProperties').setValue(event.value);
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  // DataConfig FormArray utility methods
-  get dataConfigArray(): FormArray {
-    return this.widgetForm.get('dataInputConfig.dataConfig') as FormArray;
-  }
-
-  getDataConfigControls(): FormGroup[] {
-    return this.dataConfigArray.controls as FormGroup[];
-  }
-
-  clearDataConfigArray(): void {
-    while (this.dataConfigArray.length > 0) {
-      this.dataConfigArray.removeAt(0);
-    }
-  }
-
-  setupEntityConfigs(entityValues: string[]): void {
-    // Clear any existing configurations
-    this.clearDataConfigArray();
-
-    // Create a new form group for each selected entity
-    for (const entityValue of entityValues) {
-      var mappedEntity = this.entities.find(e => e.value === entityValue);
-      this.dataConfigArray.push(
-        this.fb.group({
-          entity: [mappedEntity.value, Validators.required],
-          schemaName: [mappedEntity.schema, Validators.required]
-        })
-      );
-    }
-  }
-
-  aggregationMethodChange(event): void {
-    const method = Number((event.target as HTMLSelectElement).value) as Enum_Method;
-    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-    this.widgetForm.get('dataInputConfig.method').setValue(method);
-    if (entityValue && this.entityPropertiesMap[entityValue]) {
-      if (method === Enum_Method.Sum) {
-        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type == EventPropertyType.Float || prop.type == EventPropertyType.Integer);
-      }
-      else {
-        // For Count or other methods, we can show all properties
-        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type === EventPropertyType.String);
-      }
-    } else {
-      this.entityProperties = [];
-    }
-    this.widgetForm.get('dataInputConfig.fieldNames').setValue([], { emitEvent: false });
-    // this.updateStepCompletion(3);
-  }
-
-  // Accordion Step Navigation Methods
   toggleStep(step: number): void {
-    if (this.currentStep === step) {
-      // Already on this step, do nothing
-      return;
-    }
+    if (this.currentStep === step) return;
 
     if (this.canNavigateToStep(step)) {
       this.currentStep = step;
@@ -542,168 +552,634 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  isStepComplete(step: number): boolean {
-    return this.stepsCompleted[step] === true;
+  // Configuration Methods
+  requiresWidgetSpecificConfig(): boolean {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    return widgetType && [
+      Enum_WidgetType.KPI1D, Enum_WidgetType.KPI2D,
+      Enum_WidgetType.Donut1D, Enum_WidgetType.Donut2D,
+      Enum_WidgetType.Table
+    ].includes(widgetType);
   }
 
-  canNavigateToStep(step: number): boolean {
-    // First step is always accessible
-    if (step === 1) return true;
+  toggleConfigurationMode(): void {
+    this.isAdvancedMode = !this.isAdvancedMode;
 
-    // Otherwise, all previous steps must be completed
-    for (let i = 1; i < step; i++) {
-      if (!this.isStepComplete(i)) {
-        return false;
-      }
+    if (!this.isAdvancedMode) {
+      this.resetAdvancedConfigurations();
     }
 
-    return true;
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  private resetAdvancedConfigurations(): void {
+    this.enableGroupBy1 = false;
+    this.enableGroupBy2 = false;
+    this.enablePropertyFilters = false;
+    this.groupBy1SelectionType = null;
+    this.groupBy2SelectionType = null;
+    this.groupBy1Option = null;
+    this.groupBy2Option = null;
+    this.groupBy1Model = null;
+    this.groupBy2Model = null;
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy1: null,
+        groupBy2: null
+      },
+      filterConfig: {
+        propertyFilters: null
+      }
+    });
+    this.ruleData = new RuleSet();
+  }
+
+  // Event Handlers - Updated for type safety
+  onConfigurationApproachChange(): void {
+    const value = this.widgetForm.controls.configurationApproach.value;
+
+    if (value === 'widgetFirst') {
+      this.widgetForm.controls.widgetType.setValidators(Validators.required);
+    } else {
+      this.widgetForm.controls.entityConfigType.setValidators(Validators.required);
+    }
+
+    this.widgetForm.patchValue({ widgetType: null });
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(1);
+  }
+
+  onWidgetTypeChange(): void {
+    const widgetType = parseInt(this.widgetForm.controls.widgetType.value as any, 10) as Enum_WidgetType;
+    this.widgetForm.patchValue({ widgetType: widgetType });
+    this.setDefaultWidgetSpecificConfig();
+
+    if (this.widgetForm.controls.configurationApproach.value === 'widgetFirst') {
+      this.updateStepCompletion(1);
+    } else {
+      this.updateStepCompletion(4);
+    }
+
+    if (this.requiresWidgetSpecificConfig()) {
+      this.updateStepCompletion(5);
+    }
+
+    this.isWidgetTypeSelectedInitially = true;
+  }
+
+  onEntityTypeSelectChange(): void {
+    // const entityType = event.value;
+    const entityType = this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        entityTypeSelect: entityType,
+        entities: [],
+        entitySelect: null,
+        fieldNames: [],
+        method: Enum_Method.Count
+      }
+    });
+
+    this.selectedEntities = entityType === Enum_Schema.Events
+      ? this.eventSchemaEntities
+      : this.publicSchemaEntities;
+  }
+
+  onEntityConfigTypeChange(): void {
+    const value = this.widgetForm.controls.entityConfigType.value;
+
+    if (value === 'single') {
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          entitySelect: null
+        }
+      });
+      this.clearDataConfigArray();
+    } else {
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          entities: [],
+          entitySelect: null
+        }
+      });
+    }
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy1: null,
+        groupBy2: null
+      }
+    });
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(1);
+  }
+
+  onEntitySelectChange(): void {
+    // const selectedEntity = event.value as Enum_Entity;
+    const selectedEntity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value as Enum_Entity;
+    const entityName = Enum_Entity_With_Labels[selectedEntity];
+    if (selectedEntity) {
+      // Update entity properties for dropdown
+      this.entityProperties = this.entityPropertiesMap[entityName] || [];
+      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
+        name: prop.name,
+        type: prop.type,
+        rule: null // Initialize with no rule
+      }));
+
+
+    } else {
+      this.entityProperties = [];
+      this.allFieldNames = [];
+    }
+
+    this.onEntityChange();
+    // Clear field names when entity changes
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldNames: []
+      }
+    });
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  onFieldNamesChange(event: any): void {
+
+    var selectedFields = event.value as IWidgetFieldNameConfig[]
+    // Update form control
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldNames: selectedFields
+      }
+    });
+
+    if (selectedFields?.length > 1) {
+      this.disableGroupBy2();
+    }
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  onCommonPropertiesChange(event: any): void {
+    const selectedProperties = event.value as Property[];
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldNames: selectedProperties
+      }
+    });
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  onFieldsAggregationMethodChange(): void {
+    const method = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value as Enum_Method_Aggregation
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldsAggregationType: method
+      }
+    });
+  }
+
+  onEntitiesChange(event: any): void {
+    const selectedEntities = event.value as Enum_Entity[];
+
+    if (selectedEntities?.length) {
+      this.setupEntityConfigs(selectedEntities);
+      this.updateRecommendedWidgets();
+    } else {
+      this.clearDataConfigArray();
+    }
+
+    this.createRuleGroupQueryBuilder(this.commonProperties);
+    this.updateStepCompletion(3);
+  }
+
+  onHeadingChange(): void {
+    this.updateStepCompletion(2);
+  }
+
+  aggregationMethodChange(event: any): void {
+    const method = event.value as Enum_Method;
+    const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        method: method
+      }
+    });
+
+    var entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+    if (entityValue && this.entityPropertiesMap[entityName]) {
+      this.entityProperties = WidgetFormUtils.getCompatibleProperties(
+        this.entityPropertiesMap[entityName],
+        method
+      );
+      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
+        name: prop.name,
+        type: prop.type,
+        rule: null // Initialize with no rule
+      }));
+
+    } else {
+      this.entityProperties = [];
+      this.allFieldNames = [];
+    }
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldNames: []
+      }
+    });
   }
 
   onEntityChange(): void {
-    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-    const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
-
-    if (entityValue && this.entityPropertiesMap[entityValue]) {
-      if (aggregationMethod === Enum_Method.Sum) {
-        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type == EventPropertyType.Float || prop.type == EventPropertyType.Integer);
-      }
-      else {
-        // For Count or other methods, we can show all properties
-        this.entityProperties = this.entityPropertiesMap[entityValue].filter(prop => prop.type === EventPropertyType.String);
-      }
+    const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+    const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
+    var entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+    if (entityValue && this.entityPropertiesMap[entityName]) {
+      this.entityProperties = WidgetFormUtils.getCompatibleProperties(
+        this.entityPropertiesMap[entityName],
+        aggregationMethod
+      );
+      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
+        name: prop.name,
+        type: prop.type,
+        rule: null // Initialize with no rule
+      }));
     } else {
       this.entityProperties = [];
+      this.allFieldNames = [];
+    }
+
+    this.createRuleGroupQueryBuilder(this.entityProperties);
+  }
+
+  // Field Rules Management
+  toggleFieldRule(index: any, event: Event): void {
+    const target = event.target as HTMLInputElement;
+
+    if (target.checked) {
+      const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
+      if (existingField) {
+        existingField.rule = new Rule();
+        existingField.rule.field = existingField.name;
+        existingField.rule.operator = this.getOpertorsByType[existingField.type][0];
+        existingField.rule.type = existingField.type;
+      }
+    } else {
+      const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
+      if (existingField) {
+        existingField.rule = null;
+      }
     }
   }
 
-  // Update getAllAvailableProperties to ensure properties have name
+
+  onFieldRuleOperatorChange(fieldIndex: number, event: Event): void {
+    const operator = (event.target as HTMLSelectElement).value;
+    this.updateFieldRule(fieldIndex, 'operator', operator);
+  }
+
+  onFieldRuleValueChange(fieldIndex: number, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.updateFieldRule(fieldIndex, 'value', value);
+  }
+
+  private updateFieldRule(fieldIndex: number, property: string, value: any): void {
+    const existingField = this.selectedFieldNames[fieldIndex] as IWidgetFieldNameConfig;
+    if (existingField) {
+      existingField.rule[property] = value;
+    }
+
+  }
+
+
+  // Group By Event Handlers
+  toggleGroupBy1(event: any): void {
+    this.enableGroupBy1 = (event.target as HTMLInputElement).checked;
+
+    if (!this.enableGroupBy1) {
+      this.resetGroupBy1();
+      this.enableGroupBy2 = false;
+      this.toggleGroupBy2({ target: { checked: false } } as any);
+    }
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  toggleGroupBy2(event: Event): void {
+    this.enableGroupBy2 = (event.target as HTMLInputElement).checked;
+
+    if (!this.enableGroupBy2) {
+      this.resetGroupBy2();
+    }
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  private resetGroupBy1(): void {
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy1: null
+      }
+    });
+    this.groupBy1Model = null;
+    this.groupBy1Option = null;
+    this.groupBy1SelectionType = null;
+  }
+
+  private resetGroupBy2(): void {
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy2: null
+      }
+    });
+    this.groupBy2Model = null;
+    this.groupBy2Option = null;
+    this.groupBy2SelectionType = null;
+  }
+
+  getAvailableGroupByTypes(groupByNumber: number): any[] {
+    if (groupByNumber === 1) {
+      return groupByTypes;
+    }
+
+    if (groupByNumber === 2 && this.groupBy1SelectionType === 'time') {
+      return groupByTypes.filter(type => type.value === 'field');
+    }
+
+    return groupByTypes;
+  }
+
+  onSelectGroupByType(groupByNumber: number, event: any): void {
+    const selectedValue = event.value;
+
+    if (groupByNumber === 1) {
+      this.groupBy1SelectionType = selectedValue;
+
+      if (selectedValue === 'time' && this.groupBy2SelectionType === 'time') {
+        this.resetGroupBy2();
+      }
+
+      this.resetGroupBy1Model(selectedValue);
+    } else if (groupByNumber === 2) {
+      this.groupBy2SelectionType = selectedValue;
+      this.resetGroupBy2Model(selectedValue);
+    }
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  private resetGroupBy1Model(selectionType: string): void {
+    if (selectionType === 'time') {
+      this.groupBy1Model = null;
+      this.groupBy1Option = null;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy1: null }
+      });
+    } else if (selectionType === 'field') {
+      this.selectedTimeGrouping1 = 'day';
+      this.groupBy1Model = null;
+      this.groupBy1Option = null;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy1: null }
+      });
+    }
+  }
+
+  private resetGroupBy2Model(selectionType: string): void {
+    if (selectionType === 'time') {
+      this.groupBy2Model = null;
+      this.groupBy2Option = null;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy2: null }
+      });
+    } else if (selectionType === 'field') {
+      this.selectedTimeGrouping2 = 'day';
+      this.groupBy2Model = null;
+      this.groupBy2Option = null;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy2: null }
+      });
+    }
+  }
+
+  onGroupBy1Change(event: any): void {
+    const selectedProperty = event.value as Property;
+    this.groupBy1Model = this.createGroupByModel(selectedProperty);
+    this.groupBy1Option = selectedProperty;
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy1: this.groupBy1Model
+      }
+    });
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  onGroupBy2Change(event: any): void {
+    const selectedProperty = event.value as Property;
+    this.groupBy2Model = this.createGroupByModel(selectedProperty);
+    this.groupBy2Option = selectedProperty;
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy2: this.groupBy2Model
+      }
+    });
+
+    this.updateRecommendedWidgets();
+  }
+
+  // Helper Methods
+  private createGroupByModel(prop: Property): groupByConf {
+    const model = new groupByConf();
+    model.name = prop.name;
+    model.projectionName = prop.columnName;
+    model.type = prop.type;
+    model.isTime = false;
+    return model;
+  }
+
+  private disableGroupBy2(): void {
+    this.enableGroupBy2 = false;
+    this.groupBy2SelectionType = null;
+    this.groupBy2Option = null;
+    this.groupBy2Model = null;
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        groupBy2: null
+      }
+    });
+  }
+
+  updateTimeGrouping(groupByNumber: number, event: any): void {
+    const groupByModel = new groupByConf();
+    groupByModel.name = event.value;
+    groupByModel.projectionName = WidgetFormUtils.capitalizeFirst(event.value);
+    groupByModel.type = EventPropertyType.String;
+    groupByModel.isTime = true;
+
+    if (groupByNumber === 1) {
+      this.groupBy1Model = groupByModel;
+      this.selectedTimeGrouping1 = event.value;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy1: groupByModel }
+      });
+    } else if (groupByNumber === 2) {
+      this.groupBy2Model = groupByModel;
+      this.selectedTimeGrouping2 = event.value;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy2: groupByModel }
+      });
+    }
+
+    this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
+  }
+
+  // Property Filters
+  togglePropertyFilters(event: Event): void {
+    this.enablePropertyFilters = (event.target as HTMLInputElement).checked;
+
+    if (!this.enablePropertyFilters) {
+      this.ruleData = new RuleSet();
+      this.widgetForm.patchValue({
+        filterConfig: {
+          propertyFilters: null
+        }
+      });
+    }
+
+    this.updateStepCompletion(3);
+  }
+
+  convertRulesToPropertyFilters(): any {
+    return this.enablePropertyFilters ? this.ruleData : null;
+  }
+
+  // Utility Methods
   getAllAvailableProperties(): Property[] {
     const properties: Property[] = [];
 
-    if (this.widgetForm.get('entityConfigType').value === 'single') {
-      const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-      if (entityValue && this.entityPropertiesMap[entityValue]) {
-        properties.push(...this.entityPropertiesMap[entityValue]);
+    if (this.widgetForm.controls.entityConfigType.value === 'single') {
+      const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+      const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+      if (entityName && this.entityPropertiesMap[entityName]) {
+        properties.push(...this.entityPropertiesMap[entityName]);
       }
     } else {
-      const selectedEntities = this.widgetForm.get('dataInputConfig.entities').value || [];
+      const selectedEntities = this.widgetForm.controls.dataInputConfig.controls.entities.value || [];
       for (const entityValue of selectedEntities) {
-        const entityProps = this.entityPropertiesMap[entityValue] || [];
+        const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+        const entityProps = this.entityPropertiesMap[entityName] || [];
         properties.push(...entityProps);
       }
       properties.push(...this.commonProperties);
     }
 
-    // Ensure all properties have name field
-    return properties.map(prop => ({
-      ...prop
-    }));
+    return properties;
   }
 
+  getAvailableColumnNames(): string[] {
+    const fieldNames = this.selectedFieldNames;
+    let columns = ['count'];
 
-  updateStepCompletion(step: number): void {
-    switch (step) {
-      case 1:
-        // Step 1: Configuration Approach
-        if (this.widgetForm.get('configurationApproach').value === 'widgetFirst') {
-          this.stepsCompleted[1] = this.widgetForm.get('widgetType').value !== null;
-        } else {
-          this.stepsCompleted[1] = this.widgetForm.get('entityConfigType').value !== null;
+    if (fieldNames?.length > 0) {
+      fieldNames.forEach((field: IWidgetFieldNameConfig) => {
+        if (field?.name) {
+          columns.push(field.name);
         }
-        break;
-
-      case 2:
-        // Step 2: Display Configuration
-        this.stepsCompleted[2] = !!this.widgetForm.get('displayConfig.heading').value;
-        break;
-
-      case 3:
-        // Step 3: Data Configuration & Filters (Enhanced with field rules)
-        let step3Complete = false;
-
-        if (this.widgetForm.get('entityConfigType').value === 'single') {
-          const entity = this.widgetForm.get('dataInputConfig.entitySelect').value;
-          const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
-
-          if (aggregationMethod === Enum_Method.Sum) {
-            const properties = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-            step3Complete = !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
-          } else {
-            step3Complete = !!entity;
-          }
-
-          // Additional validation for field rules if any are enabled
-          if (step3Complete && this.hasEnabledFieldRules()) {
-            step3Complete = this.validateAllEnabledFieldRules();
-          }
-
-        } else {
-          const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-          step3Complete = entities.length > 0;
-        }
-
-        this.stepsCompleted[3] = step3Complete;
-        break;
-
-      case 4:
-        // Step 4: Widget Type (for properties-first approach only)
-        if (this.widgetForm.get('configurationApproach').value === 'propertiesFirst') {
-          this.stepsCompleted[4] = this.widgetForm.get('widgetType').value !== null;
-        }
-        break;
+      });
     }
+
+    columns.push('displayValue');
+    return [...new Set(columns)];
   }
 
-  // Helper method to check if any field rules are enabled
-  hasEnabledFieldRules(): boolean {
-    return Object.values(this.ruleDataForEachField).some(fieldRule => fieldRule.enabled);
-  }
+  shouldShowGroupBy2(): boolean {
+    if (!this.enableGroupBy1) return false;
 
-  // Helper method to validate all enabled field rules
-  validateAllEnabledFieldRules(): boolean {
-    for (const fieldName in this.ruleDataForEachField) {
-      const fieldRules = this.ruleDataForEachField[fieldName];
-      if (fieldRules.enabled) {
-        // Check if the field has at least one rule configured
-        const ruleCount = this.getFieldRuleCount(fieldName);
-        if (ruleCount === 0) {
-          // Field is enabled but has no rules - this might be considered incomplete
-          // You can decide whether this should block progress or just show a warning
-          console.warn(`Field ${fieldName} has rules enabled but no rules configured`);
-          // For now, we'll allow it to proceed, but you can change this behavior
-        }
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    if (this.isWidgetTypeSelectedInitially) {
+      if (widgetType === Enum_WidgetType.StackedBarChart ||
+        widgetType === Enum_WidgetType.StackedColumnChart ||
+        widgetType === Enum_WidgetType.HeatMapChart3D) {
+        return true;
+      } else {
+        return false;
       }
     }
-    return true; // Allow progression even if some enabled fields have no rules
+
+    const selectedFields = this.selectedFieldNames;
+    if (selectedFields?.length > 1) {
+      return false;
+    }
+
+    return true;
   }
 
+  // Data Config Array Methods
+  getDataConfigControls(): FormGroup[] {
+    return this.dataConfigArray.controls as FormGroup[];
+  }
+
+  clearDataConfigArray(): void {
+    while (this.dataConfigArray.length > 0) {
+      this.dataConfigArray.removeAt(0);
+    }
+  }
+
+  setupEntityConfigs(entityValues: Enum_Entity[]): void {
+    this.clearDataConfigArray();
+
+    for (const entityValue of entityValues) {
+      const mappedEntity = Enum_Entity_With_Labels[entityValue]
+      if (mappedEntity) {
+        const entityFormGroup = this.fb.group({
+          entity: this.fb.control<Enum_Entity>(mappedEntity.value, {
+            validators: [Validators.required],
+            nonNullable: true
+          }),
+          schemaName: this.fb.control<Enum_Schema>(mappedEntity.schema, {
+            validators: [Validators.required],
+            nonNullable: true
+          })
+        });
+        this.dataConfigArray.push(entityFormGroup);
+      }
+    }
+  }
+
+  // Widget Recommendation Logic
   canRecommendWidgets(): boolean {
-    if (this.widgetForm.get('configurationApproach').value === 'propertiesFirst') {
-      // Check if we have enough data to make recommendations
-      if (this.widgetForm.get('entityConfigType').value === 'single') {
-        const entity = this.widgetForm.get('dataInputConfig.entitySelect').value;
-        const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
+    if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+      if (this.widgetForm.controls.entityConfigType.value === 'single') {
+        const entity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+        const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
+
         if (aggregationMethod === Enum_Method.Sum) {
-          const properties = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-          return !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
-        }
-        else {
-          return !!entity
+          return !!entity && this.selectedFieldNames.length > 0;
+        } else {
+          return !!entity;
         }
       } else {
-        const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-        return entities.length > 0
-        // // Check if at least one entity has properties selected
-        // const dataConfigs = this.getDataConfigControls();
-        // for (const config of dataConfigs) {
-        //   if (config.get('properties').value?.length > 0) {
-        //     return true;
-        //   }
-        // }
+        const entities = this.widgetForm.controls.dataInputConfig.controls.entities.value || [];
+        return entities.length > 0;
       }
     }
-
     return false;
   }
 
@@ -713,305 +1189,650 @@ export class WidgetFormComponent implements OnInit {
       return;
     }
 
-    const entityConfigType = this.widgetForm.get('entityConfigType').value;
-    const groupBy1 = this.widgetForm.get('dataInputConfig.groupBy1').value;
-    const groupBy2 = this.widgetForm.get('dataInputConfig.groupBy2').value;
-    const fieldNames = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-    const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
+    const groupBy1 = this.widgetForm.controls.dataInputConfig.controls.groupBy1.value;
+    const groupBy2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
+    const fieldNames = this.selectedFieldNames;
 
-    // Default available widgets
     let availableWidgets = [...allWidgetTypes];
 
-    if (fieldNames.length > 0 && groupBy1 && groupBy2) {
-      availableWidgets = availableWidgets.filter(w =>
-        [Enum_WidgetType.StackedBarChart, Enum_WidgetType.StackedColumnChart].includes(w.value)
-      );
-    }
-    else if (fieldNames.length == 0 && groupBy1 && groupBy2) {
+    if (fieldNames.length === 1 && groupBy1 && groupBy2) {
       availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
-    }
-    else if (groupBy1 || fieldNames.length > 0) {
-      if (groupBy1) {
-        availableWidgets = [...getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional), ...getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional)];
-      }
-      else {
-        availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
-      }
-
+    } else if (groupBy1) {
+      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
     } else {
-      // No groupBy fields
-      availableWidgets = availableWidgets.filter(w =>
-        [Enum_WidgetType.KPI].includes(w.value)
-      );
+      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.OneDimensional);
     }
 
     this.recommendedWidgets = availableWidgets;
   }
 
-  canSubmitForm(): boolean {
-    // Basic validation
-    if (!this.widgetForm.get('displayConfig.heading').value) {
-      return false;
+  selectWidget(widgetType: Enum_WidgetType): void {
+    this.widgetForm.patchValue({ widgetType: widgetType });
+    this.setDefaultWidgetSpecificConfig();
+
+    if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+      this.updateStepCompletion(4);
     }
 
-    // Widget Type Selection validation
-    if (!this.widgetForm.get('widgetType').value) {
-      return false;
+    if (this.requiresWidgetSpecificConfig()) {
+      this.updateStepCompletion(5);
     }
+  }
 
-    // Single/Multiple entity validation based on entity configuration type
-    let entityValidation = false;
+  // Step Completion Logic
+  updateStepCompletion(step: number): void {
+    switch (step) {
+      case 1:
+        if (this.widgetForm.controls.configurationApproach.value === 'widgetFirst') {
+          this.stepsCompleted[1] = this.widgetForm.controls.widgetType.value !== null;
+        } else {
+          this.stepsCompleted[1] = this.widgetForm.controls.entityConfigType.value !== null;
+        }
+        break;
 
-    if (this.widgetForm.get('entityConfigType').value === 'single') {
-      const entity = this.widgetForm.get('dataInputConfig.entitySelect').value;
-      const aggregationMethod = this.widgetForm.get('dataInputConfig.method').value;
+      case 2:
+        this.stepsCompleted[2] = !!this.widgetForm.controls.displayConfig.controls.heading.value;
+        break;
 
-      if (aggregationMethod === Enum_Method.Sum) {
-        const properties = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-        entityValidation = !!entity && ((Array.isArray(properties) && properties.length > 0) || (!!properties && !Array.isArray(properties)));
-      } else {
-        entityValidation = !!entity;
+      case 3:
+        this.stepsCompleted[3] = this.validateStep3();
+        break;
+
+      case 4:
+        if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+          this.stepsCompleted[4] = this.widgetForm.controls.widgetType.value !== null;
+        }
+        break;
+
+      case 5:
+        if (this.requiresWidgetSpecificConfig()) {
+          this.stepsCompleted[5] = this.validateWidgetSpecificConfig();
+        } else {
+          this.stepsCompleted[5] = true;
+        }
+        break;
+    }
+  }
+
+  private validateStep3(): boolean {
+    if (this.widgetForm?.controls.entityConfigType.value === 'single') {
+      const entity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+      const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
+
+
+      var warnings = this.getValidationWarnings();
+      if (warnings.length > 0) {
+        return false;
       }
-
-      // Validate field rules if any are enabled
-      if (entityValidation && this.hasEnabledFieldRules()) {
-        // You can add stricter validation here if needed
-        entityValidation = this.validateAllEnabledFieldRules();
+      if (aggregationMethod === Enum_Method.Sum) {
+        return !!entity && this.selectedFieldNames.length > 0;
+      } else {
+        return !!entity;
       }
     } else {
-      const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-      entityValidation = entities.length > 0;
-      // // Check if at least one entity has properties selected
-      // const dataConfigs = this.getDataConfigControls();
-      // for (const config of dataConfigs) {
-      //   if (config.get('properties').value?.length > 0) {
-      //     return true;
-      //   }
-      // }
+      const entities = this.widgetForm?.controls.dataInputConfig.controls.entities.value || [];
+      return entities.length > 0;
+    }
+  }
+
+  private validateWidgetSpecificConfig(): boolean {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+
+    if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
+      const countColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value;
+      const displayColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value;
+      return !!countColumn && !!displayColumn;
+    } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+      const resultLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value;
+      return !!resultLabel;
+    } else if (widgetType === Enum_WidgetType.Table) {
+      const pageLimit = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit.value;
+      return pageLimit > 0;
+    }
+
+    return true;
+  }
+
+  canProceedToReview(): boolean {
+    const approach = this.widgetForm.controls.configurationApproach.value;
+    const hasWidgetSpecificConfig = this.requiresWidgetSpecificConfig();
+
+    if (approach === 'widgetFirst') {
+      if (hasWidgetSpecificConfig) {
+        return this.isStepComplete(1) && this.isStepComplete(2) &&
+          this.isStepComplete(3) && this.isStepComplete(5);
+      } else {
+        return this.isStepComplete(1) && this.isStepComplete(2) && this.isStepComplete(3);
+      }
+    } else {
+      if (hasWidgetSpecificConfig) {
+        return this.isStepComplete(1) && this.isStepComplete(2) &&
+          this.isStepComplete(3) && this.isStepComplete(4) && this.isStepComplete(5);
+      } else {
+        return this.isStepComplete(1) && this.isStepComplete(2) &&
+          this.isStepComplete(3) && this.isStepComplete(4);
+      }
+    }
+  }
+
+  // Widget Configuration
+  setDefaultWidgetSpecificConfig(): void {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+
+    if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          kpiConf: {
+            CountValueColumnName: 'count',
+            DisplayValueColumnName: 'displayValue',
+            seriesAggregation: Enum_Method_Aggregation.None,
+            showChart: false
+          }
+        }
+      });
+    } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          donutConf: {
+            resultLabel: 'Result',
+            seriesAggregation: Enum_Method_Aggregation.None,
+            showSeriesLabelValue: true
+          }
+        }
+      });
+    } else if (widgetType === Enum_WidgetType.Table) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          tableConf: {
+            pagination: true,
+            pageLimit: WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT,
+            pageNumber: 1
+          }
+        }
+      });
+    }
+  }
+
+  // Query Builder Setup
+  setConfig(): void {
+    this.config = this.columnArray;
+  }
+
+  createRuleGroupQueryBuilder(properties: Property[]): void {
+    properties.forEach((property: Property) => {
+      if (property.type !== EventPropertyType.Guid) {
+        if (property.name === "VideoSourceId") {
+          const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
+          let videoSourcesName = "";
+          for (let i = 0; i < videoSources.length; i++) {
+            videoSourcesName += videoSources[i].name + ",";
+          }
+          property.defaultValues = videoSourcesName.slice(0, -1);
+        }
+
+        this.createFilterPropertyObject(
+          property.name,
+          property.columnName,
+          property.type,
+          property.defaultValues,
+        );
+      }
+    });
+  }
+
+  createFilterPropertyObject(propertyName: string, name: string, type: EventPropertyType, options: any): void {
+    const operators = this.getOpertorsByType(type);
+    const processedOptions = this.setDefaultValuesByType(options, type);
+
+    let object: any = {
+      name: name,
+      type: EventPropertyType[type],
+      operators: operators
+    };
+
+    if (processedOptions !== null) {
+      object.options = processedOptions;
+    }
+
+    this.columnArray.fields[propertyName] = object;
+    this.setConfig();
+  }
+
+  getOpertorsByType(type: EventPropertyType): string[] {
+    return RuleOperators[type] || ["Equal", "NotEqual"];
+  }
+
+  setDefaultValuesByType(options: any, type: EventPropertyType): any {
+    if (typeof options === "string") {
+      return options.includes(",")
+        ? options.split(",").map((value: string) => value.trim())
+        : [options.trim()];
+    }
+
+    if (type === EventPropertyType.Boolean) {
+      return [true, false];
+    }
+
+    return options;
+  }
+
+  // Validation and Form Submission
+  private canSubmitForm(): boolean {
+    if (!this.widgetForm?.controls.displayConfig.controls.heading.value) {
+      return false;
+    }
+
+    if (!this.widgetForm?.controls.widgetType.value) {
+      return false;
+    }
+
+    let entityValidation = this.validateStep3();
+
+    if (this.requiresWidgetSpecificConfig()) {
+      entityValidation = entityValidation && this.validateWidgetSpecificConfig();
     }
 
     return entityValidation;
   }
 
-  onSubmit(): void {
+  getPreview() {
     if (!this.canSubmitForm()) {
       this.markFormGroupTouched(this.widgetForm);
-      alert('Please complete all required fields before submitting.');
+      alert(ERROR_MESSAGES.FORM_VALIDATION_FAILED);
       return;
     }
 
-    // Show validation warnings if any
+    this.showValidationWarnings();
+    try {
+      const finalWidget = this.createWidget();
+      console.log('Widget created:', finalWidget);
+      const event: any = {};
+      event.component = WidgetFormPreviewComponent;
+      event.data = finalWidget;
+      const dialogData: CommonModalData = {
+        event: event,
+        width: "900px",
+        heading: "Widget Preview",
+        footerButtons: [
+          {
+            Callback: "Close",
+            title: "Close",
+            basedOnChildTemplate: true,
+            style: "i2v-button tertiary-outline medium",
+          },
+        ],
+        showPreviousButton: false,
+        showNextButton: false,
+        showBackButton: false,
+      };
+
+      const ref = this.dialog.open(CommonModalComponent, {
+        panelClass: "custom-dialog-container",
+        data: dialogData,
+      });
+      ref.afterClosed().subscribe((data) => { });
+
+    }
+    catch (error) {
+      console.error('Error in preview widget:', error);
+      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+    }
+
+  }
+
+  onSubmit(): void {
+    if (!this.canSubmitForm()) {
+      this.markFormGroupTouched(this.widgetForm);
+      alert(ERROR_MESSAGES.FORM_VALIDATION_FAILED);
+      return;
+    }
+
     this.showValidationWarnings();
 
-    // Determine dimension based on data configuration
-    let dimension = WidgetDimension.OneDimensional;
+    try {
+      const finalWidget = this.createWidget();
+      console.log('Widget created:', finalWidget);
+      this.finalWidget = finalWidget;
+      this.finalWidgetChange.emit(this.finalWidget);
+      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
 
-    if (this.widgetForm.get('dataInputConfig.groupBy1').value) {
-      dimension = this.widgetForm.get('dataInputConfig.groupBy2').value ?
-        WidgetDimension.ThreeDimensional :
-        WidgetDimension.TwoDimensional;
+      this.dialogRef.close({ widgetData: this.finalWidget, operation: this.modalData.event?.data?.operation });
+    } catch (error) {
+      console.error('Error creating widget:', error);
+      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+    }
+  }
+
+  Cancel(): void {
+    this.dialogRef.close({ widgetData: this.finalWidget, operation: Enum_WidgetFormOperation.none });
+  }
+
+  // Widget Creation (Updated to use typed form)
+  private createWidget(): Widget {
+    const formValue = this.widgetForm.value as WidgetFormValue;
+
+    const dimension = this.determineDimension();
+    const fieldNames = this.selectedFieldNames;
+    const fieldsAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
+    let showableProperties = this.createShowableProperties(this.selectedFieldNames, true);
+    if (dimension === WidgetDimension.ThreeDimensional) {
+      if (fieldNames.length > 1 && fieldsAggregationType != Enum_Method_Aggregation.None) {
+        showableProperties = this.createShowableProperties([], true);
+      }
+      else {
+        showableProperties = this.createShowableProperties(this.selectedFieldNames, false);
+      }
     }
 
-    // Create fieldNames
-    const fieldNames: WidgetFieldNameConfig[] = [];
+    const dataConfig = this.createDataConfig();
+    const baseWidgetConfig = this.createBaseWidgetConfig(showableProperties);
+    //handle videoSourceId Group by
+    var groupby1 = this.widgetForm.controls.dataInputConfig.controls.groupBy1.value;
+    var groupby2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
+    if (groupby1?.name == "VideoSourceId" || groupby2?.name == "VideoSourceId") {
+      if (groupby1?.name == "VideoSourceId") {
+        groupby1.projectionName = "Video Source Name"
+      }
+      if (groupby2?.name == "VideoSourceId") {
+        groupby2.projectionName = "Video Source Name"
+      }
+      dataConfig.forEach((config) => {
+        config.joinableEntities = [];
+        config.joinableEntities[0] = {
+          entity: Enum_Entity.VideoSources,
+          schema: Enum_Schema.Public,
+          joinOn: "Id",
+          joinWith: "VideoSourceId",
+          properties: [{ name: "Name", displayName: "VideoSourceName" }],
+        }
+      })
+    }
+    else {
+      dataConfig.forEach((config) => {
+        const index = config.joinableEntities?.findIndex(
+          (joinableEntity) => joinableEntity.entity === Enum_Entity.VideoSources
+        );
 
-    // Gather fieldNames properties based on entity configuration
-    if (this.widgetForm.get('entityConfigType').value === 'single') {
-      const props = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-      const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-
-      // Create fieldNames objects
-      props.forEach(propValue => {
-        const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name === propValue.name);
-        if (propInfo) {
-          const fieldConfig: WidgetFieldNameConfig = {
-            name: propValue.name,
-            type: propInfo.type,
-          };
-
-          // Add field-specific rules if enabled
-          if (this.ruleDataForEachField[propValue.name]?.enabled) {
-            fieldConfig.rule = this.ruleDataForEachField[propValue.name].rule;
-          }
-
-          fieldNames.push(fieldConfig);
+        if (index !== undefined && index !== -1) {
+          config.joinableEntities.splice(index, 1);
         }
       });
-    } else {
-      // For multiple entities, gather from all entity configurations
-      const dataConfigs = this.getDataConfigControls();
 
-      // Add common properties if selected
-      const commonProps = this.widgetForm.get('dataInputConfig.commonProperties').value || [];
-      commonProps.forEach(propValue => {
-        const propInfo = this.commonProperties.find(p => p.name === propValue);
-        if (propInfo) {
-          fieldNames.push({
-            name: propValue.name,
-            type: propInfo.type,
-          });
-        }
-      });
+    }
+    const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
+    const constructorProps = this.createConstructorProps(baseWidgetConfig, dataInputConfig, dimension);
+
+    const widgetType = formValue.widgetType!;
+    const validation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig);
+
+    if (!validation.isValid) {
+      throw new Error(`${ERROR_MESSAGES.CONFIGURATION_INVALID}: ${validation.errors.join(', ')}`);
     }
 
-    // Create showable properties array
-    const showableProperties: ShowableProperty[] = [];
+    const finalWidget = WidgetFactory.createWidget(constructorProps, widgetType);
+    finalWidget.dimension = dimension;
+    finalWidget.dashboardId = this.dashboardId;
 
-    // Gather showable properties based on entity configuration
-    if (this.widgetForm.get('entityConfigType').value === 'single') {
-      const props = this.widgetForm.get('dataInputConfig.fieldNames').value || [];
-      const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
+    return finalWidget;
+  }
 
-      // Create ShowableProperty objects
-      props.forEach(propValue => {
-        const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name === propValue.name);
-        if (propInfo) {
-          showableProperties.push({
-            name: propValue.name,
-            displayName: propInfo.columnName,
-            isMultiValued: false,
-            isLabel: propInfo.type === EventPropertyType.String
-          });
-        }
-      });
-    } else {
-      // For multiple entities, gather from all entity configurations
-      const dataConfigs = this.getDataConfigControls();
+  private determineDimension(): WidgetDimension {
+    const groupBy1 = this.widgetForm.controls.dataInputConfig.controls.groupBy1.value;
+    const groupBy2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
 
-      // Add common properties if selected
-      const commonProps = this.widgetForm.get('dataInputConfig.commonProperties').value || [];
-      commonProps.forEach(propValue => {
-        const propInfo = this.commonProperties.find(p => p.name === propValue.name);
-        if (propInfo) {
-          showableProperties.push({
-            name: propValue,
-            displayName: propInfo.columnName,
-            isMultiValued: false,
-            isLabel: propInfo.type === EventPropertyType.String
-          });
-        }
-      });
+    if (groupBy1) {
+      return groupBy2 ? WidgetDimension.ThreeDimensional : WidgetDimension.TwoDimensional;
+    }
+    return WidgetDimension.OneDimensional;
+  }
+
+  private createShowableProperties(props: IWidgetFieldNameConfig[], addFieldsAggregationType: boolean = false): IShowableProperty[] {
+    const showableProperties: IShowableProperty[] = [];
+    const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+
+    props.forEach((propValue: IWidgetFieldNameConfig) => {
+      const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+      const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name === propValue.name);
+      if (propInfo) {
+        showableProperties.push({
+          name: propValue.name,
+          displayName: propInfo.name,
+          isMultiValued: false,
+          isLabel: propInfo.type === EventPropertyType.String
+        });
+      }
+    });
+
+    if (addFieldsAggregationType) {
+      var fieldAggregation = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value as Enum_Method_Aggregation;
+      showableProperties.push({
+        name: fieldAggregation.toString(),
+        displayName: fieldAggregation.toString(),
+        isMultiValued: false,
+        isLabel: false
+      })
+
+      return showableProperties;
     }
 
-    // Prepare the data configuration
-    let dataConfig: WidgetDataConfig[] = [];
+    return showableProperties;
+  }
 
-    if (this.widgetForm.get('entityConfigType').value === 'single') {
-      dataConfig = [{
-        entity: this.widgetForm.get('dataInputConfig.entitySelect').value as Enum_Entity,
-        schemaName: this.widgetForm.get('dataInputConfig.entityTypeSelect').value as Enum_Schema
+  private createDataConfig(): IWidgetDataConfig[] {
+    if (this.widgetForm.controls.entityConfigType.value === 'single') {
+      return [{
+        entity: this.widgetForm.controls.dataInputConfig.controls.entitySelect.value as Enum_Entity,
+        schemaName: this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema
       }];
     } else {
-      // For multiple entities, gather from all entity configurations
       const dataConfigs = this.getDataConfigControls();
-
-      dataConfigs.forEach(config => {
-        if (config.get('schemaName').value) {
-          dataConfig.push({
-            entity: config.get('entity').value as Enum_Entity,
-            schemaName: config.get('schemaName').value as Enum_Schema
-          });
-        }
-      });
+      return dataConfigs
+        .filter(config => config.get('schemaName')?.value)
+        .map(config => ({
+          entity: config.get('entity')?.value as Enum_Entity,
+          schemaName: config.get('schemaName')?.value as Enum_Schema
+        }));
     }
+  }
 
-    // Create the base widget configuration
-    const baseWidgetConfig: BaseWidgetConstructorProps = {
-      id: this.generateUUID(),
-      widgetType: this.widgetForm.get('widgetType').value,
-      displayConfig: this.widgetForm.get('displayConfig').value,
+  private createShowablePropertyFormGroup(property: IShowableProperty): FormGroup<{
+    name: FormControl<string>;
+    displayName: FormControl<string>;
+    isMultiValued: FormControl<boolean>;
+    isLabel: FormControl<boolean>;
+  }> {
+    return this.fb.group({
+      name: this.fb.control(property.name, { nonNullable: true }),
+      displayName: this.fb.control(property.displayName, { nonNullable: true }),
+      isMultiValued: this.fb.control(property.isMultiValued || false, { nonNullable: true }),
+      isLabel: this.fb.control(property.isLabel || false, { nonNullable: true })
+    });
+  }
+
+  private addShowablePropertiesToForm(showableProperties: IShowableProperty[]): void {
+    const showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    showablePropertiesArray.clear();
+
+    showableProperties.forEach(property => {
+      showablePropertiesArray.push(this.createShowablePropertyFormGroup(property));
+    });
+  }
+
+  private createBaseWidgetConfig(showableProperties: IShowableProperty[]): IBaseWidgetConstructorProps {
+    // Add showable properties to form if needed
+    this.addShowablePropertiesToForm(showableProperties);
+
+    const displayConfigValue = this.widgetForm.controls.displayConfig.value;
+    const displayConfig: IWidgetDisplayConfig = {
+      heading: displayConfigValue.heading || '',
+      subHeading: displayConfigValue.subHeading || '',
+      color: displayConfigValue.color || '#0d6efd',
+      svgIcon: undefined // Optional property
+    };
+
+    return {
+      id: WidgetFormUtils.generateUUID(),
+      displayConfig: displayConfig,
       showableProperties: showableProperties,
-      widgetTileConf: this.widgetForm.get('widgetTileConf').value,
-      WidgetInteractivityConfig: {
+      widgetTileConf: this.widgetForm.controls.widgetTileConf.value,
+      widgetInteractivityConfig: {
         isWidgetHidden: false
       },
       filterConfig: {
         customFilters: {},
         propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
         disableTimeFilter: false,
-        startTime: this.getCurrentDayStart(),
+        startTime: WidgetFormUtils.getCurrentDayStart(),
         endTime: moment(new Date()).valueOf(),
         isDashboardFilterApplied: true
-      }
+      },
+      allowRefresh: this.widgetForm.controls.allowRefresh.value,
+      refreshInterval: this.widgetForm.controls.refreshInterval.value
+    };
+  }
+
+  private createDataInputConfig(
+    dimension: WidgetDimension,
+    fieldNames: IWidgetFieldNameConfig[],
+    dataConfig: IWidgetDataConfig[]
+  ): IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig {
+    const baseConfig = {
+      isDistinct: this.widgetForm.controls.dataInputConfig.controls.isDistinct.value,
+      method: this.widgetForm.controls.dataInputConfig.controls.method.value,
+      dataConfig: dataConfig,
+      fieldNames: fieldNames,
+      fieldsAggregationType: this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value,
     };
 
-    // Create appropriate data input config based on dimension
-    let dataInputConfig: OneDimensionDataInputConfig | TwoDimensionDataInputConfig | ThreeDimensionDataInputConfig;
-
     switch (dimension) {
-      case WidgetDimension.OneDimensional: {
-        const config: OneDimensionDataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
-          method: this.widgetForm.get('dataInputConfig.method')?.value,
-          dataConfig: dataConfig,
-          fieldNames: fieldNames
-        };
-        dataInputConfig = config;
-        break;
-      }
+      case WidgetDimension.OneDimensional:
+        return baseConfig as IOneDimensionDataInputConfig;
 
-      case WidgetDimension.TwoDimensional: {
-        const config: TwoDimensionDataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
-          method: this.widgetForm.get('dataInputConfig.method')?.value,
-          fieldNames: fieldNames,
-          dataConfig: dataConfig,
-          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1')?.value,
-          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime')?.value,
-        };
-        dataInputConfig = config;
-        break;
-      }
+      case WidgetDimension.TwoDimensional:
+        return {
+          ...baseConfig,
+          groupBy1: this.widgetForm.controls.dataInputConfig.controls.groupBy1.value,
+          clubbingTime: this.widgetForm.controls.dataInputConfig.controls.clubbingTime.value,
+        } as ITwoDimensionDataInputConfig;
 
-      case WidgetDimension.ThreeDimensional: {
-        const config: ThreeDimensionDataInputConfig = {
-          isDistinct: this.widgetForm.get('dataInputConfig.isDistinct')?.value,
-          method: this.widgetForm.get('dataInputConfig.method')?.value,
-          dataConfig: dataConfig,
-          fieldNames: fieldNames,
-          groupBy1: this.widgetForm.get('dataInputConfig.groupBy1')?.value,
-          groupBy2: this.widgetForm.get('dataInputConfig.groupBy2')?.value,
-          clubbingTime: this.widgetForm.get('dataInputConfig.clubbingTime')?.value,
-        };
-        dataInputConfig = config;
-        break;
-      }
+      case WidgetDimension.ThreeDimensional:
+        return {
+          ...baseConfig,
+          groupBy1: this.widgetForm.controls.dataInputConfig.controls.groupBy1.value,
+          groupBy2: this.widgetForm.controls.dataInputConfig.controls.groupBy2.value,
+          clubbingTime: this.widgetForm.controls.dataInputConfig.controls.clubbingTime.value,
+        } as IThreeDimensionDataInputConfig;
+
+      default:
+        return baseConfig as IOneDimensionDataInputConfig;
     }
+  }
 
-    try {
-      // Create a complete constructor props object
-      const constructorProps = {
-        ...baseWidgetConfig,
-        dataInputConfig: dataInputConfig
+  private createConstructorProps(
+    baseWidgetConfig: IBaseWidgetConstructorProps,
+    dataInputConfig: any,
+    dimension: WidgetDimension
+  ): any {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+
+    // Handle widget-specific configurations
+    if (widgetType === Enum_WidgetType.Donut1D) {
+      const donutConf: DonutConf = {
+        resultLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value,
+        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.seriesAggregation.value,
+        showSeriesLabelValue: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value,
       };
 
-      // Validate the configuration for the selected widget type
-      const validation = WidgetFactory.validateWidgetConfiguration(
-        this.widgetForm.get('widgetType').value,
-        dataInputConfig
-      );
+      return {
+        ...baseWidgetConfig,
+        widgetType: widgetType,
+        dataInputConfig: dataInputConfig,
+        donutConf: donutConf
+      } as DonutChart1DWidget;
+    }
 
-      if (!validation.isValid) {
-        alert(`Invalid widget configuration: ${validation.errors.join(', ')}`);
-        return;
-      }
+    if (widgetType === Enum_WidgetType.Donut2D) {
+      const donutConf: DonutConf = {
+        resultLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value,
+        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.seriesAggregation.value,
+        showSeriesLabelValue: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value,
+      };
 
-      // Use the factory to create the appropriate widget
-      const finalWidget = WidgetFactory.createWidget(constructorProps);
-      finalWidget.dimension = dimension;
+      return {
+        ...baseWidgetConfig,
+        dataInputConfig: dataInputConfig,
+        donutConf: donutConf
+      } as DonutChart2DWidget;
+    }
 
-      // In a real application, you would save this widget or pass it to a service
-      console.log('Widget created:', finalWidget);
-      this.finalWidget = finalWidget;
-      this.finalWidgetChange.emit(this.finalWidget);
-      alert('Widget created successfully!');
+    if (widgetType === Enum_WidgetType.KPI1D) {
+      const kpiConf: KPIConf = {
+        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
+        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
+        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
+        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.seriesAggregation.value,
+        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
+      };
 
-      // Optional: Reset the form or navigate to another page
-      // this.onReset();
-      // this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error('Error creating widget:', error);
-      alert(`Error creating widget: ${error.message}`);
+      return {
+        ...baseWidgetConfig,
+        dataInputConfig: dataInputConfig,
+        kpiConf: kpiConf
+      } as KPI1DWidgetConstructorProps;
+    }
+
+    if (widgetType === Enum_WidgetType.KPI2D) {
+      const kpiConf: KPIConf = {
+        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
+        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
+        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
+        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.seriesAggregation.value,
+        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
+      };
+
+      return {
+        ...baseWidgetConfig,
+        dataInputConfig: dataInputConfig as ITwoDimensionDataInputConfig,
+        kpiConf: kpiConf
+      } as KPI2DWidgetConstructorProps;
+    }
+
+    if (widgetType === Enum_WidgetType.Table) {
+      const tableConf: TableConf = {
+        pagination: this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pagination.value,
+        pageLimit: this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit.value,
+        pageNumber: this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageNumber.value,
+      };
+
+      return {
+        ...baseWidgetConfig,
+        dataInputConfig: dataInputConfig as any,
+        tableConf: tableConf
+      } as TableWidgetConstructorProps;
+    }
+
+    // Default case for other widget types
+    switch (dimension) {
+      case WidgetDimension.OneDimensional:
+        return {
+          ...baseWidgetConfig,
+          dataInputConfig: dataInputConfig as IOneDimensionDataInputConfig
+        } as OneDimensionWidgetConstructorProps;
+      case WidgetDimension.TwoDimensional:
+        return {
+          ...baseWidgetConfig,
+          dataInputConfig: dataInputConfig as ITwoDimensionDataInputConfig
+        } as TwoDimensionWidgetConstructorProps;
+      case WidgetDimension.ThreeDimensional:
+        return {
+          ...baseWidgetConfig,
+          dataInputConfig: dataInputConfig as IThreeDimensionDataInputConfig
+        } as ThreeDimensionWidgetConstructorProps;
+      default:
+        return {
+          ...baseWidgetConfig,
+          dataInputConfig: dataInputConfig as IOneDimensionDataInputConfig
+        } as OneDimensionWidgetConstructorProps;
     }
   }
 
@@ -1033,216 +1854,64 @@ export class WidgetFormComponent implements OnInit {
     });
   }
 
-  togglePropertyFilters(event: any): void {
-    this.enablePropertyFilters = event.target.checked;
-
-    if (!this.enablePropertyFilters) {
-      // Clear property filters when disabled
-      this.ruleData = new RuleSet();
-      this.widgetForm.get('filterConfig.propertyFilters').setValue(null);
-    }
-
-    this.updateStepCompletion(3);
+  // Template Helper Methods
+  getPropertyDisplayName(property: Property): string {
+    return property.columnName || property.name;
   }
 
-  convertRulesToPropertyFilters(): any {
-
-    if (!this.enablePropertyFilters) {
-      return null;
-    }
-
-    // Convert the rule groups to a format the widget can use
-    const propertyFilters = this.ruleData;
-    return propertyFilters;
+  isPropertySelected(property: Property, selectedProperties: Property[]): boolean {
+    return selectedProperties.some(selected => selected.name === property.name);
   }
 
-  getCurrentDayStart(): number {
-    const now = new Date();
-    return moment(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)).valueOf();
-  }
-
-  generateUUID(): string {
-    // Simple UUID generator for demo purposes
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-  onReset(): void {
-    this.widgetForm.reset();
-    this.clearDataConfigArray();
-
-    this.enableGroupBy1 = false;
-    this.enableGroupBy2 = false;
-    this.groupBy1SelectionType = null;
-    this.groupBy2SelectionType = null;
-    this.groupBy1Option = null;
-    this.groupBy2Option = null;
-    this.groupBy1Model = null;
-    this.groupBy2Model = null;
-
-    // Reset default values
-    this.widgetForm.get('configurationApproach').setValue('widgetFirst');
-    this.widgetForm.get('entityConfigType').setValue('single');
-    this.widgetForm.get('dataInputConfig.method').setValue(Enum_Method.Count);
-    this.widgetForm.get('dataInputConfig.isDistinct').setValue(false);
-    this.widgetForm.get('displayConfig.color').setValue('#3498db');
-
-    this.enablePropertyFilters = false;
-    this.ruleData = new RuleSet();
-
-    // Clear field-specific rules
-    this.ruleDataForEachField = {};
-
-    // Reset accordion state
-    this.currentStep = 1;
-    this.stepsCompleted = { 1: false, 2: false, 3: false, 4: false };
-  }
-
-  // Helper methods for property operations
-  getEntityLabel(entityValue: string): string {
-    const entity = this.entities.find(e => e.label === entityValue);
-    return entity ? entity.label : entityValue;
-  }
-
-  getEntitySpecificProperties(entityValue: string): any[] {
-    return this.entityPropertiesMap[entityValue] || [];
-  }
-
-
-  selectWidget(widgetType: string): void {
-    this.widgetForm.get('widgetType').setValue(widgetType);
-    this.updateStepCompletion(4);
-  }
-
-  // Method to determine if we can proceed to the review step
-  canProceedToReview(): boolean {
-    if (this.widgetForm.get('configurationApproach').value === 'widgetFirst') {
-      return this.isStepComplete(1) && this.isStepComplete(2) && this.isStepComplete(3);
-    } else {
-      return this.isStepComplete(1) && this.isStepComplete(2) && this.isStepComplete(3) && this.isStepComplete(4);
-    }
-  }
-
-  // Check if a property is time-based
-  isTimeProperty(selectedProperty: Property): boolean {
-    if (!selectedProperty) return false;
-
-    // Get property information from all available properties
-    const allProperties = this.getAllAvailableProperties();
-    const property = allProperties.find(prop => prop.name === selectedProperty.name);
-
-    // Check if property is time-based
-    return property?.type === EventPropertyType.Date || property?.type === EventPropertyType.DateTime;
-  }
-
-  // Get form control for a specific entity's properties
-  getPropertiesControlForEntity(entityValue: string): AbstractControl | null {
-    if (!entityValue) return null;
-
-    // If it's single entity config
-    if (this.widgetForm.get('entityConfigType').value === 'single' &&
-      this.widgetForm.get('dataInputConfig.entitySelect').value === entityValue) {
-      return this.widgetForm.get('dataInputConfig.fieldNames');
-    }
-
-    // If it's multiple entities config
-    if (this.widgetForm.get('entityConfigType').value === 'multiple') {
-      const dataConfigControls = this.getDataConfigControls();
-      for (let i = 0; i < dataConfigControls.length; i++) {
-        const config = dataConfigControls[i];
-        if (config.get('entity').value === entityValue) {
-          return config.get('properties');
-        }
-      }
-    }
-
-    return null;
-  }
-
-  // Methods for the summary section
+  // Summary Methods for Review Step
   getWidgetTypeLabel(): string {
-    const widgetType = this.widgetForm.get('widgetType').value;
+    const widgetType = this.widgetForm.controls.widgetType.value;
     const widget = this.widgetTypes.find(w => w.value === widgetType);
     return widget ? widget.label : 'None Selected';
   }
 
   getSelectedPropertiesSummary(): string {
-
-    return "";
-
-    // if (this.widgetForm.get('entityConfigType').value === 'single') {
-    //   const fieldNamesValue = this.widgetForm.get('dataInputConfig.fieldNames').value;
-
-    //   // Handle the case where fieldNames might be a single object (for Count method) or an array
-    //   if (!fieldNamesValue) {
-    //     return 'None';
-    //   }
-
-    //   const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-    //   let properties = [];
-
-    //   // Check if it's a single property object (Count method) or array of property names
-    //   if (Array.isArray(fieldNamesValue)) {
-    //     // It's an array of property names (for non-Count methods)
-    //     properties = fieldNamesValue.map(propertyName => {
-    //       const prop = this.entityPropertiesMap[entityValue]?.find(p => p.name === propertyName);
-    //       return prop ? prop.name : propertyName;
-    //     });
-    //   } else if (typeof fieldNamesValue === 'object' && fieldNamesValue.name) {
-    //     // It's a single property object (for Count method)
-    //     properties = [fieldNamesValue.name];
-    //   } else {
-    //     // Fallback for any other format
-    //     properties = [String(fieldNamesValue)];
-    //   }
-
-    //   return properties.join(', ');
-    // } else {
-    //   // For multiple entities, this is more complex - summarize by entity
-    //   const entities = this.widgetForm.get('dataInputConfig.entities').value || [];
-    //   if (entities.length === 0) return 'None';
-
-    //   const summaries = [];
-    //   const dataConfigs = this.getDataConfigControls();
-
-    //   for (const config of dataConfigs) {
-    //     const entityValue = config.get('entity').value;
-    //     const properties = config.get('properties').value || [];
-    //     var propertiesLength = (!!properties && !Array.isArray(properties)) ? 1 : (Array.isArray(properties) && properties.length > 0) ? properties.length : 0;
-    //     if (propertiesLength > 0) {
-    //       const entityLabel = this.getEntityLabel(entityValue);
-    //       const propLabels = properties.map(value => {
-    //         const prop = this.entityPropertiesMap[entityValue]?.find(p => p.name === value.name);
-    //         return prop ? prop.name : value;
-    //       }).join(', ');
-
-    //       summaries.push(`${entityLabel}: ${propLabels}`);
-    //     }
-    //   }
-
-    //   return summaries.join('; ');
-    // }
+    const fieldNames = this.selectedFieldNames;
+    if (fieldNames.length === 0) return 'None selected';
+    return fieldNames.map((field: Property) => field.columnName || field.name).join(', ');
   }
 
   getGroupingSummary(): string {
     if (!this.enableGroupBy1) return 'None';
 
-    const groupBy1 = this.widgetForm.get('dataInputConfig.groupBy1').value;
+    const groupBy1 = this.widgetForm.controls.dataInputConfig.controls.groupBy1.value;
     if (!groupBy1) return 'None';
 
-    const allProps = this.getAllAvailableProperties();
-    const groupBy1Label = groupBy1.name;
+    const groupBy1Label = groupBy1.projectionName || groupBy1.name;
 
     if (!this.enableGroupBy2) return groupBy1Label;
 
-    const groupBy2 = this.widgetForm.get('dataInputConfig.groupBy2').value;
+    const groupBy2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
     if (!groupBy2) return groupBy1Label;
 
-    const groupBy2Label = groupBy2.name;
-    return `Group By 1 : ${groupBy1Label} \n Group By 2 :${groupBy2Label}`;
+    const groupBy2Label = groupBy2.projectionName || groupBy2.name;
+    return `Group By 1: ${groupBy1Label}, Group By 2: ${groupBy2Label}`;
+  }
+
+  getWidgetSpecificConfigSummary(): string {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+
+    if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
+      const countColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value;
+      const displayColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value;
+      const showChart = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value;
+      return `Count Column: ${countColumn}, Display Column: ${displayColumn}, Show Chart: ${showChart ? 'Yes' : 'No'}`;
+    } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+      const resultLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value;
+      const showSeriesLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value;
+      return `Result Label: ${resultLabel}, Show Series Label: ${showSeriesLabel ? 'Yes' : 'No'}`;
+    } else if (widgetType === Enum_WidgetType.Table) {
+      const pagination = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pagination.value;
+      const pageLimit = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit.value;
+      return `Pagination: ${pagination ? 'Enabled' : 'Disabled'}, Page Limit: ${pageLimit}`;
+    }
+
+    return 'No specific configuration required';
   }
 
   getPropertyLabel(propertyField: string): string {
@@ -1253,307 +1922,587 @@ export class WidgetFormComponent implements OnInit {
     return property ? property.columnName : propertyField;
   }
 
-
-  // Check for time-based properties
-  hasTimeBasedProperties(): boolean {
-    const allProperties = this.getAllAvailableProperties();
-    return allProperties.some(prop => this.isTimeProperty(prop));
+  getEntityLabel(entity: Enum_Entity): string {
+    return Enum_Entity_With_Labels[entity]
   }
 
-  accordionTabOpened(event: any) {
-    // The index is 0-based in the event but 1-based in our model
-    this.currentStep = event.index + 1;
-  }
-
-  // Add these new methods
-  toggleGroupBy1(event: any): void {
-    this.enableGroupBy1 = event.target.checked;
-
-    if (!this.enableGroupBy1) {
-      // Clear GroupBy1 when disabled
-      this.widgetForm.get('dataInputConfig.groupBy1').setValue(null);
-      this.groupBy1Model = null;
-      this.groupBy1Option = null;
-      this.groupBy1SelectionType = null;
-
-      // Also disable and clear GroupBy2 since it depends on GroupBy1
-      this.enableGroupBy2 = false;
-      this.toggleGroupBy2({ target: { checked: false } });
-    }
-
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  toggleGroupBy2(event: any): void {
-    this.enableGroupBy2 = event.target.checked;
-
-    if (!this.enableGroupBy2) {
-      // Clear GroupBy2 when disabled
-      this.widgetForm.get('dataInputConfig.groupBy2').setValue(null);
-      this.groupBy2Model = null;
-      this.groupBy2Option = null;
-      this.groupBy2SelectionType = null;
-    }
-
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  getAvailableGroupByTypes(groupByNumber: number): any[] {
-    // For group by 1, always return all options
-    if (groupByNumber === 1) {
-      return this.groupByTypes;
-    }
-
-    // For group by 2, check if group by 1 is time-based
-    if (groupByNumber === 2 && this.groupBy1SelectionType === 'time') {
-      // If group by 1 is time-based, only return 'field' option
-      return this.groupByTypes.filter(type => type.value === 'field');
-    }
-
-    // Otherwise return all options
-    return this.groupByTypes;
-  }
-
-  onGroupBy1Change(event: any): void {
-
-    var prop = event.value as Property;
-
-    // Create groupByConf object
-    this.groupBy1Model = new groupByConf();
-    this.groupBy1Model.name = prop.name;
-    this.groupBy1Model.projectionName = prop.columnName;
-    this.groupBy1Model.type = prop.type;
-    this.groupBy1Model.isTime = false;
-
-    this.groupBy1Option = prop;
-
-    // Set to form
-    this.widgetForm.get('dataInputConfig.groupBy1').setValue(this.groupBy1Model);
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  onGroupBy2Change(event): void {
-    var prop = event.value as Property;
-
-    // Create groupByConf object
-    this.groupBy2Model = new groupByConf();
-    this.groupBy2Model.name = prop.name;
-    this.groupBy2Model.projectionName = prop.columnName;
-    this.groupBy2Model.type = prop.type;
-    this.groupBy2Model.isTime = false;
-
-    this.groupBy2Option = prop;
-
-    // Set to form
-    this.widgetForm.get('dataInputConfig.groupBy2').setValue(this.groupBy2Model);
-    this.updateRecommendedWidgets();
-  }
-
-  updateTimeGrouping(groupByNumber: number, event): void {
-    // Create groupByConf object
-    const groupByModel = new groupByConf();
-    groupByModel.name = event.value;
-    groupByModel.projectionName = this.capitalizeFirstWord(event.value);
-    groupByModel.type = EventPropertyType.String;
-    groupByModel.isTime = true;
-
-    if (groupByNumber === 1) {
-      this.groupBy1Model = groupByModel;
-      this.widgetForm.get('dataInputConfig.groupBy1')?.setValue(groupByModel);
-
-    } else if (groupByNumber === 2) {
-      this.groupBy2Model = groupByModel;
-      this.widgetForm.get('dataInputConfig.groupBy2')?.setValue(groupByModel);
-    }
-
-    this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
-  }
-
-  determinePropertyType(fieldName: string): EventPropertyType {
-    // Get property information from all available properties
-    const allProperties = this.getAllAvailableProperties();
-    const property = allProperties.find(prop => prop.name === fieldName);
-
-    if (!property) {
-      return EventPropertyType.String; // Default
-    }
-
-    return property.type
-  }
-
-  onSelectGroupByType(groupByNumber: number, event): void {
-    const selectedValue = event.value;
-
-    if (groupByNumber === 1) {
-      this.groupBy1SelectionType = selectedValue;
-
-      // If group by 1 is changed to time and group by 2 is also time, reset group by 2
-      if (selectedValue === 'time' && this.groupBy2SelectionType === 'time') {
-        this.groupBy2SelectionType = null;
-        this.groupBy2Model = null;
-        this.groupBy2Option = null;
-        this.widgetForm.get('dataInputConfig.groupBy2')?.setValue(null);
-      }
-    } else if (groupByNumber === 2) {
-      this.groupBy2SelectionType = selectedValue;
-    }
-
-    // Update the groupBy configuration in the form
-    this.updateTimeGrouping(groupByNumber, event);
-  }
-
-  capitalizeFirstWord(str) {
-    if (!str) return str;
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  createRuleGroupQueryBuilder(properties: Property[]) {
-    properties.forEach((property: Property) => {
-      if (property.type != EventPropertyType.Guid) {
-
-        if (property.name == "VideoSourceId") {
-          const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
-          let videoSourcesName = "";
-          for (let i = 0; i < videoSources.length; i++) {
-            videoSourcesName += videoSources[i].name + ",";
-          }
-          property.defaultValues = videoSourcesName.slice(0, -1);
-        }
-
-        this.createFilterPropertyObject(
-          property.name,
-          property.columnName,
-          property.type,
-          property.defaultValues,
-        );
-      }
-    });
-  }
-
-  createFilterPropertyObject(propertyName, name, type, options) {
-    let object;
-    const operators = this.getOpertorByType(type);
-    const options_ = this.setDefaultValuesByType(propertyName, options, type);
-    console.log(type);
-    if (options_ == null) {
-      object = { name: name, type: EventPropertyType[type], operators: operators };
-    } else {
-      object = {
-        name: name,
-        type: EventPropertyType[type],
-        options: options_,
-        operators: operators,
-      };
-    }
-    this.columnArray.fields[propertyName] = object;
-    this.setConfig();
-  }
-
-  getOpertorByType(type: number) {
-    return RuleOperators[type];
-  }
-
-  setDefaultValuesByType(propertyName, options, type) {
-    if (typeof options === "string") {
-      return options.includes(",")
-        ? options.split(",").map((value) => value.trim())
-        : [options.trim()];
-    }
-    if (type === 3) {
-      return [true, false];
-    }
-    return options;
-  }
-
-  // Method to get configuration for a specific field's query builder
-  getConfigForField(fieldName: string): QueryBuilderConfig {
-    const entityValue = this.widgetForm.get('dataInputConfig.entitySelect').value;
-
-    if (!entityValue || !this.entityPropertiesMap[entityValue]) {
-      return { fields: {} };
-    }
-
-    const entityProperties = this.entityPropertiesMap[entityValue];
-    const config: QueryBuilderConfig = { fields: {} };
-
-    // Build configuration for the specific field
-    var property = entityProperties.find(prop => prop.name === fieldName);
-    if (property) {
-      if (property.type !== EventPropertyType.Guid) {
-        const operators = this.getOpertorByType(property.type);
-        const options = this.setDefaultValuesByType(property.name, property.defaultValues, property.type);
-
-        let fieldConfig;
-        if (options == null) {
-          fieldConfig = {
-            name: property.columnName,
-            type: EventPropertyType[property.type],
-            operators: operators
-          };
-        } else {
-          fieldConfig = {
-            name: property.columnName,
-            type: EventPropertyType[property.type],
-            options: options,
-            operators: operators,
-          };
-        }
-
-        config.fields[property.name] = fieldConfig;
-      }
-    }
-
-
-    return config;
-  }
-
-  // Method to get count of rules for a specific field
-  getFieldRuleCount(fieldName: string): number {
-    const fieldRules = this.ruleDataForEachField[fieldName];
-    if (!fieldRules || !fieldRules.enabled || !fieldRules.rule) {
-      return 0;
-    }
-
-    return 1;
-
-  }
-
-  // Method to get validation warnings (non-blocking issues)
+  // Validation Methods
   getValidationWarnings(): string[] {
-    const warnings: string[] = [];
-
-    // Check for enabled field rules without actual rules
-    for (const fieldName in this.ruleDataForEachField) {
-      const fieldRules = this.ruleDataForEachField[fieldName];
-      if (fieldRules.enabled) {
-        const ruleCount = this.getFieldRuleCount(fieldName);
-        if (ruleCount === 0) {
-          warnings.push(`Field "${fieldName}" has rules enabled but no rules configured`);
-        }
-      }
+    let warnings: string[] = [];
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    if (widgetType) {
+      const dimension = this.determineDimension();
+      const fieldNames = this.selectedFieldNames;
+      const dataConfig = this.createDataConfig();
+      const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
+      const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig);
+      warnings = [...widgetConfigurationValidation.errors]
+      const WidgetCompatibilityValidation = validateWidgetCompatibility(widgetType, dataInputConfig)
+      warnings = [...WidgetCompatibilityValidation.errors]
     }
-
-    // // Check for global property filters enabled but no rules
-    // if (this.enablePropertyFilters && this.getGlobalFilterRuleCount() === 0) {
-    //   warnings.push('Global property filters are enabled but no filter rules are configured');
-    // }
-
     return warnings;
   }
 
-  // Method to show validation warnings to user
   showValidationWarnings(): void {
     const warnings = this.getValidationWarnings();
     if (warnings.length > 0) {
       const warningMessage = 'Please note the following:\n\n' + warnings.join('\n');
-      // You can show this in a more user-friendly way, like a toast or modal
       console.warn('Validation warnings:', warnings);
-      // Optionally show to user:
-      // alert(warningMessage);
     }
+  }
+
+  // Demo and Utility Methods
+  preFillForm(): void {
+    this.widgetForm.patchValue({
+      configurationApproach: 'propertiesFirst',
+      entityConfigType: 'single',
+      displayConfig: {
+        heading: 'Sample Widget Dashboard',
+        subHeading: 'Traffic Analytics',
+        color: '#2196F3'
+      },
+      dataInputConfig: {
+        entityTypeSelect: Enum_Schema.Events,
+        entitySelect: Enum_Entity.Highway_ATCC,
+        method: Enum_Method.Sum,
+        isDistinct: false
+      },
+      allowRefresh: false,
+      refreshInterval: 300,
+    });
+
+    this.selectedEntities = this.eventSchemaEntities;
+    this.onEntityChange();
+
+    if (this.entityProperties?.length > 0) {
+      var fieldName: IWidgetFieldNameConfig = {
+        name: this.entityProperties[0].columnName,
+        type: this.entityProperties[0].type,
+        rule: null
+      }
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          fieldNames: [fieldName]
+        }
+      });
+    }
+
+    if (this.isAdvancedMode && this.entityProperties?.length > 1) {
+      this.enableGroupBy1 = true;
+      this.groupBy1SelectionType = 'field';
+      this.groupBy1Option = this.entityProperties[1];
+      this.groupBy1Model = this.createGroupByModel(this.entityProperties[1]);
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          groupBy1: this.groupBy1Model
+        }
+      });
+    }
+
+    this.updateRecommendedWidgets();
+    if (this.recommendedWidgets?.length > 0) {
+      this.widgetForm.patchValue({
+        widgetType: this.recommendedWidgets[0].value
+      });
+    }
+
+    this.setDefaultWidgetSpecificConfig();
+
+    // Update all step completions
+    [1, 2, 3, 4, 5].forEach(step => this.updateStepCompletion(step));
+
+    console.log('Form pre-filled with dummy values');
+  }
+
+  onReset(): void {
+    this.widgetForm.reset();
+    this.clearDataConfigArray();
+
+    // Reset advanced configurations
+    this.resetAdvancedConfigurations();
+
+    // Reset default values
+    this.widgetForm.patchValue({
+      configurationApproach: 'widgetFirst',
+      entityConfigType: 'single',
+      dataInputConfig: {
+        method: Enum_Method.Count,
+        isDistinct: false
+      },
+      displayConfig: {
+        color: WIDGET_FORM_CONSTANTS.DEFAULT_COLORS[0]
+      },
+      widgetTileConf: WIDGET_FORM_CONSTANTS.DEFAULT_DIMENSIONS
+    });
+
+    // Reset accordion state
+    this.currentStep = 1;
+    this.stepsCompleted = { 1: false, 2: false, 3: false, 4: false, 5: false };
+    this.setDefaultWidgetSpecificConfig();
+
+    console.log(SUCCESS_MESSAGES.FORM_RESET);
+  }
+
+  // Helper Methods
+  capitalizeFirstWord(str: string): string {
+    return WidgetFormUtils.capitalizeFirst(str);
+  }
+
+  getCurrentDayStart(): number {
+    return WidgetFormUtils.getCurrentDayStart();
+  }
+
+  generateUUID(): string {
+    return WidgetFormUtils.generateUUID();
+  }
+
+  // Edit Mode Methods
+  private async initializeFormWithExistingWidget(): Promise<void> {
+    if (!this.finalWidget) return;
+
+    try {
+      // Wait for form initialization to complete
+      if (!this.isFormInitialized) {
+        await this.initializeForm();
+      }
+
+      // Set basic configuration
+      this.initializeBasicConfig();
+
+      // Set display configuration
+      this.initializeDisplayConfig();
+
+      // Set data input configuration
+      await this.initializeDataInputConfig();
+
+      // Set widget-specific configuration
+      this.initializeWidgetSpecificConfig();
+
+      // Set filter configuration
+      this.initializeFilterConfig();
+
+      // Set widget tile configuration
+      this.initializeWidgetTileConfig();
+
+      // Update UI state based on loaded data
+      this.updateUIStateAfterLoad();
+
+      // Update step completions
+      this.updateAllStepCompletions();
+
+      console.log('Form initialized with existing widget data');
+
+    } catch (error) {
+      console.error('Error initializing form with widget data:', error);
+    }
+  }
+
+  private initializeBasicConfig(): void {
+    const widget = this.finalWidget;
+
+    // Determine configuration approach based on widget structure
+    const configApproach = this.determineConfigurationApproach(widget);
+
+    this.widgetForm.patchValue({
+      configurationApproach: configApproach,
+      widgetType: widget.widgetType,
+      entityConfigType: this.determineEntityConfigType(widget)
+    });
+  }
+
+  private determineConfigurationApproach(widget: Widget): 'widgetFirst' | 'propertiesFirst' {
+    // Logic to determine if this was created widget-first or properties-first
+    return 'widgetFirst'; // Default, adjust based on your needs
+  }
+
+  private determineEntityConfigType(widget: Widget): 'single' | 'multiple' {
+    const dataConfig = widget.dataInputConfig?.dataConfig;
+    return (dataConfig && dataConfig.length > 1) ? 'multiple' : 'single';
+  }
+
+  private initializeDisplayConfig(): void {
+    const widget = this.finalWidget;
+
+    this.widgetForm.patchValue({
+      displayConfig: {
+        heading: widget.displayConfig?.heading || '',
+        subHeading: widget.displayConfig?.subHeading || '',
+        color: widget.displayConfig?.color || WIDGET_FORM_CONSTANTS.DEFAULT_COLORS[0]
+      }
+    });
+  }
+
+  private async initializeDataInputConfig(): Promise<void> {
+    const widget = this.finalWidget;
+    const dataInputConfig = widget.dataInputConfig;
+
+    if (!dataInputConfig) return;
+
+    // Set basic data input configuration
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        method: dataInputConfig.method || Enum_Method.Count,
+        isDistinct: dataInputConfig.isDistinct || false,
+        fieldsAggregationType: dataInputConfig.fieldsAggregationType || Enum_Method_Aggregation.None,
+      }
+    });
+
+    await this.initializeClubbingTimeConfigurations(dataInputConfig);
+    // Initialize entity configuration
+    await this.initializeEntityConfiguration(dataInputConfig);
+
+    // Initialize field names
+    this.initializeFieldNames(dataInputConfig);
+
+    // Initialize group by configurations
+    this.initializeGroupByConfigurations(dataInputConfig);
+  }
+
+  private async initializeEntityConfiguration(dataInputConfig: any): Promise<void> {
+    const dataConfig = dataInputConfig.dataConfig;
+
+    if (!dataConfig || dataConfig.length === 0) return;
+
+    if (dataConfig.length === 1) {
+      // Single entity configuration
+      const entityConfig = dataConfig[0];
+
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          entityTypeSelect: entityConfig.schemaName,
+          entitySelect: entityConfig.entity
+        }
+      });
+
+      // Update selected entities dropdown
+      this.selectedEntities = entityConfig.schemaName === Enum_Schema.Events
+        ? this.eventSchemaEntities
+        : this.publicSchemaEntities;
+
+      // Trigger entity change to load properties
+      this.onEntityChange();
+
+    } else {
+      // Multiple entities configuration
+      const entityValues = dataConfig.map((config: any) => config.entity);
+
+      this.widgetForm.patchValue({
+        dataInputConfig: {
+          entities: entityValues,
+          entityTypeSelect: dataConfig[0].schemaName // Assume all same schema
+        }
+      });
+
+      // Update selected entities dropdown
+      this.selectedEntities = dataConfig[0].schemaName === Enum_Schema.Events
+        ? this.eventSchemaEntities
+        : this.publicSchemaEntities;
+
+      // Setup entity configs
+      this.setupEntityConfigs(entityValues);
+    }
+  }
+
+  private initializeFieldNames(dataInputConfig: any): void {
+    const fieldNames: IWidgetFieldNameConfig[] = dataInputConfig.fieldNames || [];
+    fieldNames.forEach((field: any) => {
+      field.rule = null; // Initialize with no rule
+    });
+
+    this.widgetForm.patchValue({
+      dataInputConfig: {
+        fieldNames: fieldNames
+      }
+    });
+  }
+
+  private initializeGroupByConfigurations(dataInputConfig: any): void {
+    // Initialize Group By 1
+    if (dataInputConfig.groupBy1) {
+      this.enableGroupBy1 = true;
+      const groupBy1 = dataInputConfig.groupBy1;
+
+      if (groupBy1.isTime) {
+        this.groupBy1SelectionType = 'time';
+        this.selectedTimeGrouping1 = groupBy1.name;
+      } else {
+        this.groupBy1SelectionType = 'field';
+        // Find the property in available properties
+        const allProps = this.getAllAvailableProperties();
+        this.groupBy1Option = allProps.find(p => p.name === groupBy1.name) || null;
+      }
+
+      this.groupBy1Model = groupBy1;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy1: groupBy1 }
+      });
+    }
+
+    // Initialize Group By 2
+    if (dataInputConfig.groupBy2) {
+      this.enableGroupBy2 = true;
+      const groupBy2 = dataInputConfig.groupBy2;
+
+      if (groupBy2.isTime) {
+        this.groupBy2SelectionType = 'time';
+        this.selectedTimeGrouping2 = groupBy2.name;
+      } else {
+        this.groupBy2SelectionType = 'field';
+        // Find the property in available properties
+        const allProps = this.getAllAvailableProperties();
+        this.groupBy2Option = allProps.find(p => p.name === groupBy2.name) || null;
+      }
+
+      this.groupBy2Model = groupBy2;
+      this.widgetForm.patchValue({
+        dataInputConfig: { groupBy2: groupBy2 }
+      });
+    }
+
+  }
+
+  private initializeClubbingTimeConfigurations(dataInputConfig: ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig): void {
+    // Initialize Group By 1
+    if (dataInputConfig.clubbingTime) {
+      this.widgetForm.patchValue({
+        dataInputConfig: { clubbingTime: dataInputConfig.clubbingTime }
+      });
+    }
+  }
+
+  private initializeWidgetSpecificConfig(): void {
+    const widget = this.finalWidget;
+    const widgetType = widget.widgetType;
+
+    // Determine if widget-specific config should be enabled
+    const shouldEnableConfig = this.determineWidgetSpecificConfigState(widget);
+
+    // Set the checkbox state
+    this.widgetForm.patchValue({
+      enableWidgetSpecificConfig: shouldEnableConfig
+    });
+
+    if (shouldEnableConfig) {
+      // Load the actual configuration
+      this.loadWidgetSpecificConfiguration(widget, widgetType);
+    } else {
+      // Set default values but keep checkbox disabled
+      this.setDefaultWidgetSpecificConfig();
+    }
+  }
+
+  private determineWidgetSpecificConfigState(widget: Widget): boolean {
+    const widgetType = widget.widgetType;
+
+    // If widget doesn't require specific config, return false
+    if (!this.widgetTypeRequiresSpecificConfig(widgetType)) {
+      return false;
+    }
+
+    // Check if widget has meaningful configuration data
+    switch (widgetType) {
+      case Enum_WidgetType.KPI1D:
+      case Enum_WidgetType.KPI2D:
+        return this.hasValidKPIConfig((widget as Kpi1DWidget | Kpi2DWidget).kpiConf);
+
+      case Enum_WidgetType.Donut1D:
+      case Enum_WidgetType.Donut2D:
+        return this.hasValidDonutConfig((widget as DonutChart1DWidget | DonutChart2DWidget).donutConf);
+
+      case Enum_WidgetType.Table:
+        return this.hasValidTableConfig((widget as TableWidget).tableConf);
+
+      default:
+        return false;
+    }
+  }
+
+  widgetTypeRequiresSpecificConfig(widgetType: Enum_WidgetType): boolean {
+    if (widgetType == Enum_WidgetType.KPI1D || widgetType == Enum_WidgetType.KPI2D || widgetType == Enum_WidgetType.Donut1D ||
+      widgetType == Enum_WidgetType.Donut2D || widgetType == Enum_WidgetType.Table) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  private hasValidKPIConfig(kpiConf: any): boolean {
+    if (!kpiConf) return false;
+
+    // Check if it has non-default values
+    const hasCustomCountColumn = kpiConf.CountValueColumnName &&
+      kpiConf.CountValueColumnName !== 'count';
+    const hasCustomDisplayColumn = kpiConf.DisplayValueColumnName &&
+      kpiConf.DisplayValueColumnName !== 'displayValue';
+    const hasCustomImageColumn = kpiConf.ImageColumnName &&
+      kpiConf.ImageColumnName.trim() !== '';
+    const hasNonDefaultAggregation = kpiConf.seriesAggregation &&
+      kpiConf.seriesAggregation !== Enum_Method_Aggregation.None;
+    const hasChartEnabled = kpiConf.showChart === true;
+
+    return hasCustomCountColumn || hasCustomDisplayColumn ||
+      hasCustomImageColumn || hasNonDefaultAggregation || hasChartEnabled;
+  }
+
+  private hasValidDonutConfig(donutConf: any): boolean {
+    if (!donutConf) return false;
+
+    const hasCustomLabel = donutConf.resultLabel &&
+      donutConf.resultLabel !== 'Result';
+    const hasNonDefaultAggregation = donutConf.seriesAggregation &&
+      donutConf.seriesAggregation !== Enum_Method_Aggregation.None;
+    const hasCustomSeriesLabel = donutConf.showSeriesLabelValue === false; // Default is true
+
+    return hasCustomLabel || hasNonDefaultAggregation || hasCustomSeriesLabel;
+  }
+
+  private hasValidTableConfig(tableConf: any): boolean {
+    if (!tableConf) return false;
+
+    const hasCustomPagination = tableConf.pagination === false; // Default is true
+    const hasCustomPageLimit = tableConf.pageLimit &&
+      tableConf.pageLimit !== WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT;
+    const hasCustomPageNumber = tableConf.pageNumber &&
+      tableConf.pageNumber !== 1;
+
+    return hasCustomPagination || hasCustomPageLimit || hasCustomPageNumber;
+  }
+
+  private loadWidgetSpecificConfiguration(widget: Widget, widgetType: Enum_WidgetType): void {
+    switch (widgetType) {
+      case Enum_WidgetType.KPI1D:
+      case Enum_WidgetType.KPI2D:
+        this.initializeKPIConfig(widget);
+        break;
+      case Enum_WidgetType.Donut1D:
+      case Enum_WidgetType.Donut2D:
+        this.initializeDonutConfig(widget);
+        break;
+      case Enum_WidgetType.Table:
+        this.initializeTableConfig(widget);
+        break;
+    }
+  }
+  private initializeKPIConfig(widget: Kpi1DWidget | Kpi2DWidget): void {
+    const kpiConf = widget.kpiConf;
+
+    if (kpiConf) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          kpiConf: {
+            CountValueColumnName: kpiConf.CountValueColumnName,
+            DisplayValueColumnName: kpiConf.DisplayValueColumnName,
+            ImageColumnName: kpiConf.ImageColumnName || '',
+            seriesAggregation: kpiConf.seriesAggregation || Enum_Method_Aggregation.None,
+            showChart: kpiConf.showChart || false
+          }
+        }
+      });
+    }
+  }
+
+  private initializeDonutConfig(widget: DonutChart1DWidget | DonutChart2DWidget): void {
+    const donutConf = widget.donutConf;
+
+    if (donutConf) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          donutConf: {
+            resultLabel: donutConf.resultLabel || 'Result',
+            seriesAggregation: donutConf.seriesAggregation || Enum_Method_Aggregation.None,
+            showSeriesLabelValue: donutConf.showSeriesLabelValue !== false
+          }
+        }
+      });
+    }
+  }
+
+  private initializeTableConfig(widget: TableWidget): void {
+    const tableConf = widget.tableConf;
+
+    if (tableConf) {
+      this.widgetForm.patchValue({
+        widgetSpecificConfig: {
+          tableConf: {
+            pagination: tableConf.pagination !== false,
+            pageLimit: tableConf.pageLimit || WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT,
+            pageNumber: tableConf.pageNumber || 1
+          }
+        }
+      });
+    }
+  }
+
+  private initializeFilterConfig(): void {
+    const widget = this.finalWidget;
+    const filterConfig = widget.filterConfig;
+
+    if (filterConfig) {
+      this.widgetForm.patchValue({
+        filterConfig: {
+          customFilters: filterConfig.customFilters || {},
+          propertyFilters: filterConfig.propertyFilters || null
+        }
+      });
+
+      // Set property filters state
+      if (filterConfig.propertyFilters) {
+        this.enablePropertyFilters = true;
+        this.ruleData = filterConfig.propertyFilters;
+      }
+    }
+  }
+
+  private initializeWidgetTileConfig(): void {
+    const widget = this.finalWidget;
+    const widgetTileConf = widget.widgetTileConf;
+
+    if (widgetTileConf) {
+      this.widgetForm.patchValue({
+        widgetTileConf: {
+          ...WIDGET_FORM_CONSTANTS.DEFAULT_DIMENSIONS,
+          ...widgetTileConf
+        }
+      });
+    }
+  }
+
+  private updateUIStateAfterLoad(): void {
+    // Set advanced mode if complex configurations are present
+    const hasAdvancedConfig = this.enableGroupBy1 || this.enableGroupBy2 || this.enablePropertyFilters;
+    this.isAdvancedMode = hasAdvancedConfig;
+
+    // Update recommendations
+    this.updateRecommendedWidgets();
+
+    // Set widget type as initially selected
+    this.isWidgetTypeSelectedInitially = true;
+
+    // Update rule builder if needed
+    if (this.enablePropertyFilters) {
+      const allProps = this.getAllAvailableProperties();
+      this.createRuleGroupQueryBuilder(allProps);
+    }
+  }
+
+  private updateAllStepCompletions(): void {
+    // Update all steps as completed since we have valid widget data
+    [1, 2, 3, 4, 5].forEach(step => this.updateStepCompletion(step));
+  }
+
+  // Helper method to check if we're in edit mode
+  isEditMode(): boolean {
+    return this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit && !!this.finalWidget;
+  }
+
+  // Update the form title based on mode
+  getFormTitle(): string {
+    return this.isEditMode() ? 'Edit Widget' : 'Create New Widget';
+  }
+
+  // Update submit button text based on mode
+  getSubmitButtonText(): string {
+    return this.isEditMode() ? 'Update Widget' : 'Create Widget';
   }
 }

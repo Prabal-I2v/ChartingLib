@@ -1,7 +1,7 @@
 import { dashboard } from "../DashboardModel";
-import { NoDimensionWidget, NoDimensionWidgetConstructorProps, OneDimensionWidget } from "../dimension-widgets";
+import { NoDimensionWidget, NoDimensionWidgetConstructorProps, OneDimensionWidget } from "../Widget";;
 import { Enum_WidgetType, WidgetDimension } from "../enums/enums";
-import { NoDimensionDataInputConfig, WidgetDisplayConfig, WidgetFilterConfig, WidgetDataOutputConfig, WidgetInteractivityConfig, ShowableProperty } from "../interfaces/interfaces";
+import { INoDimensionDataInputConfig, IWidgetDisplayConfig, IWidgetFilterConfig, IWidgetDataOutputConfig, IWidgetInteractivityConfig, IShowableProperty } from "../interfaces/interfaces";
 import { WidgetTileConf } from "../types/types";
 
 
@@ -11,31 +11,15 @@ export interface TableConf {
   pageNumber: number;
 }
 
-export class TableWidgetConstructorProps implements NoDimensionWidgetConstructorProps{
-  dataInputConfig: NoDimensionDataInputConfig;
-  displayConfig: WidgetDisplayConfig;
-  filterConfig?: WidgetFilterConfig;
-  dataOutputConfig?: WidgetDataOutputConfig;
-  WidgetInteractivityConfig?: WidgetInteractivityConfig;
-  showableProperties?: ShowableProperty[];
-  widgetTileConf: WidgetTileConf;
-  allowRefresh?: boolean;
-  refreshInterval?: number;
-  widgetType: Enum_WidgetType.Table;
-  id?: string;
-  dashboardId?: string;
-  dashboard?: dashboard;
-  isPreview?: boolean;
-  query?: string;
-  tableConf? : TableConf
+export class TableWidgetConstructorProps extends NoDimensionWidgetConstructorProps {
+  tableConf?: TableConf
 }
 
 export class TableWidget extends NoDimensionWidget {
-  tableConf: TableConf;
+  widgetType = Enum_WidgetType.Table
+  tableConf?: TableConf;
   constructor(params: TableWidgetConstructorProps) {
-    // Call the parent constructor with the params
     super({
-      widgetType: Enum_WidgetType.Table, // Set default widget type
       ...params // Allow overriding any properties
     });
     this.tableConf = params.tableConf;

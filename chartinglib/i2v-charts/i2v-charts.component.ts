@@ -8,18 +8,17 @@ import {
   Output,
   SimpleChanges,
 } from "@angular/core";
-import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
 import { debounce } from "rxjs/operators";
-import { month } from "../Models/vehicle-icon-mapping";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { v4 as uuidv4 } from 'uuid';
 import { TableOutputModel } from "../Models/TableOutputModel";
 import { Widget } from "../Models/Widget";
 import { Enum_TimePeriod } from "../Models/enums/enums";
-import { ICustomFilter, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, CustomFilterValueModel, ITimeRange, ICommonFilterOutputEmittorModel, ISetIntervalFilterOutputEmittorModel, RuleSet } from "../Models/types/types";
+import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
+import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
 
 @Component({
   selector: "i2v-charts",
@@ -37,6 +36,7 @@ export abstract class I2vChartsComponent implements OnInit {
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
+  @Output() editWidgetOutput = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
@@ -61,24 +61,6 @@ export abstract class I2vChartsComponent implements OnInit {
   private debounceTime = 500; // milliseconds
   componentId: string;
   customFilterValues: Record<string, CustomFilterValueModel[]>;
-
-  private _chartData: ClientChartModel;
-  @Input()
-  set chartData(data: ChartsOutputModel) {
-    this._chartData = this.transformChartData(data);
-  }
-  get chartData(): ClientChartModel {
-    return this._chartData;
-  }
-
-  private _tableData: TableOutputModel;
-  @Input()
-  set tableData(data: TableOutputModel) {
-    this._tableData = this.transformTableData(data);
-  }
-  get tableData(): TableOutputModel {
-    return this._tableData;
-  }
 
   constructor(public cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
     // Generate and store a UUID when component is created
@@ -241,6 +223,10 @@ export abstract class I2vChartsComponent implements OnInit {
     this.getDataFromServer(this.widgetRequestModel);
   }
 
+  onEditWidgetOutput() {
+    this.editWidgetOutput.next(this.widgetRequestModel);
+  }
+
   onCustomFilterValuesChange(
     event: ICustomFilterOutputEmittorModel,
     commonCall: boolean = false,
@@ -293,11 +279,6 @@ export abstract class I2vChartsComponent implements OnInit {
     this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.isCustomFilterApplied = true;
     this.getDataFromServer(this.widgetRequestModel);
-    // if (!commonCall) {
-    //   this.getDataFromServer(this.widgetRequestModel);
-    // }
-
-    // this.customFilterOutput.emit(event);
   }
 
   onTimeChange(
@@ -312,10 +293,6 @@ export abstract class I2vChartsComponent implements OnInit {
 
     this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.getDataFromServer(this.widgetRequestModel);
-    // if (!commonCall) {
-    //   this.getDataFromServer(this.widgetRequestModel);
-    // }
-    // this.daysFilterOutput.emit(event);
   }
 
   onRefreshIntervalChange(event: ISetIntervalFilterOutputEmittorModel) {
@@ -339,7 +316,7 @@ export abstract class I2vChartsComponent implements OnInit {
 
   // Type guard functions
   private isChartsOutputModel(data: any): data is ChartsOutputModel {
-    return data && 'labels' in data && 'data' in data;
+    return data && 'labels' in data && 'seriesData' in data;
   }
 
   private isTableOutputModel(data: any): data is TableOutputModel {
@@ -362,11 +339,11 @@ export abstract class I2vChartsComponent implements OnInit {
 
           if (data) {
             if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
-              this.chartData = data;
+              this.transformChartData(data);
               this.dataExists = true;
             }
             else if (this.isTableOutputModel(data)) {
-              this.tableData = data;
+              // this.tableData = data;
               this.dataExists = true;
             }
           }
@@ -383,48 +360,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   // Chart transformation (your original logic)
-  public transformChartData(data: ChartsOutputModel): ClientChartModel {
-    let isMonthData = false;
-    if (data.labels[0]?.key.toLowerCase() === "month") isMonthData = true;
-
-    const chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({ name: x.label, data: x.data });
-    });
-
-    if (data.labels.length > 0) {
-      if (isMonthData) {
-        const monthData: any[] = [];
-        data.labels[0].value.forEach((x) => {
-          monthData.push(month[parseInt(x) - 1]);
-        });
-
-        chartData.chartCategories = monthData;
-      } else {
-        chartData.chartCategories = data.labels[0].value;
-      }
-
-      chartData.x_label = data.labels[0].key;
-    } else {
-      chartData.chartCategories = data.data.map((x) => {
-        return x.label;
-      });
-    }
-    return chartData;
-  }
-
-  // Table transformation
-  public transformTableData(data: TableOutputModel): TableOutputModel {
-    const clientModel = new TableOutputModel();
-
-    // Set headers from columns
-    clientModel.columns = [...data.columns];
-
-    // Transform rows
-    clientModel.rows = data.rows;
-
-    return clientModel;
-  }
+  public abstract transformChartData(data: ChartsOutputModel | TableOutputModel): void;
 
   createRule(
     data: ICustomFilterOutputEmittorModel,
@@ -469,7 +405,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   checkIfAnySeriesExists(data: ChartsOutputModel): boolean {
-    const index = data.data.findIndex((x) => {
+    const index = data.seriesData.findIndex((x) => {
       return x.data.length > 0;
     });
 

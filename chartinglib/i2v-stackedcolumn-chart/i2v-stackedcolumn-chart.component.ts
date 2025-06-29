@@ -11,6 +11,9 @@ import { Enum_TimePeriod } from "../Models/enums/enums";
   styleUrl: "./i2v-stackedcolumn-chart.component.scss",
 })
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
+  
+  chartData: ClientChartModel;
+
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
@@ -23,34 +26,36 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
    super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+ // Chart transformation (your original logic)
+  public transformChartData(data: ChartsOutputModel) {
     let isMonthData = false;
-    if (data.labels[0].key == Enum_TimePeriod.month) isMonthData = true;
-    const chartData = new ClientChartModel();
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
 
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({
-        name: x.label,
-        data: x.data.map((str) => parseInt(str, 10)),
-      });
+    const chartData = new ClientChartModel();
+    chartData.series = data.seriesData.map((x) => {
+      return new ChartSeries({ name: x.label, data: x.data });
     });
-    if (data.labels.length > 0) {
+
+    if (data.labels.xAxisFields.length > 0) {
       if (isMonthData) {
         const monthData: any[] = [];
-        data.labels[0].value.forEach((x) => {
+        data.seriesData[0].data.forEach((x) => {
           monthData.push(month[parseInt(x) - 1]);
         });
 
-        chartData.chartCategories = monthData;
+        chartData.xAxisFields = data.labels.xAxisFields;
       } else {
-        chartData.chartCategories = data.labels[0].value;
+        chartData.xAxisFields = data.labels.xAxisFields;
       }
-      chartData.x_label = data.labels[0].key;
-    } else {
-      chartData.chartCategories = data.data.map((x) => {
-        return x.label;
-      });
     }
-    return chartData;
+
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
+
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
+    }
+    this.chartData = chartData;
   }
 }

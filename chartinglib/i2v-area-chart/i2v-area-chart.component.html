@@ -56,7 +56,7 @@
       <kendo-chart-legend position="bottom" orientation="horizontal" [spacing]="140"
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>
-        @for (data of chartData.series; track $index) {
+        @for (data of chartData.series; track seriesTrackBy) {
         <kendo-chart-series-item type="area" [data]="data.data" [name]="data.name" [color]="data.color">
         </kendo-chart-series-item>
         }

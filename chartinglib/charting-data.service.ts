@@ -29,7 +29,7 @@ export class ChartingDataService {
    */
   public getChartingData(requestModel: Widget): Observable<any> {
     return this.http
-      .post<ApiResponse<any>>("/api//dashboard/GetWidgetOutputModel", requestModel)
+      .post<ApiResponse<any>>("/api/dashboard/GetWidgetOutputModel", requestModel)
       .pipe(
         map(response => {
           if (!response.success) {

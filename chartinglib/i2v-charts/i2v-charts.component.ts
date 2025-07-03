@@ -581,4 +581,12 @@ export abstract class I2vChartsComponent implements OnInit {
     }
   }
 
+  seriesTrackBy(index: number): string | number {
+    // Assuming each series has a unique 'id' or 'displayName'
+    return index;
+  }
+
+  xAxisTrackBy(index: number): string | number {
+    return index;
+  }
 }

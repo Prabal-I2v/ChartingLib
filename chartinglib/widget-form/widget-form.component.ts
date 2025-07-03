@@ -1,6 +1,6 @@
 // widget-form.component.ts - Complete TypeScript file with strong typing
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, FormControl, AbstractControl } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import * as moment from 'moment';
 
@@ -285,7 +285,7 @@ export class WidgetFormComponent implements OnInit {
   readonly timeGroupingOptions = timeGroupingOptions;
 
   // Configuration Mode
-  isAdvancedMode: boolean = false;
+  isAdvancedMode: boolean = true;
   selectedEntities: any[] = []; // For dropdown options
   isWidgetTypeSelectedInitially: boolean = false;
 
@@ -314,6 +314,7 @@ export class WidgetFormComponent implements OnInit {
 
   // State Management
   isFormInitialized = false;
+  attemptedSubmit = false;
 
   constructor(
     private fb: FormBuilder,
@@ -340,6 +341,8 @@ export class WidgetFormComponent implements OnInit {
     else {
       this.initializeForm();
     }
+
+    this.setupFormValidation();
   }
 
   // Computed Properties
@@ -358,6 +361,11 @@ export class WidgetFormComponent implements OnInit {
   // Property getters for template access
   get selectedFieldNames(): IWidgetFieldNameConfig[] {
     return this.widgetForm.controls.dataInputConfig.controls.fieldNames.value || [];
+  }
+
+  // Property getters for template access
+  get entityAggregationMethod(): Enum_Method {
+    return this.widgetForm.controls.dataInputConfig.controls.method.value;
   }
 
   get allowRefresh(): boolean {
@@ -939,6 +947,67 @@ export class WidgetFormComponent implements OnInit {
   }
 
 
+  hasGroupBy1TypeError(): boolean {
+    return this.enableGroupBy1 && !this.groupBy1SelectionType && this.attemptedSubmit;
+  }
+
+  getGroupBy1TypeError(): string {
+    return 'Please select a Group By 1 type';
+  }
+
+  hasGroupBy1FieldError(): boolean {
+    return this.enableGroupBy1 &&
+      this.groupBy1SelectionType === 'field' &&
+      !this.groupBy1Option &&
+      this.attemptedSubmit;
+  }
+
+  getGroupBy1FieldError(): string {
+    return 'Please select a field for Group By 1';
+  }
+
+  hasGroupBy1TimeError(): boolean {
+    return this.enableGroupBy1 &&
+      this.groupBy1SelectionType === 'time' &&
+      !this.selectedTimeGrouping1 &&
+      this.attemptedSubmit;
+  }
+
+  getGroupBy1TimeError(): string {
+    return 'Please select a time grouping for Group By 1';
+  }
+
+  // Group By 2 validation methods
+  hasGroupBy2TypeError(): boolean {
+    return this.enableGroupBy2 && !this.groupBy2SelectionType && this.attemptedSubmit;
+  }
+
+  getGroupBy2TypeError(): string {
+    return 'Please select a Group By 2 type';
+  }
+
+  hasGroupBy2FieldError(): boolean {
+    return this.enableGroupBy2 &&
+      this.groupBy2SelectionType === 'field' &&
+      !this.groupBy2Option &&
+      this.attemptedSubmit;
+  }
+
+  getGroupBy2FieldError(): string {
+    return 'Please select a field for Group By 2';
+  }
+
+  hasGroupBy2TimeError(): boolean {
+    return this.enableGroupBy2 &&
+      this.groupBy2SelectionType === 'time' &&
+      !this.selectedTimeGrouping2 &&
+      this.attemptedSubmit;
+  }
+
+  getGroupBy2TimeError(): string {
+    return 'Please select a time grouping for Group By 2';
+  }
+
   // Group By Event Handlers
   toggleGroupBy1(event: any): void {
     this.enableGroupBy1 = (event.target as HTMLInputElement).checked;
@@ -949,9 +1018,11 @@ export class WidgetFormComponent implements OnInit {
       this.toggleGroupBy2({ target: { checked: false } } as any);
     }
 
-    this.widgetForm.patchValue({
-      widgetType: null
-    });
+    if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+      this.widgetForm.patchValue({
+        widgetType: null
+      });
+    }
 
     this.updateStepCompletion(4)
     this.updateRecommendedWidgets();
@@ -965,9 +1036,11 @@ export class WidgetFormComponent implements OnInit {
       this.resetGroupBy2();
     }
 
-    this.widgetForm.patchValue({
-      widgetType: null
-    });
+    if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+      this.widgetForm.patchValue({
+        widgetType: null
+      });
+    }
 
     this.updateStepCompletion(4)
     this.updateRecommendedWidgets();
@@ -1025,7 +1098,7 @@ export class WidgetFormComponent implements OnInit {
     }
 
     this.updateRecommendedWidgets();
-    this.updateStepCompletion(3);
+    this.updateStepCompletion(3); // Trigger validation update
   }
 
   private resetGroupBy1Model(selectionType: string): void {
@@ -1089,6 +1162,7 @@ export class WidgetFormComponent implements OnInit {
     });
 
     this.updateRecommendedWidgets();
+    this.updateStepCompletion(3);
   }
 
   // Helper Methods
@@ -1342,9 +1416,8 @@ export class WidgetFormComponent implements OnInit {
     showablePropertiesArray.clear();
 
     selectedProps.forEach((prop) => {
-      var isEntityProp = this.entityProperties.find((entityProp) => {
-        entityProp.name == prop
-      });
+      var isEntityProp = this.entityProperties.find(entityProp => entityProp.name == prop);
+
       if (isEntityProp) {
         showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
       }
@@ -1383,36 +1456,19 @@ export class WidgetFormComponent implements OnInit {
 
   // Step Completion Logic
   updateStepCompletion(step: number): void {
-    switch (step) {
-      case 1:
-        if (this.widgetForm.controls.configurationApproach.value === 'widgetFirst') {
-          this.stepsCompleted[1] = this.widgetForm.controls.widgetType.value !== null;
-        } else {
-          this.stepsCompleted[1] = this.widgetForm.controls.entityConfigType.value !== null;
-        }
-        break;
+    const errors = this.getStepErrors(step);
+    this.stepsCompleted[step] = errors.length === 0;
 
-      case 2:
-        this.stepsCompleted[2] = !!this.widgetForm.controls.displayConfig.controls.heading.value;
-        break;
+    // Also validate dependent steps
+    if (step < 5) {
+      this.updateStepCompletion(step + 1);
+    }
+  }
 
-      case 3:
-        this.stepsCompleted[3] = this.validateStep3().length == 0;
-        break;
-
-      case 4:
-        if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
-          this.stepsCompleted[4] = this.widgetForm.controls.widgetType.value !== null;
-        }
-        break;
-
-      case 5:
-        if (this.requiresWidgetSpecificConfig()) {
-          this.stepsCompleted[5] = this.validateWidgetSpecificConfig();
-        } else {
-          this.stepsCompleted[5] = true;
-        }
-        break;
+  // Method to update all step completions
+  private updateAllStepCompletions(): void {
+    for (let i = 1; i <= 5; i++) {
+      this.updateStepCompletion(i);
     }
   }
 
@@ -1439,24 +1495,6 @@ export class WidgetFormComponent implements OnInit {
     }
 
     return errors;
-  }
-
-  private validateWidgetSpecificConfig(): boolean {
-    const widgetType = this.widgetForm.controls.widgetType.value;
-
-    if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
-      const countColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value;
-      const displayColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value;
-      return !!countColumn && !!displayColumn;
-    } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
-      const resultLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value;
-      return !!resultLabel;
-    } else if (widgetType === Enum_WidgetType.Table) {
-      const pageLimit = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit.value;
-      return pageLimit > 0;
-    }
-
-    return true;
   }
 
   canProceedToReview(): boolean {
@@ -1583,7 +1621,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   // Validation and Form Submission
-  private canSubmitForm(): boolean {
+  canSubmitForm(): boolean {
     if (!this.widgetForm?.controls.displayConfig.controls.heading.value) {
       return false;
     }
@@ -1606,22 +1644,56 @@ export class WidgetFormComponent implements OnInit {
     if (warnings.length > 0) {
       return false;
     }
+    return true;
   }
 
-  getPreview() {
+
+  onSubmit(): void {
+    this.attemptedSubmit = true;
+    this.markFormGroupTouched(this.widgetForm);
+
     if (!this.canSubmitForm()) {
-      this.markFormGroupTouched(this.widgetForm);
-      alert(ERROR_MESSAGES.FORM_VALIDATION_FAILED);
+      // Scroll to first error
+      this.scrollToFirstError();
       return;
     }
 
     this.showValidationWarnings();
+
+    try {
+      const finalWidget = this.createWidget();
+      this.finalWidget = finalWidget;
+      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
+      this.dialogRef.close({
+        widgetData: this.finalWidget,
+        operation: this.modalData.event?.data?.operation
+      });
+    } catch (error) {
+      console.error('Error creating widget:', error);
+      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+    }
+  }
+
+  // Enhanced getPreview method with validation
+  getPreview(): void {
+    this.attemptedSubmit = true;
+    this.markFormGroupTouched(this.widgetForm);
+
+    if (!this.canSubmitForm()) {
+      this.scrollToFirstError();
+      return;
+    }
+
+    this.showValidationWarnings();
+
     try {
       const finalWidget = this.createWidget();
       console.log('Widget created:', finalWidget);
+
       const event: any = {};
       event.component = WidgetFormPreviewComponent;
       event.data = finalWidget;
+
       const dialogData: CommonModalData = {
         event: event,
         width: "900px",
@@ -1643,37 +1715,30 @@ export class WidgetFormComponent implements OnInit {
         panelClass: "custom-dialog-container",
         data: dialogData,
       });
-      ref.afterClosed().subscribe((data) => { });
 
-    }
-    catch (error) {
+      ref.afterClosed().subscribe((data) => { });
+    } catch (error) {
       console.error('Error in preview widget:', error);
       alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
-
   }
 
-  onSubmit(): void {
-    if (!this.canSubmitForm()) {
-      this.markFormGroupTouched(this.widgetForm);
-      alert(ERROR_MESSAGES.FORM_VALIDATION_FAILED);
-      return;
-    }
+  // Method to scroll to first error field
+  private scrollToFirstError(): void {
+    setTimeout(() => {
+      const firstErrorElement = document.querySelector('.form-control.error, .p-dropdown.error, .p-multiselect.error');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
 
-    this.showValidationWarnings();
-
-    try {
-      const finalWidget = this.createWidget();
-      // console.log('Widget created:', finalWidget);
-      this.finalWidget = finalWidget;
-      // this.finalWidgetChange.emit(this.finalWidget);
-      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
-
-      this.dialogRef.close({ widgetData: this.finalWidget, operation: this.modalData.event?.data?.operation });
-    } catch (error) {
-      console.error('Error creating widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
-    }
+        // Try to focus the element
+        if (firstErrorElement instanceof HTMLElement) {
+          firstErrorElement.focus();
+        }
+      }
+    }, 100);
   }
 
   Cancel(): void {
@@ -2048,7 +2113,7 @@ export class WidgetFormComponent implements OnInit {
   getSelectedPropertiesSummary(): string {
     const fieldNames = this.selectedFieldNames;
     if (fieldNames.length === 0) return 'None selected';
-    return fieldNames.map((field: Property) => field.columnName).join(', ');
+    return fieldNames.map((field: Property) => field.name).join(', ');
   }
 
   getGroupingSummary(): string {
@@ -2093,28 +2158,136 @@ export class WidgetFormComponent implements OnInit {
     return Enum_Entity_With_Labels[entity]
   }
 
-  // Validation Methods
   getValidationWarnings(): string[] {
-    let warnings: string[] = [];
+    const warnings: string[] = [];
     const widgetType = this.widgetForm.controls.widgetType.value;
-    if (widgetType) {
-      return ['Please select a widget type']
+
+    if (!widgetType) {
+      warnings.push('Please select a widget type');
+      return warnings;
     }
+
     const dimension = this.determineDimension();
     const fieldNames = this.selectedFieldNames;
+
+    // Basic step 3 validation
     const dataInputConfigurationValidation = this.validateStep3();
-    warnings = [...dataInputConfigurationValidation];
+    warnings.push(...dataInputConfigurationValidation);
+
     if (warnings.length > 0) {
       return warnings;
     }
-    const dataConfig = this.createDataConfig();
-    const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
-    const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig, this.widgetForm.controls.showablePropertiesSelection.value);
-    warnings = [...widgetConfigurationValidation.errors]
-    const WidgetCompatibilityValidation = validateWidgetCompatibility(widgetType, dataInputConfig)
-    warnings = [...WidgetCompatibilityValidation.errors]
+
+    try {
+      const dataConfig = this.createDataConfig();
+      const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
+
+      // Widget configuration validation
+      const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(
+        widgetType,
+        dataInputConfig,
+        this.widgetForm.controls.showablePropertiesSelection.value
+      );
+      warnings.push(...widgetConfigurationValidation.errors);
+
+      // Widget compatibility validation
+      const widgetCompatibilityValidation = validateWidgetCompatibility(widgetType, dataInputConfig);
+      warnings.push(...widgetCompatibilityValidation.errors);
+    } catch (error) {
+      warnings.push('Configuration validation failed: ' + (error as Error).message);
+    }
 
     return warnings;
+  }
+
+  // Add reactive validation to form controls
+  private setupFormValidation(): void {
+    // Add required validator to critical fields
+    this.widgetForm.controls.configurationApproach.setValidators([Validators.required]);
+    this.widgetForm.controls.displayConfig.controls.heading.setValidators([
+      Validators.required,
+      Validators.maxLength(100),
+      Validators.pattern(/^(?!\s*$).+/) // Not just whitespace
+    ]);
+
+    // Conditional validators
+    this.widgetForm.controls.configurationApproach.valueChanges.subscribe(value => {
+      if (value === 'widgetFirst') {
+        this.widgetForm.controls.widgetType.setValidators([Validators.required]);
+      } else {
+        this.widgetForm.controls.widgetType.clearValidators();
+      }
+      this.widgetForm.controls.widgetType.updateValueAndValidity();
+    });
+
+    // Entity selection validation
+    this.widgetForm.controls.entityConfigType.valueChanges.subscribe(value => {
+      if (value === 'single') {
+        this.widgetForm.controls.dataInputConfig.controls.entitySelect.setValidators([Validators.required]);
+        this.widgetForm.controls.dataInputConfig.controls.entities.clearValidators();
+      } else {
+        this.widgetForm.controls.dataInputConfig.controls.entitySelect.clearValidators();
+        this.widgetForm.controls.dataInputConfig.controls.entities.setValidators([Validators.required]);
+      }
+      this.widgetForm.controls.dataInputConfig.controls.entitySelect.updateValueAndValidity();
+      this.widgetForm.controls.dataInputConfig.controls.entities.updateValueAndValidity();
+    });
+
+    // Refresh interval validation
+    this.widgetForm.controls.allowRefresh.valueChanges.subscribe(value => {
+      if (value) {
+        this.widgetForm.controls.refreshInterval.setValidators([
+          Validators.required,
+          Validators.min(30),
+          Validators.max(3600)
+        ]);
+      } else {
+        this.widgetForm.controls.refreshInterval.clearValidators();
+      }
+      this.widgetForm.controls.refreshInterval.updateValueAndValidity();
+    });
+
+    // Widget-specific config validation
+    this.widgetForm.controls.enableWidgetSpecificConfig.valueChanges.subscribe(value => {
+      this.updateWidgetSpecificValidation();
+    });
+
+    this.widgetForm.controls.widgetType.valueChanges.subscribe(value => {
+      this.updateWidgetSpecificValidation();
+    });
+  }
+
+  private updateWidgetSpecificValidation(): void {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    const isEnabled = this.widgetForm.controls.enableWidgetSpecificConfig.value;
+
+    if (isEnabled && this.requiresWidgetSpecificConfig()) {
+      if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
+        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName
+          .setValidators([Validators.required]);
+        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName
+          .setValidators([Validators.required]);
+      } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+        this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel
+          .setValidators([Validators.required]);
+      } else if (widgetType === Enum_WidgetType.Table) {
+        this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit
+          .setValidators([Validators.min(1), Validators.max(100)]);
+      }
+    } else {
+      // Clear validators when not enabled
+      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName
+        .clearValidators();
+      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName
+        .clearValidators();
+      this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel
+        .clearValidators();
+      this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit
+        .clearValidators();
+    }
+
+    // Update validity
+    this.widgetForm.controls.widgetSpecificConfig.updateValueAndValidity();
   }
 
   showValidationWarnings(): void {
@@ -2199,6 +2372,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onReset(): void {
+    this.attemptedSubmit = false;
     this.widgetForm.reset();
     this.clearDataConfigArray();
 
@@ -2211,11 +2385,16 @@ export class WidgetFormComponent implements OnInit {
       entityConfigType: 'single',
       dataInputConfig: {
         method: Enum_Method.Count,
-        isDistinct: false
+        isDistinct: false,
+        entityTypeSelect: Enum_Schema.Events,
+        fieldsAggregationType: Enum_Method_Aggregation.None
       },
       displayConfig: {
         color: WIDGET_FORM_CONSTANTS.DEFAULT_COLORS[0]
       },
+      allowRefresh: false,
+      refreshInterval: 300,
+      enableWidgetSpecificConfig: false,
       widgetTileConf: WIDGET_FORM_CONSTANTS.DEFAULT_DIMENSIONS
     });
 
@@ -2346,9 +2525,13 @@ export class WidgetFormComponent implements OnInit {
   private initializeShowableProperties(widget: Widget) {
     this.widgetForm.patchValue({
       showablePropertiesSelection: widget.showableProperties.map(prop => prop.name),
-      showableProperties: widget.showableProperties
     });
 
+    var showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    showablePropertiesArray.clear();
+    widget.showableProperties.forEach(prop =>
+      showablePropertiesArray.push(this.createShowablePropertyFormGroup(prop))
+    );
   }
 
   private async initializeEntityConfiguration(dataInputConfig: any): Promise<void> {
@@ -2624,6 +2807,258 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
+  hasFieldError(fieldPath: string): boolean {
+    const field = this.getFormControl(fieldPath);
+    if (!field) return false;
+
+    // Show error if field is invalid AND (touched OR form submission was attempted)
+    return field.invalid && (field.touched || this.attemptedSubmit);
+  }
+
+  getFieldError(fieldPath: string): string {
+    const field = this.getFormControl(fieldPath);
+    if (!field || !this.hasFieldError(fieldPath)) return '';
+
+    // Return the first error message found
+    const errors = field.errors;
+    if (!errors) return '';
+
+    // Handle common Angular validators
+    if (errors['required']) {
+      return this.getFieldDisplayName(fieldPath) + ' is required';
+    }
+    if (errors['minlength']) {
+      return `${this.getFieldDisplayName(fieldPath)} must be at least ${errors['minlength'].requiredLength} characters`;
+    }
+    if (errors['maxlength']) {
+      return `${this.getFieldDisplayName(fieldPath)} must be no more than ${errors['maxlength'].requiredLength} characters`;
+    }
+    if (errors['min']) {
+      return `${this.getFieldDisplayName(fieldPath)} must be at least ${errors['min'].min}`;
+    }
+    if (errors['max']) {
+      return `${this.getFieldDisplayName(fieldPath)} must be no more than ${errors['max'].max}`;
+    }
+    if (errors['email']) {
+      return 'Please enter a valid email address';
+    }
+    if (errors['pattern']) {
+      return `${this.getFieldDisplayName(fieldPath)} format is invalid`;
+    }
+
+    // Handle custom validation errors
+    if (errors['customError']) {
+      return errors['customError'];
+    }
+
+    // Default error message
+    return `${this.getFieldDisplayName(fieldPath)} is invalid`;
+  }
+
+  markFieldAsTouched(fieldPath: string): void {
+    const field = this.getFormControl(fieldPath);
+    if (field) {
+      field.markAsTouched();
+      field.updateValueAndValidity();
+    }
+  }
+
+  // Step-level error checking methods
+  getStepErrors(step: number): string[] {
+    const errors: string[] = [];
+
+    switch (step) {
+      case 1:
+        if (!this.widgetForm.controls.configurationApproach.value) {
+          errors.push('Please select a configuration approach');
+        }
+
+        if (this.widgetForm.controls.configurationApproach.value === 'widgetFirst') {
+          if (!this.widgetForm.controls.widgetType.value) {
+            errors.push('Please select a widget type');
+          }
+        } else if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+          if (!this.widgetForm.controls.entityConfigType.value) {
+            errors.push('Please select an entity configuration type');
+          }
+        }
+        break;
+
+      case 2:
+        if (!this.widgetForm.controls.displayConfig.controls.heading.value?.trim()) {
+          errors.push('Widget heading is required');
+        }
+        if (this.widgetForm.controls.displayConfig.controls.heading.value?.length > 100) {
+          errors.push('Widget heading must be 100 characters or less');
+        }
+        break;
+
+      case 3:
+      case 3:
+        errors.push(...this.validateStep3());
+
+        // Add Group By validation
+        if (this.enableGroupBy1) {
+          if (!this.groupBy1SelectionType) {
+            errors.push('Please select a Group By 1 type');
+          } else if (this.groupBy1SelectionType === 'field' && !this.groupBy1Option) {
+            errors.push('Please select a field for Group By 1');
+          } else if (this.groupBy1SelectionType === 'time' && !this.selectedTimeGrouping1) {
+            errors.push('Please select a time grouping for Group By 1');
+          }
+        }
+
+        if (this.enableGroupBy2) {
+          if (!this.groupBy2SelectionType) {
+            errors.push('Please select a Group By 2 type');
+          } else if (this.groupBy2SelectionType === 'field' && !this.groupBy2Option) {
+            errors.push('Please select a field for Group By 2');
+          } else if (this.groupBy2SelectionType === 'time' && !this.selectedTimeGrouping2) {
+            errors.push('Please select a time grouping for Group By 2');
+          }
+        }
+
+        break;
+
+      case 4:
+        if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+          if (!this.widgetForm.controls.widgetType.value) {
+            errors.push('Please select a widget type');
+          }
+        }
+        break;
+
+      case 5:
+        if (this.requiresWidgetSpecificConfig() && this.isSpecificConfigEnabled) {
+          errors.push(...this.validateWidgetSpecificConfigErrors());
+        }
+
+        if (this.allowRefresh) {
+          const refreshInterval = this.widgetForm.controls.refreshInterval.value;
+          if (!refreshInterval || refreshInterval < 60 || refreshInterval > 3600) {
+            errors.push('Refresh interval must be between 30 and 3600 seconds');
+          }
+        }
+        break;
+    }
+
+    return errors;
+  }
+
+  // Global form error checking
+  getGlobalErrors(): string[] {
+    const errors: string[] = [];
+
+    // Check if form was submitted but has errors
+    if (this.attemptedSubmit && this.widgetForm.invalid) {
+      errors.push('Please complete all required fields and fix validation errors');
+    }
+
+    // Check for critical configuration issues
+    const validationWarnings = this.getValidationWarnings();
+    if (validationWarnings.length > 0) {
+      errors.push(...validationWarnings);
+    }
+
+    return errors;
+  }
+
+  // Enhanced validation for widget-specific config
+  private validateWidgetSpecificConfigErrors(): string[] {
+    const errors: string[] = [];
+    const widgetType = this.widgetForm.controls.widgetType.value;
+
+    // if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
+    //   const kpiConfig = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf;
+
+    //   if (!kpiConfig.controls.CountValueColumnName.value) {
+    //     errors.push('Count Value Column is required for KPI widgets');
+    //   }
+    //   if (!kpiConfig.controls.DisplayValueColumnName.value) {
+    //     errors.push('Display Value Column is required for KPI widgets');
+    //   }
+    // }
+    // else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+    //   const donutConfig = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf;
+
+    //   if (!donutConfig.controls.resultLabel.value?.trim()) {
+    //     errors.push('Result Label is required for Donut charts');
+    //   }
+    // }
+    // else if (widgetType === Enum_WidgetType.Table) {
+    //   const tableConfig = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf;
+
+    //   if (tableConfig.controls.pagination.value) {
+    //     const pageLimit = tableConfig.controls.pageLimit.value;
+    //     if (!pageLimit || pageLimit < 1 || pageLimit > 100) {
+    //       errors.push('Page limit must be between 1 and 100 when pagination is enabled');
+    //     }
+    //   }
+    // }
+
+    return errors;
+  }
+
+  // Helper method to get FormControl by path
+  private getFormControl(fieldPath: string): AbstractControl | null {
+    const pathArray = fieldPath.split('.');
+    let control: AbstractControl = this.widgetForm;
+
+    for (const path of pathArray) {
+      if (control instanceof FormGroup) {
+        control = control.controls[path];
+      } else if (control instanceof FormArray) {
+        const index = parseInt(path, 10);
+        if (!isNaN(index)) {
+          control = control.at(index);
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+
+      if (!control) {
+        return null;
+      }
+    }
+
+    return control;
+  }
+
+  // Helper method to get user-friendly field names
+  private getFieldDisplayName(fieldPath: string): string {
+    const fieldNames: { [key: string]: string } = {
+      'configurationApproach': 'Configuration Approach',
+      'entityConfigType': 'Entity Configuration Type',
+      'widgetType': 'Widget Type',
+      'displayConfig.heading': 'Widget Heading',
+      'displayConfig.subHeading': 'Sub Heading',
+      'displayConfig.color': 'Widget Color',
+      'dataInputConfig.entitySelect': 'Entity',
+      'dataInputConfig.entities': 'Entities',
+      'dataInputConfig.fieldNames': 'Properties',
+      'dataInputConfig.method': 'Aggregation Method',
+      'refreshInterval': 'Refresh Interval',
+      'widgetSpecificConfig.kpiConf.CountValueColumnName': 'Count Value Column',
+      'widgetSpecificConfig.kpiConf.DisplayValueColumnName': 'Display Value Column',
+      'widgetSpecificConfig.donutConf.resultLabel': 'Result Label',
+      'widgetSpecificConfig.tableConf.pageLimit': 'Page Limit'
+    };
+
+    return fieldNames[fieldPath] || this.formatFieldPath(fieldPath);
+  }
+
+  // Format field path to readable name
+  private formatFieldPath(fieldPath: string): string {
+    return fieldPath
+      .split('.')
+      .pop()
+      ?.replace(/([A-Z])/g, ' $1')
+      ?.replace(/^./, str => str.toUpperCase()) || 'Field';
+  }
+
+
   private initializeWidgetTileConfig(widget: Widget): void {
     const widgetTileConf = widget.widgetTileConf;
 
@@ -2653,11 +3088,6 @@ export class WidgetFormComponent implements OnInit {
       const allProps = this.getAllAvailableProperties();
       this.createRuleGroupQueryBuilder(allProps);
     }
-  }
-
-  private updateAllStepCompletions(): void {
-    // Update all steps as completed since we have valid widget data
-    [1, 2, 3, 4, 5].forEach(step => this.updateStepCompletion(step));
   }
 
   // Helper method to check if we're in edit mode

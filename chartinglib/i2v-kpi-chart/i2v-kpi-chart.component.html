@@ -49,13 +49,28 @@
         }
 
         <div class="content-section">
-          @for (series of chartData.series; track $index) {
+          @if(chartData.xAxisFields.length> 0)
+          {
+          @for (series of chartData.series; track seriesTrackBy) {
+          @for (xAxisField of chartData.xAxisFields; track xAxisTrackBy) {
+
+          <div class="number-grp">
+            <div class="minorheader" style="font-style: italic;">{{ xAxisField | uppercase }}</div>
+
+            <div class="digits">{{ series.data[chartData.xAxisFields.indexOf(xAxisField)] }}</div>
+          </div>
+          }
+          }
+          }
+          @else{
+          @for (series of chartData.series; track seriesTrackBy) {
           <div class="number-grp">
             @if (!widgetRequestModel.kpiConf?.hideLabel) {
             <div class="minorheader" style="font-style: italic;">{{ series.displayName | uppercase }}</div>
             }
             <div class="digits">{{ series.data[0] }}</div>
           </div>
+          }
 
           }
 

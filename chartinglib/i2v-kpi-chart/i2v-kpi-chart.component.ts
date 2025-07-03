@@ -3,7 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
-import { emotionIconColorMapping, eventIconMapping } from "../Models/vehicle-icon-mapping";
+import { emotionIconColorMapping, Enum_Month, eventIconMapping } from "../Models/vehicle-icon-mapping";
 import { Enum_Method_Aggregation } from "../Models/enums/enums";
 import { Kpi1DWidget } from "../Models/widgetRequestModel/KpiWidget1DModel";
 import { Kpi2DWidget, KPIConf } from "../Models/widgetRequestModel/KpiWidget2DModel";
@@ -43,8 +43,33 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.name, displayName : x.displayName, data: x.data });
+      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data });
     });
+    let isMonthData = false;
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
+
+    if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
+      if (isMonthData) {
+        const monthData: any[] = [];
+        data.labels.xAxisFields.forEach((x) => {
+          monthData.push(Enum_Month[parseInt(x) - 1]);
+        });
+        chartData.xAxisFields = monthData;
+      } else {
+        chartData.xAxisFields = data.labels.xAxisFields;
+      }
+    }
+    else {
+      chartData.xAxisFields = [];
+    }
+
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
+
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
+    }
 
     if (chartData.series.length > 0) {
       //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
@@ -101,7 +126,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     else {
       this.setData(chartData.series[0]);
     }
-    
+
     this.chartData = chartData;
     this.chartData.series = this.filterShowableSeries(this.chartData)
   }

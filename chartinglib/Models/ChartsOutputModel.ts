@@ -6,7 +6,8 @@ export class ChartsOutputModel {
 
 class ChartsDataModel {
   data: string[];
-  label: string;
+  displayName: string
+  name: string;
 }
 
 class ChartsLabelModel {

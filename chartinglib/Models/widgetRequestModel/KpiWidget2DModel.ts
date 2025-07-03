@@ -3,11 +3,11 @@ import { TwoDimensionWidgetConstructorProps, TwoDimensionWidget } from "../Widge
 
 
 export interface KPIConf {
-  CountValueColumnName: string,
-  DisplayValueColumnName: string,
+  CountValueColumnName?: string,
+  DisplayValueColumnName?: string,
   ImageColumnName?: string,
-  seriesAggregation : Enum_Method_Aggregation,
   showChart?: boolean
+  hideLabel?: boolean
 }
 
 export class KPI2DWidgetConstructorProps extends TwoDimensionWidgetConstructorProps{

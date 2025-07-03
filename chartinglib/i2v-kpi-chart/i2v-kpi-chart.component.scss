@@ -9,10 +9,8 @@
 }
 
 .data-box {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
   width: 100%;
+  height: 100%;
 
   .icon-box {
     width: 34px;
@@ -24,11 +22,11 @@
 }
 
 .top {
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   flex: 1;
+  height: 100%;
+  overflow: auto;
 
   .number-grp {
     display: flex;
@@ -36,9 +34,11 @@
     gap: 8px;
     height: 100%;
     justify-content: flex-start;
+    align-items: center;
     border: 1px solid #d2bebe;
     border-radius: 12px;
     padding: 10px 20px 10px 20px;
+    width: 100%;
 
     .minorheader {
       font-weight: 500;
@@ -112,7 +112,7 @@
   padding: 16px;
   gap: 10px;
   overflow-x: auto;
-  min-height: fit-content;
+  height: 100%;
 }
 
 .header-section {
@@ -172,6 +172,7 @@
   justify-content: center;
   align-items: flex-start;
   overflow: auto;
+  width: 100%;
 }
 
 .prop-image {

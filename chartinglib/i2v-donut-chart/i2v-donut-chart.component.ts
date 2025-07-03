@@ -10,6 +10,7 @@ import { ChartingDataService } from "../charting-data.service";
 import { Enum_Method_Aggregation } from "../Models/enums/enums";
 import { DonutChart2DWidget } from "../Models/widgetRequestModel/DonutChart2DModel";
 import { DonutChart1DWidget } from "../Models/widgetRequestModel/DonutChart1DModel";
+import { Enum_Month } from "../Models/vehicle-icon-mapping";
 
 @Component({
   selector: "i2v-donut-chart",
@@ -48,47 +49,37 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     this.seriesDataIndexArray = []
     chartData.series = data.seriesData.map((x) => {
       this.seriesDataIndexArray.push(true);
-      return new ChartSeries({ data: x.data, name: x.label });
+      return new ChartSeries({ data: x.data, displayName: x.displayName, name: x.name });
     });
-    var conf = this.widgetRequestModel.donutConf;
 
-    if (conf.seriesAggregation == Enum_Method_Aggregation.Greatest) {
-      var maxValue = -Infinity;
-      chartData.series.forEach((seriesData) => {
-        var res = maxValue < Number(seriesData.data[0])
-        maxValue = res ? Number(seriesData.data[0]) : maxValue;
-        if (conf.showSeriesLabelValue)
-          this.resultHeading = res ? seriesData.name : "";
-      })
-      this.resultData = maxValue.toString();
-    }
-    else if (conf.seriesAggregation == Enum_Method_Aggregation.Least) {
-      var minValue = Infinity;
-      chartData.series.forEach((seriesData, index) => {
-        var res = minValue > Number(seriesData.data[0])
-        minValue = res ? Number(seriesData.data[0]) : minValue;
-        if (conf.showSeriesLabelValue)
-          this.resultHeading = res ? seriesData.name : "";
-      })
-      this.resultData = minValue.toString();
+    let isMonthData = false;
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
 
+    if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
+      if (isMonthData) {
+        const monthData: any[] = [];
+        data.labels.xAxisFields.forEach((x) => {
+          monthData.push(Enum_Month[parseInt(x) - 1]);
+        });
+        chartData.xAxisFields = monthData;
+      } else {
+        chartData.xAxisFields = data.labels.xAxisFields;
+      }
     }
     else {
-      var value = 0;
-      chartData.series.forEach((seriesData) => {
-        value += Number(seriesData.data[0]);
-      })
+      chartData.xAxisFields = [];
     }
 
-    chartData.xAxisFields = data.seriesData.map((x) => {
-      return x.label;
-    });
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
 
-    if (chartData.series.length > 0) {
-      this.dataExists = true;
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
     }
 
     this.chartData = chartData;
+    this.chartData.series = this.filterShowableSeries(this.chartData)
   }
 
   onLegendItemClick(event) {

@@ -1,6 +1,6 @@
 // widget-factory.ts - Refactored to create widget-specific configurations first
 import { WidgetDimension, Enum_WidgetType, widgetTypeDimensionMap } from "./enums/enums";
-import { IThreeDimensionDataInputConfig, IOneDimensionDataInputConfig, ITwoDimensionDataInputConfig, INoDimensionDataInputConfig } from "./interfaces/interfaces";
+import { IThreeDimensionDataInputConfig, IOneDimensionDataInputConfig, ITwoDimensionDataInputConfig, INoDimensionDataInputConfig, IShowableProperty } from "./interfaces/interfaces";
 import { Widget } from "./Widget";
 
 import { TableConf, TableWidget } from "./widgetRequestModel/TableWidgetRequestModel";
@@ -266,10 +266,16 @@ export class WidgetFactory {
 
   public static validateWidgetConfiguration(
     widgetType: Enum_WidgetType,
-    dataConfig: any
+    dataConfig: any,
+    showablePropertiesArray: string[]
   ): { isValid: boolean; errors: string[] } {
-    const targetDimension = widgetTypeDimensionMap[widgetType];
     const errors: string[] = [];
+    if (dataConfig.fieldNames.length > 0 && showablePropertiesArray.length == 0) {
+      errors.push("Please select atleast one showable property")
+      return;
+    }
+    const targetDimension = widgetTypeDimensionMap[widgetType];
+
 
     // Determine the actual dimension of the provided data configuration
     let actualDimension = WidgetDimension.OneDimensional;
@@ -280,18 +286,22 @@ export class WidgetFactory {
     }
 
     // Check if the provided dimension is compatible with the widget type
-    // Higher dimension widgets can use lower dimension data, but not vice versa
     if (actualDimension > targetDimension) {
       errors.push(`${Enum_WidgetType[widgetType]} (${targetDimension + 1} Dimensional) cannot use ${actualDimension + 1} Dimensional data configuration. Remove excess groupBy fields.`);
     }
 
     // Widget-specific validations
     switch (widgetType) {
-      case Enum_WidgetType.KPI1D || Enum_WidgetType.AreaChart1D || Enum_WidgetType.BarChart1D ||
-        Enum_WidgetType.ColumnChart1D || Enum_WidgetType.LineChart1D || Enum_WidgetType.PieChart1D ||
-        Enum_WidgetType.Donut1D || Enum_WidgetType.HeatMapChart1D:
-        if (targetDimension != WidgetDimension.OneDimensional) {
-          errors.push(`${Enum_WidgetType[widgetType]} requires no groupby's field`);
+      case Enum_WidgetType.KPI1D:
+      case Enum_WidgetType.AreaChart1D:
+      case Enum_WidgetType.BarChart1D:
+      case Enum_WidgetType.ColumnChart1D:
+      case Enum_WidgetType.LineChart1D:
+      case Enum_WidgetType.PieChart1D:
+      case Enum_WidgetType.Donut1D:
+      case Enum_WidgetType.HeatMapChart1D:
+        if (targetDimension !== WidgetDimension.OneDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires no group by fields`);
         }
         break;
 
@@ -299,18 +309,35 @@ export class WidgetFactory {
         // Table widgets can work with any data configuration
         break;
 
-      case Enum_WidgetType.BarChart2D || Enum_WidgetType.ColumnChart2D ||
-        Enum_WidgetType.LineChart2D || Enum_WidgetType.PieChart2D || Enum_WidgetType.Donut2D ||
-        Enum_WidgetType.AreaChart2D || Enum_WidgetType.HeatMapChart2D:
-        if (targetDimension != WidgetDimension.TwoDimensional) {
-          errors.push(`${Enum_WidgetType[widgetType]} requires only 1 group by's field`);
-        }
-        break;
-      case Enum_WidgetType.HeatMapChart3D || Enum_WidgetType.StackedBarChart || Enum_WidgetType.StackedColumnChart:
-        if (targetDimension != WidgetDimension.ThreeDimensional) {
-          errors.push(`${Enum_WidgetType[widgetType]} requires 2 group by's fields`);
+      case Enum_WidgetType.BarChart2D:
+      case Enum_WidgetType.ColumnChart2D:
+      case Enum_WidgetType.LineChart2D:
+      case Enum_WidgetType.PieChart2D:
+      case Enum_WidgetType.KPI2D:
+      case Enum_WidgetType.Donut2D:
+      case Enum_WidgetType.AreaChart2D:
+      case Enum_WidgetType.HeatMapChart2D:
+        if (targetDimension !== WidgetDimension.TwoDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires only 1 group by field`);
         }
 
+        if (widgetType === Enum_WidgetType.PieChart2D || widgetType === Enum_WidgetType.Donut2D || widgetType === Enum_WidgetType.KPI2D) {
+          if (showablePropertiesArray && showablePropertiesArray.length > 1) {
+            errors.push(`Either select a single showable property or choose a different chart`);
+          }
+        }
+        break;
+
+      case Enum_WidgetType.HeatMapChart3D:
+      case Enum_WidgetType.StackedBarChart:
+      case Enum_WidgetType.StackedColumnChart:
+        if (targetDimension !== WidgetDimension.ThreeDimensional) {
+          errors.push(`${Enum_WidgetType[widgetType]} requires 2 group by fields`);
+        }
+        break;
+
+      default:
+        // Optional: Handle unknown widget types
         break;
     }
 

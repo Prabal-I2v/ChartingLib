@@ -58,7 +58,6 @@ export const singleEntityAggregationMethods: DropdownOption<Enum_Method>[] = [
   { value: Enum_Method.Count, label: 'Count' },
   { value: Enum_Method.Sum, label: 'Sum' },
   { value: Enum_Method.Average, label: 'Average' },
-  { value: Enum_Method.NoAggregation, label: 'No Aggregation' }
 ];
 
 export const multipleEntitiesAggregationMethods: DropdownOption<Enum_Method>[] = [
@@ -102,8 +101,8 @@ export const groupByTypes: DropdownOption<string>[] = [
 
 // ===== ENTITY DEFINITIONS =====
 const EVENT_ENTITIES: EntityOption[] = [
-  { value: Enum_Entity.Highway_ATCC, label: 'Highway ATCC', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Vehicle_Stopped, label: 'Vehicle Stopped', schema: Enum_Schema.Events },
+  { value: Enum_Entity.Highway_ATCC, label: 'Highway_ATCC', schema: Enum_Schema.Events },
+  { value: Enum_Entity.Vehicle_Stopped, label: 'Vehicle_Stopped', schema: Enum_Schema.Events },
   { value: Enum_Entity.ANPR, label: 'ANPR', schema: Enum_Schema.Events },
   { value: Enum_Entity.Wrong_Way_Detected, label: 'Wrong Way Detected', schema: Enum_Schema.Events },
   { value: Enum_Entity.Human_Crossing_Road, label: 'Human Crossing Road', schema: Enum_Schema.Events },
@@ -228,8 +227,6 @@ export class WidgetFormUtils {
     return [
       Enum_Method.Sum,
       Enum_Method.Average,
-      Enum_Method.Min,
-      Enum_Method.Max
     ].includes(method);
   }
 

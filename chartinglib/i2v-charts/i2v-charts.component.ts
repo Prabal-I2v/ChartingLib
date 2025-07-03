@@ -16,9 +16,10 @@ import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { v4 as uuidv4 } from 'uuid';
 import { TableOutputModel } from "../Models/TableOutputModel";
 import { Widget } from "../Models/Widget";
-import { Enum_TimePeriod } from "../Models/enums/enums";
+import { Enum_Method_Aggregation, Enum_Method_Aggregation_With_Labels, Enum_TimePeriod } from "../Models/enums/enums";
 import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
+import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 
 @Component({
   selector: "i2v-charts",
@@ -116,6 +117,7 @@ export abstract class I2vChartsComponent implements OnInit {
   onShowFilterValuesChange() {
     this.widgetResizeCallback(this.showFilterValues);
   }
+
   private setValueAsPerWidgetCustomFiltersValue(dashboardCustomFilterValue: ICustomFilter): void {
     if (!dashboardCustomFilterValue || Object.keys(dashboardCustomFilterValue).length === 0) {
       return;
@@ -322,7 +324,6 @@ export abstract class I2vChartsComponent implements OnInit {
   private isTableOutputModel(data: any): data is TableOutputModel {
     return data && 'columns' in data && 'rows' in data;
   }
-
 
   // The actual API call is moved to this method
   private fetchDataFromServer(widgetRequestModel: Widget) {
@@ -557,4 +558,27 @@ export abstract class I2vChartsComponent implements OnInit {
       this.cd.detectChanges();
     }
   }
+
+  filterShowableSeries(chartData: ClientChartModel): ChartSeries[] {
+    this.appendNameToAggregatedProperty(chartData);
+    return chartData.series.filter((x) => this.widgetRequestModel.showableProperties.some(prop => prop.name.toLowerCase() === x.name.toLowerCase()))
+  }
+
+  appendNameToAggregatedProperty(chartData: ClientChartModel) {
+    if (this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Greatest || this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Least) {
+      var aggregatedSeriesIndex = chartData.series.findIndex((x) => x.name.toLowerCase() == Enum_Method_Aggregation_With_Labels[this.widgetRequestModel.dataInputConfig.fieldsAggregationType].toLowerCase())
+      if (aggregatedSeriesIndex !== -1) {
+        const aggregatedSeriesValueArray = chartData.series[aggregatedSeriesIndex].data;
+
+        if (aggregatedSeriesValueArray.length == 1) {
+          const aggregatedValue = aggregatedSeriesValueArray[0];
+          const resArray = chartData.series.filter((x, index) => x.data[0] === aggregatedValue && index != aggregatedSeriesIndex).map(y => y.name);
+          if (resArray.length > 0) {
+            chartData.series[aggregatedSeriesIndex].displayName += ` (${resArray.join(' , ')})`;
+          }
+        }
+      }
+    }
+  }
+
 }

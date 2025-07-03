@@ -1,7 +1,7 @@
 // widget-form.component.ts - Complete TypeScript file with strong typing
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl, FormControl, ValidatorFn, ValidationErrors } from '@angular/forms';
-import { async, forkJoin } from 'rxjs';
+import { FormBuilder, FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import * as moment from 'moment';
 
 // Enums and Models
@@ -11,12 +11,11 @@ import {
   Enum_Entity,
   Enum_Schema,
   WidgetDimension,
-  Enum_TimePeriod,
   Enum_Entity_With_Labels,
-  getWidgetTypesByDimension,
   getWidgetDropdownItemsByDimension,
   allWidgetTypes,
-  Enum_Method_Aggregation
+  Enum_Method_Aggregation,
+  Enum_Method_Aggregation_With_Labels
 } from '../Models/enums/enums';
 
 import { EventPropertyType, RuleOperators } from 'src/app/Models/eventPropertyType.model';
@@ -141,6 +140,8 @@ interface WidgetFormValue {
 
 // Form control interfaces (what FormGroup expects)
 interface WidgetFormControls {
+  id: FormControl<string | null>,
+  dashboardId: FormControl<string | null>,
   configurationApproach: FormControl<'widgetFirst' | 'propertiesFirst'>;
   entityConfigType: FormControl<'single' | 'multiple'>;
   widgetType: FormControl<Enum_WidgetType | null>;
@@ -180,7 +181,7 @@ interface WidgetFormControls {
       CountValueColumnName: FormControl<string>;
       DisplayValueColumnName: FormControl<string>;
       ImageColumnName: FormControl<string>;
-      seriesAggregation: FormControl<Enum_Method_Aggregation>;
+      hideLabel: FormControl<boolean>;
       showChart: FormControl<boolean>;
     }>;
     donutConf: FormGroup<{
@@ -199,11 +200,16 @@ interface WidgetFormControls {
   refreshInterval: FormControl<number>;
 
   widgetTileConf: FormGroup<any>; // Using any for WidgetTileConf due to complexity
+  showablePropertiesSelection: FormControl<string[]>;
   showableProperties: FormArray<FormGroup<{
     name: FormControl<string>;
     displayName: FormControl<string>;
     isMultiValued: FormControl<boolean>;
     isLabel: FormControl<boolean>;
+    multiValuedConfig: FormGroup<{
+      dependentOnColumn: FormControl<string | null>,
+      valueBasedOnColumn: FormControl<string>
+    }>
   }>>;
 }
 
@@ -218,7 +224,7 @@ interface WidgetRecommendation {
 
 export interface IWidgetFormDataRequestModel {
   data?: Widget;
-  dashboardId?: string;
+  dashboardId: string;
   operation: Enum_WidgetFormOperation;
 }
 
@@ -289,6 +295,7 @@ export class WidgetFormComponent implements OnInit {
   entityProperties: Property[] = []; // Available properties for current selection
   allFieldNames: IWidgetFieldNameConfig[] = []; // All field names for current entity
   commonFieldNames: IWidgetFieldNameConfig[] = []; // Common field names for selection
+  allShowablePropertiesName: IShowableProperty[] = [];
 
   // Group By Configuration
   enableGroupBy1: boolean = false;
@@ -320,18 +327,18 @@ export class WidgetFormComponent implements OnInit {
     if (modalData.event?.data?.data) {
       this.finalWidget = modalData.event?.data?.data;
     }
-    if (modalData.event?.data?.dashboardId) {
-      this.dashboardId = modalData.event?.data?.dashboardId;
+    if (modalData.event?.data.dashboardId) {
+      this.dashboardId = modalData.event?.data.dashboardId;
     }
   }
 
-  async ngOnInit() {
+  ngOnInit() {
 
     if (this.finalWidget && this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit) {
-      await this.initializeFormWithExistingWidget();
+      this.initializeForm(this.finalWidget);
     }
     else {
-      await this.initializeForm();
+      this.initializeForm();
     }
   }
 
@@ -361,38 +368,92 @@ export class WidgetFormComponent implements OnInit {
     return this.widgetForm.controls.enableWidgetSpecificConfig.value;
   }
 
-  // get selectedCommonProperties(): IWidgetFieldNameConfig[] {
-  //   return this.widgetForm.controls.dataInputConfig.controls.commonProperties.value || [];
-  // }
+  get showableProperties(): IShowableProperty[] {
+    const formArray = this.widgetForm.controls.showableProperties;
+    if (!formArray || !formArray.controls) {
+      return [];
+    }
+
+    return formArray.controls.map(control => ({
+      name: control.value.name || '',
+      displayName: control.value.displayName || '',
+      isMultiValued: control.value.isMultiValued || false,
+      isLabel: control.value.isLabel || false,
+      multiValuedConfig: control.value.multiValuedConfig ? {
+        dependentOnColumn: control.value.multiValuedConfig.dependentOnColumn || undefined,
+        valueBasedOnColumn: control.value.multiValuedConfig.valueBasedOnColumn || ''
+      } : undefined
+    }));
+  }
+
 
   // Form Initialization
-  private async initializeForm(): Promise<void> {
+  private initializeForm(widgetData: Widget = null) {
     this.isFormInitialized = false;
 
     try {
-      const { commonProperties, analytics } = await forkJoin({
+      forkJoin({
         commonProperties: this.eventService.getAllCommonProperties(),
         analytics: this.analyticService.getAllAnalytics()
-      }).toPromise();
+      }).subscribe(({ commonProperties, analytics }) => {
+        if (commonProperties?.length && analytics?.length) {
+          this.commonProperties = commonProperties || [];
+          this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
+            name: prop.name,
+            type: prop.type,
+            rule: null // Initialize with no rule
+          }));
 
-      if (commonProperties?.length && analytics?.length) {
-        this.commonProperties = commonProperties || [];
-        this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
-          name: prop.name,
-          type: prop.type,
-          rule: null // Initialize with no rule
-        }));
+          this.entityPropertiesMap = analytics.reduce((acc, entity) => {
+            acc[entity.name] = [...entity.properties, ...commonProperties];
+            return acc;
+          }, {});
 
-        this.entityPropertiesMap = analytics.reduce((acc, entity) => {
-          acc[entity.name] = [...entity.properties, ...commonProperties];
-          return acc;
-        }, {});
+          this.createForm();
+          this.onEntityTypeSelectChange();
+          this.createRuleGroupQueryBuilder([]);
+          this.isFormInitialized = true;
 
-        this.createForm();
-        this.onEntityTypeSelectChange();
-        this.createRuleGroupQueryBuilder([]);
-        this.isFormInitialized = true;
-      }
+          if (widgetData) {
+            try {
+              this.widgetForm.patchValue({
+                id: this.finalWidget.id,
+                dashboardId: this.finalWidget.dashboardId
+              })
+              // Set basic configuration
+              this.initializeBasicConfig(this.finalWidget);
+
+              // Set display configuration
+              this.initializeDisplayConfig(this.finalWidget);
+
+              // Set data input configuration
+              this.initializeDataInputConfig(this.finalWidget);
+
+              this.initializeShowableProperties(this.finalWidget);
+
+              // Set widget-specific configuration
+              this.initializeWidgetSpecificConfig(this.finalWidget);
+
+              // Set filter configuration
+              this.initializeFilterConfig(this.finalWidget);
+
+              // Set widget tile configuration
+              this.initializeWidgetTileConfig(this.finalWidget);
+
+              // Update UI state based on loaded data
+              this.updateUIStateAfterLoad();
+
+              // Update step completions
+              this.updateAllStepCompletions();
+
+              console.log('Form initialized with existing widget data');
+
+            } catch (error) {
+              console.error('Error initializing form with widget data:', error);
+            }
+          }
+        }
+      });
     } catch (error) {
       console.error('Error initializing form:', error);
       this.isFormInitialized = true;
@@ -401,6 +462,8 @@ export class WidgetFormComponent implements OnInit {
 
   private createForm(): void {
     this.widgetForm = this.fb.group<WidgetFormControls>({
+      id: this.fb.control(null),
+      dashboardId: this.fb.control(this.dashboardId),
       configurationApproach: this.fb.control('widgetFirst', {
         validators: [Validators.required],
         nonNullable: true
@@ -453,7 +516,7 @@ export class WidgetFormComponent implements OnInit {
           CountValueColumnName: this.fb.control('count', { nonNullable: true }),
           DisplayValueColumnName: this.fb.control(''),
           ImageColumnName: this.fb.control(''),
-          seriesAggregation: this.fb.control(Enum_Method_Aggregation.None),
+          hideLabel: this.fb.control(false),
           showChart: this.fb.control(false)
         }),
 
@@ -478,11 +541,17 @@ export class WidgetFormComponent implements OnInit {
         ...WIDGET_FORM_CONSTANTS.DEFAULT_DIMENSIONS
       } as any),
 
+      // In createForm() method, add:
+      showablePropertiesSelection: this.fb.control<string[]>([]),
       showableProperties: this.fb.array<FormGroup<{
         name: FormControl<string>;
         displayName: FormControl<string>;
         isMultiValued: FormControl<boolean>;
         isLabel: FormControl<boolean>;
+        multiValuedConfig: FormGroup<{
+          dependentOnColumn: FormControl<string | null>;
+          valueBasedOnColumn: FormControl<string>;
+        }>;
       }>>([]),
 
       allowRefresh: this.fb.control<boolean>(false),
@@ -655,7 +724,7 @@ export class WidgetFormComponent implements OnInit {
           entitySelect: null
         }
       });
-      this.clearDataConfigArray();
+
     } else {
       this.widgetForm.patchValue({
         dataInputConfig: {
@@ -665,6 +734,7 @@ export class WidgetFormComponent implements OnInit {
       });
     }
 
+    this.clearDataConfigArray();
     this.widgetForm.patchValue({
       dataInputConfig: {
         groupBy1: null,
@@ -703,12 +773,14 @@ export class WidgetFormComponent implements OnInit {
       }
     });
 
+    // Update showable properties options
+    this.updateAllShowablePropertiesName();
+
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
 
   onFieldNamesChange(event: any): void {
-
     var selectedFields = event.value as IWidgetFieldNameConfig[]
     // Update form control
     this.widgetForm.patchValue({
@@ -720,6 +792,9 @@ export class WidgetFormComponent implements OnInit {
     if (selectedFields?.length > 1) {
       this.disableGroupBy2();
     }
+
+    // Update showable properties options
+    this.updateAllShowablePropertiesName();
 
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
@@ -745,6 +820,9 @@ export class WidgetFormComponent implements OnInit {
         fieldsAggregationType: method
       }
     });
+
+    // Update showable properties options
+    this.updateAllShowablePropertiesName();
   }
 
   onEntitiesChange(event: any): void {
@@ -775,7 +853,7 @@ export class WidgetFormComponent implements OnInit {
       }
     });
 
-    var entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+    var entityName = Enum_Entity_With_Labels[entityValue];
     if (entityValue && this.entityPropertiesMap[entityName]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
         this.entityPropertiesMap[entityName],
@@ -802,7 +880,7 @@ export class WidgetFormComponent implements OnInit {
   onEntityChange(): void {
     const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
     const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
-    var entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+    var entityName = Enum_Entity_With_Labels[entityValue];
     if (entityValue && this.entityPropertiesMap[entityName]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
         this.entityPropertiesMap[entityName],
@@ -871,6 +949,11 @@ export class WidgetFormComponent implements OnInit {
       this.toggleGroupBy2({ target: { checked: false } } as any);
     }
 
+    this.widgetForm.patchValue({
+      widgetType: null
+    });
+
+    this.updateStepCompletion(4)
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
@@ -882,6 +965,11 @@ export class WidgetFormComponent implements OnInit {
       this.resetGroupBy2();
     }
 
+    this.widgetForm.patchValue({
+      widgetType: null
+    });
+
+    this.updateStepCompletion(4)
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
   }
@@ -1076,14 +1164,14 @@ export class WidgetFormComponent implements OnInit {
 
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
       const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
-      const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+      const entityName = Enum_Entity_With_Labels[entityValue];
       if (entityName && this.entityPropertiesMap[entityName]) {
         properties.push(...this.entityPropertiesMap[entityName]);
       }
     } else {
       const selectedEntities = this.widgetForm.controls.dataInputConfig.controls.entities.value || [];
       for (const entityValue of selectedEntities) {
-        const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+        const entityName = Enum_Entity_With_Labels[entityValue];
         const entityProps = this.entityPropertiesMap[entityName] || [];
         properties.push(...entityProps);
       }
@@ -1137,29 +1225,34 @@ export class WidgetFormComponent implements OnInit {
   }
 
   clearDataConfigArray(): void {
+    this.entityProperties = [];
+    this.allFieldNames = [];
+
+
     while (this.dataConfigArray.length > 0) {
       this.dataConfigArray.removeAt(0);
     }
+
+    this.updateAllShowablePropertiesName();
   }
 
   setupEntityConfigs(entityValues: Enum_Entity[]): void {
     this.clearDataConfigArray();
 
     for (const entityValue of entityValues) {
-      const mappedEntity = Enum_Entity_With_Labels[entityValue]
-      if (mappedEntity) {
-        const entityFormGroup = this.fb.group({
-          entity: this.fb.control<Enum_Entity>(mappedEntity.value, {
-            validators: [Validators.required],
-            nonNullable: true
-          }),
-          schemaName: this.fb.control<Enum_Schema>(mappedEntity.schema, {
-            validators: [Validators.required],
-            nonNullable: true
-          })
-        });
-        this.dataConfigArray.push(entityFormGroup);
-      }
+      var event_entity = EVENT_ENTITIES.find(entity => entity.value == entityValue)
+      const entityFormGroup = this.fb.group({
+        entity: this.fb.control<Enum_Entity>(entityValue, {
+          validators: [Validators.required],
+          nonNullable: true
+        }),
+        schemaName: this.fb.control<Enum_Schema>(event_entity.schema, {
+          validators: [Validators.required],
+          nonNullable: true
+        })
+      });
+      this.dataConfigArray.push(entityFormGroup);
+
     }
   }
 
@@ -1183,6 +1276,41 @@ export class WidgetFormComponent implements OnInit {
     return false;
   }
 
+
+  private updateAllShowablePropertiesName(): void {
+    const fieldNames = this.selectedFieldNames;
+    const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+
+    this.allShowablePropertiesName = [];
+
+    if (fieldNames && fieldNames.length > 0) {
+      fieldNames.forEach((fieldName: IWidgetFieldNameConfig) => {
+        const entityName = Enum_Entity_With_Labels[entityValue];
+        const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name === fieldName.name);
+
+        if (propInfo) {
+          this.allShowablePropertiesName.push({
+            name: fieldName.name,
+            displayName: propInfo.columnName,
+            isMultiValued: false,
+            isLabel: propInfo.type === EventPropertyType.String
+          });
+        }
+      });
+    }
+
+    // Add aggregation method if applicable
+    const fieldAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
+    if (fieldAggregationType && (fieldAggregationType == Enum_Method_Aggregation.Total || fieldAggregationType == Enum_Method_Aggregation.Least || fieldAggregationType == Enum_Method_Aggregation.Greatest)) {
+      this.allShowablePropertiesName.push({
+        name: Enum_Method_Aggregation_With_Labels[fieldAggregationType].toLowerCase(),
+        displayName: Enum_Method_Aggregation_With_Labels[fieldAggregationType],
+        isMultiValued: false,
+        isLabel: false
+      });
+    }
+  }
+
   updateRecommendedWidgets(): void {
     if (!this.canRecommendWidgets()) {
       this.recommendedWidgets = [];
@@ -1204,6 +1332,40 @@ export class WidgetFormComponent implements OnInit {
     }
 
     this.recommendedWidgets = availableWidgets;
+  }
+
+  onShowablePropertiesChange(event: any): void {
+    const selectedProps = event.value;
+
+    // Clear existing showable properties FormArray
+    const showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    showablePropertiesArray.clear();
+
+    selectedProps.forEach((prop) => {
+      var isEntityProp = this.entityProperties.find((entityProp) => {
+        entityProp.name == prop
+      });
+      if (isEntityProp) {
+        showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
+      }
+      else {
+        const isAggregationProp =
+          Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value]?.toLowerCase() === prop.toLowerCase();
+
+        if (isAggregationProp) {
+          showablePropertiesArray.push(this.createShowablePropertyFormGroup(
+            {
+              name: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value].toLowerCase(),
+              displayName: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value],
+              isLabel: false,
+              isMultiValued: false
+            }));
+        }
+      }
+    })
+
+    // Update step completion if needed
+    this.updateStepCompletion(3);
   }
 
   selectWidget(widgetType: Enum_WidgetType): void {
@@ -1235,7 +1397,7 @@ export class WidgetFormComponent implements OnInit {
         break;
 
       case 3:
-        this.stepsCompleted[3] = this.validateStep3();
+        this.stepsCompleted[3] = this.validateStep3().length == 0;
         break;
 
       case 4:
@@ -1254,25 +1416,29 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private validateStep3(): boolean {
-    if (this.widgetForm?.controls.entityConfigType.value === 'single') {
+  private validateStep3(): string[] {
+    const errors: string[] = [];
+    const entityConfigType = this.widgetForm?.controls.entityConfigType.value;
+
+    if (entityConfigType === 'single') {
       const entity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
       const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
 
-
-      var warnings = this.getValidationWarnings();
-      if (warnings.length > 0) {
-        return false;
+      if (!entity) {
+        errors.push('Please select an entity');
       }
-      if (aggregationMethod === Enum_Method.Sum) {
-        return !!entity && this.selectedFieldNames.length > 0;
-      } else {
-        return !!entity;
+
+      if (aggregationMethod === Enum_Method.Sum && this.selectedFieldNames.length === 0) {
+        errors.push('Please select at least one field for aggregation');
       }
     } else {
       const entities = this.widgetForm?.controls.dataInputConfig.controls.entities.value || [];
-      return entities.length > 0;
+      if (entities.length === 0) {
+        errors.push('Please select at least one entity');
+      }
     }
+
+    return errors;
   }
 
   private validateWidgetSpecificConfig(): boolean {
@@ -1325,7 +1491,7 @@ export class WidgetFormComponent implements OnInit {
           kpiConf: {
             CountValueColumnName: 'count',
             DisplayValueColumnName: 'displayValue',
-            seriesAggregation: Enum_Method_Aggregation.None,
+            hideLabel: false,
             showChart: false
           }
         }
@@ -1426,13 +1592,20 @@ export class WidgetFormComponent implements OnInit {
       return false;
     }
 
-    let entityValidation = this.validateStep3();
+    let entityValidation = this.validateForm();
 
-    if (this.requiresWidgetSpecificConfig()) {
-      entityValidation = entityValidation && this.validateWidgetSpecificConfig();
-    }
+    // if (this.requiresWidgetSpecificConfig()) {
+    //   entityValidation = entityValidation && this.validateWidgetSpecificConfig();
+    // }
 
     return entityValidation;
+  }
+
+  validateForm(): boolean {
+    var warnings = this.getValidationWarnings();
+    if (warnings.length > 0) {
+      return false;
+    }
   }
 
   getPreview() {
@@ -1491,9 +1664,9 @@ export class WidgetFormComponent implements OnInit {
 
     try {
       const finalWidget = this.createWidget();
-      console.log('Widget created:', finalWidget);
+      // console.log('Widget created:', finalWidget);
       this.finalWidget = finalWidget;
-      this.finalWidgetChange.emit(this.finalWidget);
+      // this.finalWidgetChange.emit(this.finalWidget);
       alert(SUCCESS_MESSAGES.WIDGET_CREATED);
 
       this.dialogRef.close({ widgetData: this.finalWidget, operation: this.modalData.event?.data?.operation });
@@ -1504,7 +1677,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   Cancel(): void {
-    this.dialogRef.close({ widgetData: this.finalWidget, operation: Enum_WidgetFormOperation.none });
+    this.dialogRef.close({ widgetData: null, operation: Enum_WidgetFormOperation.none });
   }
 
   // Widget Creation (Updated to use typed form)
@@ -1514,56 +1687,54 @@ export class WidgetFormComponent implements OnInit {
     const dimension = this.determineDimension();
     const fieldNames = this.selectedFieldNames;
     const fieldsAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
-    let showableProperties = this.createShowableProperties(this.selectedFieldNames, true);
-    if (dimension === WidgetDimension.ThreeDimensional) {
-      if (fieldNames.length > 1 && fieldsAggregationType != Enum_Method_Aggregation.None) {
-        showableProperties = this.createShowableProperties([], true);
-      }
-      else {
-        showableProperties = this.createShowableProperties(this.selectedFieldNames, false);
-      }
-    }
 
-    const dataConfig = this.createDataConfig();
-    const baseWidgetConfig = this.createBaseWidgetConfig(showableProperties);
-    //handle videoSourceId Group by
-    var groupby1 = this.widgetForm.controls.dataInputConfig.controls.groupBy1.value;
-    var groupby2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
-    if (groupby1?.name == "VideoSourceId" || groupby2?.name == "VideoSourceId") {
-      if (groupby1?.name == "VideoSourceId") {
-        groupby1.projectionName = "Video Source Name"
-      }
-      if (groupby2?.name == "VideoSourceId") {
-        groupby2.projectionName = "Video Source Name"
-      }
-      dataConfig.forEach((config) => {
-        config.joinableEntities = [];
-        config.joinableEntities[0] = {
-          entity: Enum_Entity.VideoSources,
-          schema: Enum_Schema.Public,
-          joinOn: "Id",
-          joinWith: "VideoSourceId",
-          properties: [{ name: "Name", displayName: "VideoSourceName" }],
+    let showablePropertiesArray = [];
+    if (fieldNames && fieldNames.length > 0) {
+      if (dimension === WidgetDimension.ThreeDimensional) {
+        if (fieldNames.length > 1 && fieldsAggregationType != Enum_Method_Aggregation.None) {
+          showablePropertiesArray = this.createShowableProperties([], true);
         }
-      })
+      }
+      this.widgetForm.controls.showableProperties.controls.forEach(control => showablePropertiesArray.push({
+        name: control.value.name || '',
+        displayName: control.value.displayName || '',
+        isMultiValued: control.value.isMultiValued || false,
+        isLabel: control.value.isLabel || false,
+        multiValuedConfig: control.value.multiValuedConfig ? {
+          dependentOnColumn: control.value.multiValuedConfig.dependentOnColumn || undefined,
+          valueBasedOnColumn: control.value.multiValuedConfig.valueBasedOnColumn || ''
+        } : undefined
+      }));
     }
     else {
-      dataConfig.forEach((config) => {
-        const index = config.joinableEntities?.findIndex(
-          (joinableEntity) => joinableEntity.entity === Enum_Entity.VideoSources
-        );
-
-        if (index !== undefined && index !== -1) {
-          config.joinableEntities.splice(index, 1);
-        }
-      });
-
+      if (this.widgetForm.controls.entityConfigType.value === 'single') {
+        showablePropertiesArray.push({
+          name: Enum_Entity_With_Labels[this.widgetForm.controls.dataInputConfig.controls.entitySelect.value],
+          displayName: Enum_Entity_With_Labels[this.widgetForm.controls.dataInputConfig.controls.entitySelect.value],
+          isMultiValued: false,
+          isLabel: false,
+          multiValuedConfig: null
+        });
+      } else {
+        this.widgetForm.controls.dataInputConfig.controls.entities.value.forEach((entity) => {
+          showablePropertiesArray.push({
+            name: Enum_Entity_With_Labels[entity],
+            displayName: Enum_Entity_With_Labels[entity],
+            isMultiValued: false,
+            isLabel: false,
+            multiValuedConfig: null
+          });
+        })
+      }
     }
+    const dataConfig = this.createDataConfig();
+    const baseWidgetConfig = this.createBaseWidgetConfig(showablePropertiesArray);
+
     const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
     const constructorProps = this.createConstructorProps(baseWidgetConfig, dataInputConfig, dimension);
 
     const widgetType = formValue.widgetType!;
-    const validation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig);
+    const validation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig, this.widgetForm.controls.showablePropertiesSelection.value);
 
     if (!validation.isValid) {
       throw new Error(`${ERROR_MESSAGES.CONFIGURATION_INVALID}: ${validation.errors.join(', ')}`);
@@ -1571,7 +1742,6 @@ export class WidgetFormComponent implements OnInit {
 
     const finalWidget = WidgetFactory.createWidget(constructorProps, widgetType);
     finalWidget.dimension = dimension;
-    finalWidget.dashboardId = this.dashboardId;
 
     return finalWidget;
   }
@@ -1591,7 +1761,7 @@ export class WidgetFormComponent implements OnInit {
     const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
 
     props.forEach((propValue: IWidgetFieldNameConfig) => {
-      const entityName = Enum_Entity_With_Labels[Enum_Entity[entityValue]];
+      const entityName = Enum_Entity_With_Labels[entityValue];
       const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name === propValue.name);
       if (propInfo) {
         showableProperties.push({
@@ -1618,6 +1788,11 @@ export class WidgetFormComponent implements OnInit {
     return showableProperties;
   }
 
+  private addShowableProperty(property?: Partial<IShowableProperty>): void {
+    const formGroup = this.createShowablePropertyFormGroup(property);
+    this.widgetForm.controls.showableProperties.push(formGroup);
+  }
+
   private createDataConfig(): IWidgetDataConfig[] {
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
       return [{
@@ -1635,17 +1810,16 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private createShowablePropertyFormGroup(property: IShowableProperty): FormGroup<{
-    name: FormControl<string>;
-    displayName: FormControl<string>;
-    isMultiValued: FormControl<boolean>;
-    isLabel: FormControl<boolean>;
-  }> {
+  private createShowablePropertyFormGroup(property?: Partial<IShowableProperty>): FormGroup {
     return this.fb.group({
-      name: this.fb.control(property.name, { nonNullable: true }),
-      displayName: this.fb.control(property.displayName, { nonNullable: true }),
-      isMultiValued: this.fb.control(property.isMultiValued || false, { nonNullable: true }),
-      isLabel: this.fb.control(property.isLabel || false, { nonNullable: true })
+      name: this.fb.control(property?.name || ''),
+      displayName: this.fb.control(property?.displayName || ''),
+      isMultiValued: this.fb.control(property?.isMultiValued || false),
+      isLabel: this.fb.control(property?.isLabel || false),
+      multiValuedConfig: this.fb.group({
+        dependentOnColumn: this.fb.control<string | null>(property?.multiValuedConfig?.dependentOnColumn || null),
+        valueBasedOnColumn: this.fb.control(property?.multiValuedConfig?.valueBasedOnColumn || '')
+      })
     });
   }
 
@@ -1671,7 +1845,8 @@ export class WidgetFormComponent implements OnInit {
     };
 
     return {
-      id: WidgetFormUtils.generateUUID(),
+      id: this.widgetForm.controls.id.value ? this.widgetForm.controls.id.value : WidgetFormUtils.generateUUID(),
+      dashboardId: this.widgetForm.controls.dashboardId.value,
       displayConfig: displayConfig,
       showableProperties: showableProperties,
       widgetTileConf: this.widgetForm.controls.widgetTileConf.value,
@@ -1770,7 +1945,7 @@ export class WidgetFormComponent implements OnInit {
         CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
         DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
         ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
-        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.seriesAggregation.value,
+        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
       };
 
@@ -1786,7 +1961,7 @@ export class WidgetFormComponent implements OnInit {
         CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
         DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
         ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
-        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.seriesAggregation.value,
+        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
       };
 
@@ -1856,7 +2031,7 @@ export class WidgetFormComponent implements OnInit {
 
   // Template Helper Methods
   getPropertyDisplayName(property: Property): string {
-    return property.columnName || property.name;
+    return property.columnName;
   }
 
   isPropertySelected(property: Property, selectedProperties: Property[]): boolean {
@@ -1873,7 +2048,7 @@ export class WidgetFormComponent implements OnInit {
   getSelectedPropertiesSummary(): string {
     const fieldNames = this.selectedFieldNames;
     if (fieldNames.length === 0) return 'None selected';
-    return fieldNames.map((field: Property) => field.columnName || field.name).join(', ');
+    return fieldNames.map((field: Property) => field.columnName).join(', ');
   }
 
   getGroupingSummary(): string {
@@ -1914,14 +2089,6 @@ export class WidgetFormComponent implements OnInit {
     return 'No specific configuration required';
   }
 
-  getPropertyLabel(propertyField: string): string {
-    if (!propertyField) return 'Unknown Property';
-
-    const allProps = this.getAllAvailableProperties();
-    const property = allProps.find(p => p.name === propertyField);
-    return property ? property.columnName : propertyField;
-  }
-
   getEntityLabel(entity: Enum_Entity): string {
     return Enum_Entity_With_Labels[entity]
   }
@@ -1931,15 +2098,22 @@ export class WidgetFormComponent implements OnInit {
     let warnings: string[] = [];
     const widgetType = this.widgetForm.controls.widgetType.value;
     if (widgetType) {
-      const dimension = this.determineDimension();
-      const fieldNames = this.selectedFieldNames;
-      const dataConfig = this.createDataConfig();
-      const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
-      const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig);
-      warnings = [...widgetConfigurationValidation.errors]
-      const WidgetCompatibilityValidation = validateWidgetCompatibility(widgetType, dataInputConfig)
-      warnings = [...WidgetCompatibilityValidation.errors]
+      return ['Please select a widget type']
     }
+    const dimension = this.determineDimension();
+    const fieldNames = this.selectedFieldNames;
+    const dataInputConfigurationValidation = this.validateStep3();
+    warnings = [...dataInputConfigurationValidation];
+    if (warnings.length > 0) {
+      return warnings;
+    }
+    const dataConfig = this.createDataConfig();
+    const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
+    const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(widgetType, dataInputConfig, this.widgetForm.controls.showablePropertiesSelection.value);
+    warnings = [...widgetConfigurationValidation.errors]
+    const WidgetCompatibilityValidation = validateWidgetCompatibility(widgetType, dataInputConfig)
+    warnings = [...WidgetCompatibilityValidation.errors]
+
     return warnings;
   }
 
@@ -1976,7 +2150,7 @@ export class WidgetFormComponent implements OnInit {
 
     if (this.entityProperties?.length > 0) {
       var fieldName: IWidgetFieldNameConfig = {
-        name: this.entityProperties[0].columnName,
+        name: this.entityProperties[0].name,
         type: this.entityProperties[0].type,
         rule: null
       }
@@ -1985,7 +2159,17 @@ export class WidgetFormComponent implements OnInit {
           fieldNames: [fieldName]
         }
       });
+
+      this.widgetForm.patchValue({
+        showablePropertiesSelection: [fieldName.name]
+      });
     }
+
+
+
+    this.updateAllShowablePropertiesName();
+
+    this.addShowablePropertiesToForm(this.allShowablePropertiesName)
 
     if (this.isAdvancedMode && this.entityProperties?.length > 1) {
       this.enableGroupBy1 = true;
@@ -2066,23 +2250,29 @@ export class WidgetFormComponent implements OnInit {
         await this.initializeForm();
       }
 
+      this.widgetForm.patchValue({
+        id: this.finalWidget.id,
+        dashboardId: this.finalWidget.dashboardId
+      })
       // Set basic configuration
-      this.initializeBasicConfig();
+      this.initializeBasicConfig(this.finalWidget);
 
       // Set display configuration
-      this.initializeDisplayConfig();
+      this.initializeDisplayConfig(this.finalWidget);
 
       // Set data input configuration
-      await this.initializeDataInputConfig();
+      this.initializeDataInputConfig(this.finalWidget);
+
+      this.initializeShowableProperties(this.finalWidget);
 
       // Set widget-specific configuration
-      this.initializeWidgetSpecificConfig();
+      this.initializeWidgetSpecificConfig(this.finalWidget);
 
       // Set filter configuration
-      this.initializeFilterConfig();
+      this.initializeFilterConfig(this.finalWidget);
 
       // Set widget tile configuration
-      this.initializeWidgetTileConfig();
+      this.initializeWidgetTileConfig(this.finalWidget);
 
       // Update UI state based on loaded data
       this.updateUIStateAfterLoad();
@@ -2097,9 +2287,7 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private initializeBasicConfig(): void {
-    const widget = this.finalWidget;
-
+  private initializeBasicConfig(widget: Widget): void {
     // Determine configuration approach based on widget structure
     const configApproach = this.determineConfigurationApproach(widget);
 
@@ -2120,9 +2308,7 @@ export class WidgetFormComponent implements OnInit {
     return (dataConfig && dataConfig.length > 1) ? 'multiple' : 'single';
   }
 
-  private initializeDisplayConfig(): void {
-    const widget = this.finalWidget;
-
+  private initializeDisplayConfig(widget: Widget): void {
     this.widgetForm.patchValue({
       displayConfig: {
         heading: widget.displayConfig?.heading || '',
@@ -2132,8 +2318,7 @@ export class WidgetFormComponent implements OnInit {
     });
   }
 
-  private async initializeDataInputConfig(): Promise<void> {
-    const widget = this.finalWidget;
+  private initializeDataInputConfig(widget: Widget) {
     const dataInputConfig = widget.dataInputConfig;
 
     if (!dataInputConfig) return;
@@ -2147,15 +2332,23 @@ export class WidgetFormComponent implements OnInit {
       }
     });
 
-    await this.initializeClubbingTimeConfigurations(dataInputConfig);
+    this.initializeClubbingTimeConfigurations(dataInputConfig);
     // Initialize entity configuration
-    await this.initializeEntityConfiguration(dataInputConfig);
+    this.initializeEntityConfiguration(dataInputConfig);
 
     // Initialize field names
     this.initializeFieldNames(dataInputConfig);
 
     // Initialize group by configurations
     this.initializeGroupByConfigurations(dataInputConfig);
+  }
+
+  private initializeShowableProperties(widget: Widget) {
+    this.widgetForm.patchValue({
+      showablePropertiesSelection: widget.showableProperties.map(prop => prop.name),
+      showableProperties: widget.showableProperties
+    });
+
   }
 
   private async initializeEntityConfiguration(dataInputConfig: any): Promise<void> {
@@ -2214,6 +2407,8 @@ export class WidgetFormComponent implements OnInit {
         fieldNames: fieldNames
       }
     });
+
+    this.updateAllShowablePropertiesName();
   }
 
   private initializeGroupByConfigurations(dataInputConfig: any): void {
@@ -2270,8 +2465,7 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private initializeWidgetSpecificConfig(): void {
-    const widget = this.finalWidget;
+  private initializeWidgetSpecificConfig(widget: Widget): void {
     const widgetType = widget.widgetType;
 
     // Determine if widget-specific config should be enabled
@@ -2327,46 +2521,22 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private hasValidKPIConfig(kpiConf: any): boolean {
+  private hasValidKPIConfig(kpiConf: KPIConf): boolean {
     if (!kpiConf) return false;
 
-    // Check if it has non-default values
-    const hasCustomCountColumn = kpiConf.CountValueColumnName &&
-      kpiConf.CountValueColumnName !== 'count';
-    const hasCustomDisplayColumn = kpiConf.DisplayValueColumnName &&
-      kpiConf.DisplayValueColumnName !== 'displayValue';
-    const hasCustomImageColumn = kpiConf.ImageColumnName &&
-      kpiConf.ImageColumnName.trim() !== '';
-    const hasNonDefaultAggregation = kpiConf.seriesAggregation &&
-      kpiConf.seriesAggregation !== Enum_Method_Aggregation.None;
-    const hasChartEnabled = kpiConf.showChart === true;
-
-    return hasCustomCountColumn || hasCustomDisplayColumn ||
-      hasCustomImageColumn || hasNonDefaultAggregation || hasChartEnabled;
+    return Object.values(kpiConf).some(value => value !== null && value !== undefined && value !== '');
   }
 
-  private hasValidDonutConfig(donutConf: any): boolean {
+  private hasValidDonutConfig(donutConf: DonutConf): boolean {
     if (!donutConf) return false;
 
-    const hasCustomLabel = donutConf.resultLabel &&
-      donutConf.resultLabel !== 'Result';
-    const hasNonDefaultAggregation = donutConf.seriesAggregation &&
-      donutConf.seriesAggregation !== Enum_Method_Aggregation.None;
-    const hasCustomSeriesLabel = donutConf.showSeriesLabelValue === false; // Default is true
-
-    return hasCustomLabel || hasNonDefaultAggregation || hasCustomSeriesLabel;
+    return Object.values(donutConf).some(value => value !== null && value !== undefined && value !== '');
   }
 
-  private hasValidTableConfig(tableConf: any): boolean {
+  private hasValidTableConfig(tableConf: TableConf): boolean {
     if (!tableConf) return false;
 
-    const hasCustomPagination = tableConf.pagination === false; // Default is true
-    const hasCustomPageLimit = tableConf.pageLimit &&
-      tableConf.pageLimit !== WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT;
-    const hasCustomPageNumber = tableConf.pageNumber &&
-      tableConf.pageNumber !== 1;
-
-    return hasCustomPagination || hasCustomPageLimit || hasCustomPageNumber;
+    return Object.values(tableConf).some(value => value !== null && value !== undefined && value !== '');
   }
 
   private loadWidgetSpecificConfiguration(widget: Widget, widgetType: Enum_WidgetType): void {
@@ -2384,6 +2554,7 @@ export class WidgetFormComponent implements OnInit {
         break;
     }
   }
+
   private initializeKPIConfig(widget: Kpi1DWidget | Kpi2DWidget): void {
     const kpiConf = widget.kpiConf;
 
@@ -2394,8 +2565,8 @@ export class WidgetFormComponent implements OnInit {
             CountValueColumnName: kpiConf.CountValueColumnName,
             DisplayValueColumnName: kpiConf.DisplayValueColumnName,
             ImageColumnName: kpiConf.ImageColumnName || '',
-            seriesAggregation: kpiConf.seriesAggregation || Enum_Method_Aggregation.None,
-            showChart: kpiConf.showChart || false
+            showChart: kpiConf.showChart || false,
+            hideLabel: kpiConf.hideLabel || false,
           }
         }
       });
@@ -2434,8 +2605,7 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private initializeFilterConfig(): void {
-    const widget = this.finalWidget;
+  private initializeFilterConfig(widget: Widget): void {
     const filterConfig = widget.filterConfig;
 
     if (filterConfig) {
@@ -2454,8 +2624,7 @@ export class WidgetFormComponent implements OnInit {
     }
   }
 
-  private initializeWidgetTileConfig(): void {
-    const widget = this.finalWidget;
+  private initializeWidgetTileConfig(widget: Widget): void {
     const widgetTileConf = widget.widgetTileConf;
 
     if (widgetTileConf) {

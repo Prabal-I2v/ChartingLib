@@ -19,8 +19,7 @@
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
-        (editWidgetOutput)="onEditWidgetOutput()"
+        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
         [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
       </i2v-chart-header>
@@ -52,10 +51,14 @@
         <div class="content-section">
           @for (series of chartData.series; track $index) {
           <div class="number-grp">
-            <div class="minorheader" style="font-style: italic;">{{ series.name | uppercase}}</div>
+            @if (!widgetRequestModel.kpiConf?.hideLabel) {
+            <div class="minorheader" style="font-style: italic;">{{ series.displayName | uppercase }}</div>
+            }
             <div class="digits">{{ series.data[0] }}</div>
           </div>
+
           }
+
           <!-- <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
               [fill-color]="ResSvgIconColor" [size]="'60'"></div> -->
         </div>

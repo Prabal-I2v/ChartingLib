@@ -3,7 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
-import { month } from "../Models/vehicle-icon-mapping";
+import { Enum_Month } from "../Models/vehicle-icon-mapping";
 import { Enum_TimePeriod } from "../Models/enums/enums";
 @Component({
   selector: "i2v-stackedcolumn-chart",
@@ -33,14 +33,14 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
 
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.label, data: x.data });
+      return new ChartSeries({ name: x.name, displayName : x.displayName, data: x.data });
     });
 
     if (data.labels.xAxisFields.length > 0) {
       if (isMonthData) {
         const monthData: any[] = [];
         data.seriesData[0].data.forEach((x) => {
-          monthData.push(month[parseInt(x) - 1]);
+          monthData.push(Enum_Month[parseInt(x) - 1]);
         });
 
         chartData.xAxisFields = data.labels.xAxisFields;
@@ -57,5 +57,6 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
       chartData.yAxisLabel = data.labels.yAxisLabel;
     }
     this.chartData = chartData;
+    this.chartData.series = this.filterShowableSeries(this.chartData)
   }
 }

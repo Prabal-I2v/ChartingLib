@@ -43,7 +43,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.label, data: x.data });
+      return new ChartSeries({ name: x.name, displayName : x.displayName, data: x.data });
     });
 
     if (chartData.series.length > 0) {
@@ -102,7 +102,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       this.setData(chartData.series[0]);
     }
     
-        this.chartData = chartData;
+    this.chartData = chartData;
+    this.chartData.series = this.filterShowableSeries(this.chartData)
   }
 
   setData(chartSeries: ChartSeries, index: number = 0, showSeries: boolean = false) {

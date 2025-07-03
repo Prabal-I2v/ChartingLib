@@ -32,7 +32,7 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
     data.labels.xAxisFields.forEach((xLabel, index) => {
       if (data.labels.useXAxisFieldValue == false) {
         data.labels.yAxisFields.forEach((yLabel) => {
-          var cellData = data.seriesData.find((x) => x.label === xLabel).data[0];
+          var cellData = data.seriesData.find((x) => x.name === xLabel).data[0];
           var value = parseFloat(cellData) ?? 0;
           chartData.data.push({
             xAxis: yLabel,
@@ -43,7 +43,7 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
       }
       else {
         data.labels.yAxisFields.forEach((yLabel) => {
-          var cellData = data.seriesData.find((x) => x.label === yLabel).data[index];
+          var cellData = data.seriesData.find((x) => x.name === yLabel).data[index];
           var value = parseFloat(cellData) ?? 0;
           chartData.data.push({
             xAxis: yLabel,
@@ -55,5 +55,6 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
     });
 
     this.chartData = chartData;
+    
   }
 }

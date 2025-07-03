@@ -1,7 +1,7 @@
 
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { dashboard } from "../DashboardModel";
-import { Enum_Entity, Enum_Method, Enum_Method_Aggregation, Enum_Schema} from "../enums/enums";
+import { Enum_Entity, Enum_Method, Enum_Method_Aggregation, Enum_Schema } from "../enums/enums";
 import { ColumnClubInRange, CustomFilterValueModel, groupByConf, Rule, RuleSet, WidgetTileConf } from "../types/types";
 
 // Base Configuration Interfaces
@@ -54,9 +54,9 @@ export interface IWidgetDataOutputConfig {
   // clubbingAggregationType?: Enum_Method_Aggregation;
 }
 
-export interface IWidgetFieldNameConfig{
-  name : string;
-  type : EventPropertyType;
+export interface IWidgetFieldNameConfig {
+  name: string;
+  type: EventPropertyType;
   rule?: Rule;
 }
 
@@ -72,13 +72,13 @@ export interface IShowableProperty {
 }
 
 // Dimension-specific Data Input Configurations
-export interface IOneDimensionDataInputConfig{
+export interface IOneDimensionDataInputConfig {
   isDistinct?: boolean;
   method: Enum_Method;
   dataConfig: IWidgetDataConfig[];
   DataOutputConfig?: IWidgetDataOutputConfig;
   fieldNames?: IWidgetFieldNameConfig[];
-  fieldsAggregationType? : Enum_Method_Aggregation;
+  fieldsAggregationType?: Enum_Method_Aggregation;
 }
 
 
@@ -97,15 +97,15 @@ export interface INoDimensionDataInputConfig extends IOneDimensionDataInputConfi
 
 // Base widget constructor props
 export interface IBaseWidgetConstructorProps {
+  id?: string;
+  dashboardId?: string;
+  dashboard?: dashboard;
   displayConfig: IWidgetDisplayConfig;
   filterConfig?: IWidgetFilterConfig;
   dataOutputConfig?: IWidgetDataOutputConfig;
   widgetInteractivityConfig?: IWidgetInteractivityConfig;
   showableProperties?: IShowableProperty[];
   widgetTileConf: WidgetTileConf;
-  id?: string;
-  dashboardId?: string;
-  dashboard?: dashboard;
   isPreview?: boolean | null;
   allowRefresh: boolean;
   refreshInterval: number;

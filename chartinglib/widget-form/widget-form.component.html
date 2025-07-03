@@ -159,15 +159,15 @@
               <label for="entityTypeSelect" class="form-label">Schema Type</label>
               <p-dropdown id="entityTypeSelect" [options]="[
                 {label: 'Events', value: Enum_Schema.Events}, 
-                {label: 'Public', value: Enum_Schema.Public}
+                {label: 'Resources', value: Enum_Schema.Public}
               ]" formControlName="entityTypeSelect" optionLabel="label" optionValue="value" appendTo="body"
                 (onChange)="onEntityTypeSelectChange()" styleClass="form-dropdown">
               </p-dropdown>
             </div>
 
-            <!-- Single Entity Configuration -->
-            @if (widgetForm.controls.entityConfigType.value === 'single') {
-            <div class="entity-config single-entity-config">
+            <div class="entity-config">
+              <!-- Single Entity Configuration -->
+              @if (widgetForm.controls.entityConfigType.value === 'single') {
 
               <!-- Entity Selection -->
               <div class="form-group">
@@ -184,268 +184,7 @@
                 </div>
                 }
               </div>
-
-              <!-- Aggregation Method -->
-              <div class="form-group">
-                <label for="method" class="form-label">Aggregation Method</label>
-                <p-dropdown id="method" [options]="singleEntityAggregationMethods" formControlName="method"
-                  optionLabel="label" optionValue="value" appendTo="body" (onChange)="aggregationMethodChange($event)"
-                  styleClass="form-dropdown">
-                </p-dropdown>
-              </div>
-
-              <!-- Field Names Selection -->
-              @if (entityProperties.length > 0) {
-              <div class="form-group">
-                <label class="form-label">Select Properties</label>
-                <p-multiSelect [options]="allFieldNames" formControlName="fieldNames" optionLabel="name" [filter]="true"
-                  placeholder="Select Properties" appendTo="body" display="chip" [showToggleAll]="true"
-                  [showHeader]="true" (onChange)="onFieldNamesChange($event)" styleClass="form-multiselect">
-                </p-multiSelect>
-
-                <!-- Display selected field names -->
-                @if (selectedFieldNames.length > 0) {
-                <div class="selected-fields-info">
-                  <small>Selected: {{ selectedFieldNames.length }} properties</small>
-                </div>
-                }
-              </div>
-
-              <!-- Fields Aggregation Type -->
-              @if (selectedFieldNames.length > 0) {
-              <div class="form-group">
-                <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
-                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
-                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
-                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
-                </p-dropdown>
-              </div>
-              }
-              }
-
-              <!-- Field Rules for Count Method -->
-              @if (widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count && selectedFieldNames.length >
-              0) {
-              <div class="field-rules-container">
-
-                @for (field of selectedFieldNames; track $index) {
-                <div class="field-rule-item">
-                  <div class="field-rule-header">
-                    <div class="checkbox-label">
-                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [value]="field.rule"
-                        class="form-checkbox">
-                      <span class="checkbox-text">{{ field.name }}</span>
-                    </div>
-                  </div>
-
-                  @if (field.rule) {
-                  <div class="field-rule-controls">
-
-                    <div class="rule-control">
-                      <label class="form-label">Operator</label>
-                      <select class="form-control" [value]="field.rule.operator"
-                        (change)="onFieldRuleOperatorChange($index, $event)">
-                        @for (condition of getOpertorsByType(field.type); track condition) {
-                        <option [value]="condition">{{ condition }}</option>
-                        }
-                      </select>
-                    </div>
-
-                    <div class="rule-control">
-                      <label class="form-label">Value</label>
-
-                      @if (field.type === EventPropertyType.String) {
-                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)">
-                      }
-
-                      @if (field.type === EventPropertyType.Boolean) {
-                      <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
-                        <option value="true">True</option>
-                        <option value="false">False</option>
-                      </select>
-                      }
-
-                      @if (field.type === EventPropertyType.Integer || field.type === EventPropertyType.Float) {
-                      <input type="number" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)">
-                      }
-                    </div>
-                  </div>
-                  }
-                </div>
-                }
-              </div>
-              }
-
-              <!-- Distinct Option -->
-              <div class="form-group">
-                <div class="checkbox-label">
-                  <input type="checkbox" id="isDistinct" formControlName="isDistinct" class="form-checkbox">
-                  <span class="checkbox-text">Return distinct values only</span>
-                </div>
-              </div>
-            </div>
-            }
-
-            <!-- Multiple Entities Configuration -->
-            @if(widgetForm.controls.entityConfigType.value === 'multiple'){
-            <div class="entity-config multiple-entities-config">
-
-              <!-- Multiple Entities Selection -->
-              <div class="form-group">
-                <label for="entities" class="form-label required">Select Entities</label>
-                <p-multiSelect id="entities" [options]="selectedEntities" formControlName="entities" optionLabel="label"
-                  optionValue="value" placeholder="Select Multiple Entities" appendTo="body" display="chip"
-                  [showToggleAll]="true" [showHeader]="true" (onChange)="onEntitiesChange($event)"
-                  styleClass="form-multiselect">
-                </p-multiSelect>
-                <div *ngIf="widgetForm.controls.dataInputConfig.controls.entities.value?.length === 0"
-                  class="error-message">
-                  At least one entity must be selected
-                </div>
-              </div>
-
-              <!-- Common Properties Selection -->
-              <div class="form-group" *ngIf="commonFieldNames.length > 0">
-                <label class="form-label">Select Common Properties</label>
-                <p-multiSelect [options]="commonFieldNames" formControlName="fieldNames" optionLabel="name"
-                  [filter]="true" placeholder="Select Common Properties" appendTo="body" display="chip"
-                  [showToggleAll]="true" [showHeader]="true" (onChange)="onCommonPropertiesChange($event)"
-                  styleClass="form-multiselect">
-                </p-multiSelect>
-
-                <!-- Display selected common properties -->
-                <div class="selected-fields-info" *ngIf="selectedFieldNames.length > 0">
-                  <small>Selected: {{ selectedFieldNames.length }} common properties</small>
-                </div>
-              </div>
-
-              <!-- Fields Aggregation Type -->
-              <div class="form-group">
-                <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
-                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
-                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
-                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
-                </p-dropdown>
-              </div>
-            </div>
-            }
-
-            <!-- Advanced Configuration Section -->
-            @if (isAdvancedMode) {
-            <div class="advanced-config">
-              <h4>Advanced Configuration</h4>
-
-              <div class="group-by-configs">
-                <!-- Group By 1 Configuration -->
-                <div class="form-group group-by-section">
-                  <div class="group-by-header">
-                    <div class="checkbox-label">
-                      <input type="checkbox" id="enableGroupBy1" [checked]="enableGroupBy1"
-                        (change)="toggleGroupBy1($event)" class="form-checkbox">
-                      <span class="checkbox-text">Enable Group By 1</span>
-                    </div>
-                  </div>
-
-                  @if (enableGroupBy1) {
-                  <div class="group-by-container">
-                    <!-- Group By 1 Type Selection -->
-                    <div class="form-group">
-                      <label class="form-label">Group By 1 Type</label>
-                      <p-dropdown [options]="getAvailableGroupByTypes(1)" [(ngModel)]="groupBy1SelectionType"
-                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
-                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(1, $event)"
-                        styleClass="form-dropdown">
-                      </p-dropdown>
-                    </div>
-
-                    <!-- Field Selection for Group By 1 -->
-                    @if (groupBy1SelectionType === 'field') {
-                    <div class="form-group">
-                      <label class="form-label">Select Field for Group By 1</label>
-                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy1Option"
-                        [ngModelOptions]="{standalone: true}" optionLabel="columnName" placeholder="Select Property"
-                        appendTo="body" [showClear]="true" (onChange)="onGroupBy1Change($event)"
-                        styleClass="form-dropdown">
-
-                        <ng-template let-property pTemplate="item">
-                          <div class="property-item">
-                            <span class="property-name">{{ property.columnName }}</span>
-                            <span class="property-type">({{ property.type }})</span>
-                          </div>
-                        </ng-template>
-                      </p-dropdown>
-                    </div>
-                    }
-
-                    <!-- Time Grouping for Group By 1 -->
-                    @if (groupBy1SelectionType === 'time') {
-                    <div class="form-group">
-                      <label class="form-label">Time Grouping</label>
-                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping1"
-                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value" appendTo="body"
-                        (onChange)="updateTimeGrouping(1, $event)" styleClass="form-dropdown">
-                      </p-dropdown>
-                    </div>
-                    }
-                  </div>
-                  }
-                </div>
-
-                @if (shouldShowGroupBy2()) {
-                <div class="group-by-divider"></div>
-
-                <!-- Group By 2 Configuration -->
-                <div class="form-group group-by-section">
-                  <div class="group-by-header">
-                    <div class="checkbox-label">
-                      <input type="checkbox" id="enableGroupBy2" [checked]="enableGroupBy2"
-                        (change)="toggleGroupBy2($event)" class="form-checkbox">
-                      <span class="checkbox-text">Enable Group By 2</span>
-                    </div>
-                  </div>
-
-                  @if (enableGroupBy2) {
-                  <div class="group-by-container">
-                    <!-- Group By 2 Type Selection -->
-                    <div class="form-group">
-                      <label class="form-label">Group By 2 Type</label>
-                      <p-dropdown [options]="getAvailableGroupByTypes(2)" [(ngModel)]="groupBy2SelectionType"
-                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
-                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(2, $event)"
-                        styleClass="form-dropdown">
-                      </p-dropdown>
-                    </div>
-
-                    <!-- Field Selection for Group By 2 -->
-                    @if (groupBy2SelectionType === 'field') {
-                    <div class="form-group">
-                      <label class="form-label">Select Field for Group By 2</label>
-                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy2Option"
-                        [ngModelOptions]="{standalone: true}" optionLabel="columnName" placeholder="Select Property"
-                        appendTo="body" [showClear]="true" (onChange)="onGroupBy2Change($event)"
-                        styleClass="form-dropdown">
-                      </p-dropdown>
-                    </div>
-                    }
-
-                    <!-- Time Grouping for Group By 2 -->
-                    @if (groupBy2SelectionType === 'time') {
-                    <div class="form-group">
-                      <label class="form-label">Time Grouping</label>
-                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping2"
-                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value" appendTo="body"
-                        (onChange)="updateTimeGrouping(2, $event)" styleClass="form-dropdown">
-                      </p-dropdown>
-                    </div>
-                    }
-                  </div>
-                  }
-                </div>
-                }
-              </div>
-
+              @if (isAdvancedMode) {
               <!-- Property Filters -->
               <div class="property-filters">
                 <div class="property-filters-header">
@@ -660,28 +399,290 @@
                 </div>
                 }
               </div>
+              }
 
-              <!-- Time Clubbing Option -->
+
+              <!-- Aggregation Method -->
+              <div class="form-group">
+                <label for="method" class="form-label">Aggregation Method</label>
+                <p-dropdown id="method" [options]="singleEntityAggregationMethods" formControlName="method"
+                  optionLabel="label" optionValue="value" appendTo="body" (onChange)="aggregationMethodChange($event)"
+                  styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+
+              <!-- Field Names Selection -->
+              @if (entityProperties.length > 0) {
+              <div class="form-group">
+                <!-- {{selectedFieldNames | json}} -->
+                <label class="form-label">Select Properties</label>
+                <p-multiSelect [options]="allFieldNames" formControlName="fieldNames" optionLabel="name" [filter]="true"
+                  [maxSelectedLabels]="5" placeholder="Select Properties" appendTo="body" display="chip"
+                  [showToggleAll]="true" [showHeader]="true" (onChange)="onFieldNamesChange($event)"
+                  styleClass="form-multiselect">
+                </p-multiSelect>
+
+                <!-- Display selected field names -->
+                @if (selectedFieldNames.length > 0) {
+                <div class="selected-fields-info">
+                  <small>Selected: {{ selectedFieldNames.length }} properties</small>
+                </div>
+                }
+              </div>
+
+              <!-- Field Rules for Count Method -->
+              @if (widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count && selectedFieldNames.length
+              >
+              0) {
+              <div class="field-rules-container">
+
+                @for (field of selectedFieldNames; track $index) {
+                <div class="field-rule-item">
+                  <div class="field-rule-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [value]="field.rule"
+                        class="form-checkbox">
+                      <span class="checkbox-text">{{ field.name }}</span>
+                    </div>
+                  </div>
+
+                  @if (field.rule) {
+                  <div class="field-rule-controls">
+
+                    <div class="rule-control">
+                      <label class="form-label">Operator</label>
+                      <select class="form-control" [value]="field.rule.operator"
+                        (change)="onFieldRuleOperatorChange($index, $event)">
+                        @for (condition of getOpertorsByType(field.type); track condition) {
+                        <option [value]="condition">{{ condition }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="rule-control">
+                      <label class="form-label">Value</label>
+
+                      @if (field.type === EventPropertyType.String) {
+                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
+                        (input)="onFieldRuleValueChange($index, $event)">
+                      }
+
+                      @if (field.type === EventPropertyType.Boolean) {
+                      <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                      }
+
+                      @if (field.type === EventPropertyType.Integer || field.type === EventPropertyType.Float) {
+                      <input type="number" class="form-control" [placeholder]="'Enter value for ' + field.name"
+                        (input)="onFieldRuleValueChange($index, $event)">
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+              }
+
+              <!-- Fields Aggregation Type -->
+              @if (selectedFieldNames.length > 0) {
+              <div class="form-group">
+                <label for="fieldsAggregationType" class="form-label">Selected Properties Aggregation Method</label>
+                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
+                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+              }
+              }
+
+              <!-- Distinct Option -->
               <div class="form-group">
                 <div class="checkbox-label">
-                  <input type="checkbox" id="clubbingTime" formControlName="clubbingTime" class="form-checkbox">
-                  <span class="checkbox-text">Enable time clubbing</span>
+                  <input type="checkbox" id="isDistinct" formControlName="isDistinct" class="form-checkbox">
+                  <span class="checkbox-text">Get only distinct (unique) aggregation for selected properties</span>
                 </div>
+              </div>
+              }
+
+              <!-- Multiple Entities Configuration -->
+              @if(widgetForm.controls.entityConfigType.value === 'multiple'){
+
+
+              <!-- Multiple Entities Selection -->
+              <div class="form-group">
+                <label for="entities" class="form-label required">Select Entities</label>
+                <p-multiSelect id="entities" [options]="selectedEntities" formControlName="entities" optionLabel="label"
+                  [maxSelectedLabels]="5" optionValue="value" placeholder="Select Multiple Entities" appendTo="body"
+                  display="chip" [showToggleAll]="true" [showHeader]="true" (onChange)="onEntitiesChange($event)"
+                  styleClass="form-multiselect">
+                </p-multiSelect>
+                <div *ngIf="widgetForm.controls.dataInputConfig.controls.entities.value?.length === 0"
+                  class="error-message">
+                  At least one entity must be selected
+                </div>
+              </div>
+
+              <!-- Common Properties Selection -->
+              <div class="form-group" *ngIf="commonFieldNames.length > 0">
+                <label class="form-label">Select Common Properties</label>
+                <p-multiSelect [options]="commonFieldNames" formControlName="fieldNames" optionLabel="name"
+                  [maxSelectedLabels]="5" [filter]="true" placeholder="Select Common Properties" appendTo="body"
+                  display="chip" [showToggleAll]="true" [showHeader]="true"
+                  (onChange)="onCommonPropertiesChange($event)" styleClass="form-multiselect">
+                </p-multiSelect>
+
+                <!-- Display selected common properties -->
+                <div class="selected-fields-info" *ngIf="selectedFieldNames.length > 0">
+                  <small>Selected: {{ selectedFieldNames.length }} common properties</small>
+                </div>
+              </div>
+
+              <!-- Fields Aggregation Type -->
+              <div class="form-group">
+                <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
+                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
+                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+              }
+            </div>
+
+            <!-- Advanced Configuration Section -->
+            @if (isAdvancedMode) {
+            <div class="advanced-config">
+              <h4>Advanced Configuration</h4>
+
+              <div class="group-by-configs">
+                <!-- Group By 1 Configuration -->
+                <div class="form-group group-by-section">
+                  <div class="group-by-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" id="enableGroupBy1" [checked]="enableGroupBy1"
+                        (change)="toggleGroupBy1($event)" class="form-checkbox">
+                      <span class="checkbox-text">Enable Group By 1</span>
+                    </div>
+                  </div>
+
+                  @if (enableGroupBy1) {
+                  <div class="group-by-container">
+                    <!-- Group By 1 Type Selection -->
+                    <div class="form-group">
+                      <label class="form-label">Group By 1 Type</label>
+                      <p-dropdown [options]="getAvailableGroupByTypes(1)" [(ngModel)]="groupBy1SelectionType"
+                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
+                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(1, $event)"
+                        styleClass="form-dropdown">
+                      </p-dropdown>
+                    </div>
+
+                    <!-- Field Selection for Group By 1 -->
+                    @if (groupBy1SelectionType === 'field') {
+                    <div class="form-group">
+                      <label class="form-label">Select Field for Group By 1</label>
+                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy1Option"
+                        [ngModelOptions]="{standalone: true}" optionLabel="columnName" placeholder="Select Property"
+                        appendTo="body" [showClear]="true" (onChange)="onGroupBy1Change($event)"
+                        styleClass="form-dropdown">
+
+                        <ng-template let-property pTemplate="item">
+                          <div class="property-item">
+                            <span class="property-name">{{ property.columnName }}</span>
+                            <span class="property-type">({{ property.type }})</span>
+                          </div>
+                        </ng-template>
+                      </p-dropdown>
+                    </div>
+                    }
+
+                    <!-- Time Grouping for Group By 1 -->
+                    @if (groupBy1SelectionType === 'time') {
+                    <div class="form-group">
+                      <label class="form-label">Time Grouping</label>
+                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping1"
+                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value" appendTo="body"
+                        (onChange)="updateTimeGrouping(1, $event)" styleClass="form-dropdown">
+                      </p-dropdown>
+                    </div>
+
+                    <!-- Time Clubbing Option -->
+                    <div class="form-group">
+                      <div class="checkbox-label">
+                        <input type="checkbox" id="clubbingTime" formControlName="clubbingTime" class="form-checkbox">
+                        <span class="checkbox-text">Enable time clubbing</span>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+
+                @if (shouldShowGroupBy2()) {
+                <div class="group-by-divider"></div>
+
+                <!-- Group By 2 Configuration -->
+                <div class="form-group group-by-section">
+                  <div class="group-by-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" id="enableGroupBy2" [checked]="enableGroupBy2"
+                        (change)="toggleGroupBy2($event)" class="form-checkbox">
+                      <span class="checkbox-text">Enable Group By 2</span>
+                    </div>
+                  </div>
+
+                  @if (enableGroupBy2) {
+                  <div class="group-by-container">
+                    <!-- Group By 2 Type Selection -->
+                    <div class="form-group">
+                      <label class="form-label">Group By 2 Type</label>
+                      <p-dropdown [options]="getAvailableGroupByTypes(2)" [(ngModel)]="groupBy2SelectionType"
+                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value"
+                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(2, $event)"
+                        styleClass="form-dropdown">
+                      </p-dropdown>
+                    </div>
+
+                    <!-- Field Selection for Group By 2 -->
+                    @if (groupBy2SelectionType === 'field') {
+                    <div class="form-group">
+                      <label class="form-label">Select Field for Group By 2</label>
+                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy2Option"
+                        [ngModelOptions]="{standalone: true}" optionLabel="columnName" placeholder="Select Property"
+                        appendTo="body" [showClear]="true" (onChange)="onGroupBy2Change($event)"
+                        styleClass="form-dropdown">
+                      </p-dropdown>
+                    </div>
+                    }
+
+                    <!-- Time Grouping for Group By 2 -->
+                    @if (groupBy2SelectionType === 'time') {
+                    <div class="form-group">
+                      <label class="form-label">Time Grouping</label>
+                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping2"
+                        [ngModelOptions]="{standalone: true}" optionLabel="label" optionValue="value" appendTo="body"
+                        (onChange)="updateTimeGrouping(2, $event)" styleClass="form-dropdown">
+                      </p-dropdown>
+                    </div>
+
+                    <!-- Time Clubbing Option -->
+                    <div class="form-group">
+                      <div class="checkbox-label">
+                        <input type="checkbox" id="clubbingTime" formControlName="clubbingTime" class="form-checkbox">
+                        <span class="checkbox-text">Enable time clubbing</span>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+                }
               </div>
             </div>
             }
           </div>
-          <div class="form-group">
-            <div class="checkbox-label">
-              <input type="checkbox" formControlName="allowRefresh" class="form-checkbox">
-              <span class="checkbox-text">Refresh Interval</span>
-              @if(allowRefresh == true){
-              <input class="i2v-input primary-default medium" type="number" formControlName="refreshInterval">
-              }
-            </div>
-          </div>
-
-
 
           <div class="step-actions">
             <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
@@ -738,7 +739,7 @@
       }
 
       <!-- Step 5: Widget-Specific Configuration -->
-      <p-accordionTab *ngIf="requiresWidgetSpecificConfig()"
+      <p-accordionTab
         [disabled]="!isStepComplete(widgetForm.controls.configurationApproach.value === 'propertiesFirst' ? 4 : 3)">
         <ng-template pTemplate="header">
           <div class="accordion-header-content">
@@ -752,10 +753,30 @@
           </div>
         </ng-template>
 
+        @if(allShowablePropertiesName.length > 0) {
+        <!-- {{allShowablePropertiesName | json}} -->
+        <p-multiSelect [options]="allShowablePropertiesName" formControlName="showablePropertiesSelection"
+          optionLabel="displayName" optionValue="name" [filter]="true" [maxSelectedLabels]="5"
+          placeholder="Select Showable Properties" appendTo="body" display="chip" [showHeader]="true"
+          (onChange)="onShowablePropertiesChange($event)" styleClass="form-multiselect">
+        </p-multiSelect>
+        }
+
         <div class="form-group">
           <div class="checkbox-label">
+            <input type="checkbox" formControlName="allowRefresh" class="form-checkbox">
+            <span class="checkbox-text">Allow Auto Refresh for widgets</span>
+            @if(allowRefresh == true){
+            <input class="i2v-input primary-default medium" type="number" formControlName="refreshInterval"> (in
+            seconds)
+            }
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="requiresWidgetSpecificConfig()">
+          <div class="checkbox-label">
             <input type="checkbox" formControlName="enableWidgetSpecificConfig" class="form-checkbox">
-            <span class="checkbox-text">Enable Widget Specific COnfig</span>
+            <span class="checkbox-text">Enable Widget Specific Config</span>
           </div>
         </div>
 
@@ -770,7 +791,7 @@
             <h3 class="config-title">KPI Configuration</h3>
 
             <div class="form-group">
-              <label for="kpiCountColumn" class="form-label required">Count Value Column</label>
+              <label for="kpiCountColumn" class="form-label">Count Value Column</label>
               <p-dropdown id="kpiCountColumn" [options]="getAvailableColumnNames()"
                 formControlName="CountValueColumnName" placeholder="Select Column" appendTo="body" [showClear]="true"
                 styleClass="form-dropdown">
@@ -779,7 +800,7 @@
             </div>
 
             <div class="form-group">
-              <label for="kpiDisplayColumn" class="form-label required">Display Value Column</label>
+              <label for="kpiDisplayColumn" class="form-label">Display Value Column</label>
               <p-dropdown id="kpiDisplayColumn" [options]="getAvailableColumnNames()"
                 formControlName="DisplayValueColumnName" placeholder="Select Column" appendTo="body" [showClear]="true"
                 styleClass="form-dropdown">
@@ -796,20 +817,19 @@
             </div>
 
             <div class="form-group">
-              <label for="kpiSeriesAggregation" class="form-label">Series Aggregation</label>
-              <p-dropdown id="kpiSeriesAggregation" [options]="seriesAggregationOptions"
-                formControlName="seriesAggregation" optionLabel="label" optionValue="value" appendTo="body"
-                styleClass="form-dropdown">
-              </p-dropdown>
-              <small class="form-help">How to aggregate multiple data series</small>
-            </div>
-
-            <div class="form-group">
               <div class="checkbox-label">
                 <input type="checkbox" id="showChart" formControlName="showChart" class="form-checkbox">
                 <span class="checkbox-text">Show Chart</span>
               </div>
               <small class="form-help">Display a small chart alongside the KPI value</small>
+            </div>
+
+            <div class="form-group">
+              <div class="checkbox-label">
+                <input type="checkbox" id="showChart" formControlName="hideLabel" class="form-checkbox">
+                <span class="checkbox-text">Hide label of value</span>
+              </div>
+              <small class="form-help">Hide the small label present alongside the KPI value</small>
             </div>
           </div>
 

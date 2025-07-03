@@ -8,19 +8,18 @@ export class ClientChartModel {
 export class ChartSeries {
   name: string;
   data: any[];
-  // value: number;
-  // yAxis: string;
+  displayName : string;
   color?: string;
 
   constructor(params: {
     name?: string;
+    displayName : string;
     data?: any[];
-    // yAxis?: string;
-    // value?: number;
     color?: string;
   }) {
     this.name = params.name;
     this.data = params.data;
+    this.displayName = params.displayName ?? params.name
     // if (params.value) {
     //   this.value = params.value;
     // }

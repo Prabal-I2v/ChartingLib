@@ -1,14 +1,6 @@
-import { Enum_Method_Aggregation, Enum_WidgetType } from "../enums/enums";
+import { Enum_WidgetType } from "../enums/enums";
 import { TwoDimensionWidgetConstructorProps, TwoDimensionWidget } from "../Widget";
-
-
-export interface KPIConf {
-  CountValueColumnName?: string,
-  DisplayValueColumnName?: string,
-  ImageColumnName?: string,
-  showChart?: boolean
-  hideLabel?: boolean
-}
+import { KPIConf } from "./KpiWidget1DModel";
 
 export class KPI2DWidgetConstructorProps extends TwoDimensionWidgetConstructorProps{
   kpiConf? : KPIConf

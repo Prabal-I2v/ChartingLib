@@ -11,7 +11,7 @@ import { Enum_TimePeriod } from "../Models/enums/enums";
   styleUrl: "./i2v-stackedcolumn-chart.component.scss",
 })
 export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
-  
+
   chartData: ClientChartModel;
 
   constructor(
@@ -58,5 +58,9 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
     }
     this.chartData = chartData;
     this.chartData.series = this.filterShowableSeries(this.chartData)
+     if(this.chartData.series.length == 0)
+    {
+      this.dataExistsForShowableProperties = false;
+    }
   }
 }

@@ -1,27 +1,46 @@
 <div
-  [ngStyle]="{ background:widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
-  class="widget-wrapper">
+  [ngStyle]="{
+    background: widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden
+      ? 'rgba(0, 0, 0, 0.1)'
+      : '#fff'
+  }"
+  class="widget-wrapper"
+>
   <div class="widget-content">
     <div class="header-section">
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+          <div
+            class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+            libSvgElement
+            [appSvg]="'assets/Outline/table.svg'"
+            [size]="'48'"
+            [fill-color]="'white'"
+          ></div>
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
-      }
-      @if (isModel) {
-      <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" [widgetModel]="widgetRequestModel"
-        [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
+      } @if (isModel) {
+      <i2v-chart-header
+        class="chart-header"
+        [(showFilterValues)]="showFilterValues"
+        (widgetResizeEmittor)="widgetResizeCallback($event)"
+        [widgetModel]="widgetRequestModel"
+        [customFilters]="customFilters"
+        [isEditModeOn]="isEditModeOn"
+        (daysFilterOutput)="onTimeChange($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
-        (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
-        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
+        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
+        (editWidgetOutput)="onEditWidgetOutput()"
+        (timePeriodOutput)="onTimeDurationChanged($event)"
+        [applyToAllEnabled]="applyToAllEnabled"
+        [showEntity]="showEntity"
+        [showTimeFilter]="showTimeFilter"
+        [showRefreshInterval]="showRefreshInterval"
+      >
       </i2v-chart-header>
       }
     </div>
@@ -29,50 +48,101 @@
     <div class="loading-container">
       <span class="loading-spinner"></span>
     </div>
-    }
-    @if (isModel && !isLoading && !dataExists) {
+    } @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div
+          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement
+          [appSvg]="'assets/Outline/table.svg'"
+          [size]="'48'"
+          [fill-color]="'white'"
+        ></div>
         <span class="major-heading">No Data found</span>
       </div>
     </div>
-    }
-    @if (isModel && !isLoading && dataExists) {
+    } @if (isModel && !isLoading && dataExists &&
+    !dataExistsForShowableProperties) {
+    <div class="data-container">
+      <div class="noConfExist">
+        <div
+          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement
+          [appSvg]="'assets/Outline/table.svg'"
+          [size]="'48'"
+          [fill-color]="'white'"
+        ></div>
+        <span class="major-heading">No Data found for showable properties</span>
+      </div>
+    </div>
+    } @if (isModel && !isLoading && dataExists &&
+    dataExistsForShowableProperties) {
     <div class="top">
-      <div class="data-box">
+      @if(this.widgetRequestModel.kpiConf?.showAggregation) {
+      <div class="data-box center-box">
+        <div class="aggregated-data-box">
+          @if (svgIcon) {
+          <div class="icon-box">
+            <div
+              libSvgElement
+              [appSvg]="svgIcon"
+              [size]="'20'"
+              [fill-color]="'#5F6F94'"
+            ></div>
+          </div>
+          }
+
+          <div class="content-section">
+            <div class="number-grp">
+              <div class="minorheader" style="font-style: italic">
+                {{ this.aggregatedDataLabel | uppercase }}
+              </div>
+
+              <div class="digits">{{ aggregatedData }}</div>
+            </div>
+
+            <!-- <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
+              [fill-color]="ResSvgIconColor" [size]="'60'"></div> -->
+          </div>
+        </div>
+      </div>
+      }
+      <div class="data-box overflow-data-box">
         @if (svgIcon) {
         <div class="icon-box">
-          <div libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></div>
+          <div
+            libSvgElement
+            [appSvg]="svgIcon"
+            [size]="'20'"
+            [fill-color]="'#5F6F94'"
+          ></div>
         </div>
         }
 
         <div class="content-section">
-          @if(chartData.xAxisFields.length> 0)
-          {
-          @for (series of chartData.series; track seriesTrackBy) {
-          @for (xAxisField of chartData.xAxisFields; track xAxisTrackBy) {
+          @if(chartData.xAxisFields.length> 0) { @for (series of
+          chartData.series; track seriesTrackBy) { @for (xAxisField of
+          chartData.xAxisFields; track xAxisTrackBy) {
 
           <div class="number-grp">
-            <div class="minorheader" style="font-style: italic;">{{ xAxisField | uppercase }}</div>
+            <div class="minorheader" style="font-style: italic">
+              {{ xAxisField | uppercase }}
+            </div>
 
-            <div class="digits">{{ series.data[chartData.xAxisFields.indexOf(xAxisField)] }}</div>
+            <div class="digits">
+              {{ series.data[chartData.xAxisFields.indexOf(xAxisField)] }}
+            </div>
           </div>
-          }
-          }
-          }
-          @else{
-          @for (series of chartData.series; track seriesTrackBy) {
+          } } } @else{ @for (series of chartData.series; track seriesTrackBy) {
           <div class="number-grp">
             @if (!widgetRequestModel.kpiConf?.hideLabel) {
-            <div class="minorheader" style="font-style: italic;">{{ series.displayName | uppercase }}</div>
+            <div class="minorheader" style="font-style: italic">
+              {{ series.displayName | uppercase }}
+            </div>
             }
             <div class="digits">{{ series.data[0] }}</div>
           </div>
-          }
-
-          }
+          } }
 
           <!-- <div *ngIf="widgetRequestModel.findResultSvgIcon" libSvgElement [appSvg]="ResSvgIcon"
               [fill-color]="ResSvgIconColor" [size]="'60'"></div> -->
@@ -80,14 +150,19 @@
       </div>
 
       @if (showChart && chartData && chartData.series) {
-      <kendo-sparkline class="sparkline" [data]="chartData.series[0].data" [type]="'line'"
-        [tooltip]="{ visible: false }" [seriesDefaults]="{
+      <kendo-sparkline
+        class="sparkline"
+        [data]="chartData.series[0].data"
+        [type]="'line'"
+        [tooltip]="{ visible: false }"
+        [seriesDefaults]="{
               line: {
                 color: 'green',
                 width: 2,
                 style: 'smooth',
               },
-            }">
+            }"
+      >
       </kendo-sparkline>
       }
     </div>
@@ -124,7 +199,9 @@
   </div>
   @if (showFilterValues) {
   <div class="filter-details-section">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
+    <app-details-widget
+      [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters"
+    >
     </app-details-widget>
   </div>
   }

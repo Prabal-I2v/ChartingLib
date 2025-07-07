@@ -1,27 +1,46 @@
 <div
-  [ngStyle]="{ background:widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
-  class="widget-wrapper">
+  [ngStyle]="{
+    background: widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden
+      ? 'rgba(0, 0, 0, 0.1)'
+      : '#fff'
+  }"
+  class="widget-wrapper"
+>
   <div class="widget-content">
     <div class="header-section">
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+          <div
+            class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+            libSvgElement
+            [appSvg]="'assets/Outline/table.svg'"
+            [size]="'48'"
+            [fill-color]="'white'"
+          ></div>
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
-      }
-      @if (isModel) {
-      <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" [widgetModel]="widgetRequestModel"
-        [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
+      } @if (isModel) {
+      <i2v-chart-header
+        class="chart-header"
+        [(showFilterValues)]="showFilterValues"
+        (widgetResizeEmittor)="widgetResizeCallback($event)"
+        [widgetModel]="widgetRequestModel"
+        [customFilters]="customFilters"
+        [isEditModeOn]="isEditModeOn"
+        (daysFilterOutput)="onTimeChange($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
-        (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
-        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
+        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
+        (editWidgetOutput)="onEditWidgetOutput()"
+        (timePeriodOutput)="onTimeDurationChanged($event)"
+        [applyToAllEnabled]="applyToAllEnabled"
+        [showEntity]="showEntity"
+        [showTimeFilter]="showTimeFilter"
+        [showRefreshInterval]="showRefreshInterval"
+      >
       </i2v-chart-header>
       }
     </div>
@@ -29,24 +48,51 @@
     <div class="loading-container">
       <span class="loading-spinner"></span>
     </div>
-    }
-    @if (isModel && !isLoading && !dataExists) {
+    } @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div
+          class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"
+          libSvgElement
+          [appSvg]="'assets/Outline/table.svg'"
+          [size]="'48'"
+          [fill-color]="'white'"
+        ></div>
         <span class="major-heading">No Data found</span>
       </div>
     </div>
     }
-    @if (isModel && !isLoading && dataExists) {
-    <kendo-chart [chartArea]="{ background: 'transparent' }" class="chart-container"
-      [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
-      [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
-      [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'y' } } : false">
+ @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
+    <div class="data-container">
+      <div class="noConfExist">
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <span class="major-heading">No Data found for showable properties</span>
+      </div>
+    </div>
+    }
+    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
+    <kendo-chart
+      [chartArea]="{ background: 'transparent' }"
+      class="chart-container"
+      [ngStyle]="{ 'min-height': showFilterValues ? '400px' : '0px' }"
+      [pannable]="
+        widgetRequestModel.widgetInteractivityConfig.isPannable
+          ? { lock: 'y' }
+          : false
+      "
+      [zoomable]="
+        widgetRequestModel.widgetInteractivityConfig.isZoomable
+          ? { mousewheel: { lock: 'y' } }
+          : false
+      "
+    >
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item [max]="widgetRequestModel.widgetInteractivityConfig.max"
-          [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
+        <kendo-chart-category-axis-item
+          [max]="widgetRequestModel.widgetInteractivityConfig.max"
+          [categories]="chartData.xAxisFields"
+          [title]="{ text: chartData.xAxisLabel }"
+        >
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>
         </kendo-chart-category-axis-item>
@@ -55,17 +101,36 @@
         <kendo-chart-value-axis-item [title]="{ text: chartData.yAxisLabel }">
         </kendo-chart-value-axis-item>
       </kendo-chart-value-axis>
-      <kendo-chart-tooltip>
-        <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
+      <!-- <kendo-chart-tooltip>
+        <ng-template
+          kendoChartSeriesTooltipTemplate
+          let-value="value"
+          let-category="category"
+        >
           {{ value }}
         </ng-template>
-      </kendo-chart-tooltip>
-      <kendo-chart-legend class="hidden-legend" position="top" orientation="horizontal" [spacing]="140"
-        [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
+      </kendo-chart-tooltip> -->
+      <kendo-chart-legend
+        class="hidden-legend"
+        position="top"
+        orientation="horizontal"
+        [spacing]="140"
+        [padding]="{ left: 80, right: 80 }"
+      ></kendo-chart-legend>
       <kendo-chart-series>
         @for (data of chartData.series; track seriesTrackBy) {
-        <kendo-chart-series-item type="column" [gap]="2" [spacing]="0.25" [data]="data.data" [color]="data.color"
-          [name]="data.name">
+        <kendo-chart-series-item
+          type="column"
+          [gap]="2"
+          [spacing]="0.25"
+          [data]="data.data"
+          [color]="data.color"
+          [name]="data.name"
+        >
+          <kendo-chart-series-item-labels
+            [visible]="true"
+            [font]="'bold 12px Arial, sans-serif'"
+          />
         </kendo-chart-series-item>
         }
       </kendo-chart-series>
@@ -74,7 +139,9 @@
   </div>
   @if (showFilterValues && !isEditModeOn) {
   <div class="filter-details-section">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
+    <app-details-widget
+      [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters"
+    >
     </app-details-widget>
   </div>
   }

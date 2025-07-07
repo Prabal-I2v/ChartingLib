@@ -38,9 +38,9 @@ import {
 
 import { DonutConf, DonutChart1DWidget } from '../Models/widgetRequestModel/DonutChart1DModel';
 import { DonutChart2DWidget } from '../Models/widgetRequestModel/DonutChart2DModel';
-import { Kpi2DWidget, KPI2DWidgetConstructorProps, KPIConf } from '../Models/widgetRequestModel/KpiWidget2DModel';
+import { Kpi2DWidget, KPI2DWidgetConstructorProps } from '../Models/widgetRequestModel/KpiWidget2DModel';
 import { TableWidgetConstructorProps, TableConf, TableWidget } from '../Models/widgetRequestModel/TableWidgetRequestModel';
-import { Kpi1DWidget, KPI1DWidgetConstructorProps } from '../Models/widgetRequestModel/KpiWidget1DModel';
+import { Kpi1DWidget, KPI1DWidgetConstructorProps, KPIConf } from '../Models/widgetRequestModel/KpiWidget1DModel';
 
 // Interfaces
 import {
@@ -120,7 +120,10 @@ interface WidgetFormValue {
       DisplayValueColumnName: string;
       ImageColumnName: string;
       seriesAggregation: Enum_Method_Aggregation;
+      showAggregation: boolean;
+      dataAggregationMethod: Enum_Method_Aggregation
       showChart: boolean;
+      hideLabel: boolean
     };
     donutConf: {
       resultLabel: string;
@@ -178,15 +181,17 @@ interface WidgetFormControls {
 
   widgetSpecificConfig: FormGroup<{
     kpiConf: FormGroup<{
-      CountValueColumnName: FormControl<string>;
-      DisplayValueColumnName: FormControl<string>;
-      ImageColumnName: FormControl<string>;
+      countValueColumnName: FormControl<string>;
+      displayValueColumnName: FormControl<string>;
+      imageColumnName: FormControl<string>;
+      showAggregation : FormControl<boolean>;
+      dataAggregationMethod : FormControl<Enum_Method_Aggregation>;
       hideLabel: FormControl<boolean>;
       showChart: FormControl<boolean>;
     }>;
     donutConf: FormGroup<{
-      resultLabel: FormControl<string>;
-      seriesAggregation: FormControl<Enum_Method_Aggregation>;
+      centerLabel: FormControl<string>;
+      centerLabelAggregation: FormControl<Enum_Method_Aggregation>;
       showSeriesLabelValue: FormControl<boolean>;
     }>;
     tableConf: FormGroup<{
@@ -521,16 +526,18 @@ export class WidgetFormComponent implements OnInit {
 
       widgetSpecificConfig: this.fb.group({
         kpiConf: this.fb.group({
-          CountValueColumnName: this.fb.control('count', { nonNullable: true }),
-          DisplayValueColumnName: this.fb.control(''),
-          ImageColumnName: this.fb.control(''),
+          countValueColumnName: this.fb.control('count', { nonNullable: true }),
+          displayValueColumnName: this.fb.control(''),
+          imageColumnName: this.fb.control(''),
+          showAggregation  :this.fb.control(false),
+          dataAggregationMethod  :this.fb.control(Enum_Method_Aggregation.None),
           hideLabel: this.fb.control(false),
           showChart: this.fb.control(false)
         }),
 
         donutConf: this.fb.group({
-          resultLabel: this.fb.control('Result', { nonNullable: true }),
-          seriesAggregation: this.fb.control(Enum_Method_Aggregation.None),
+          centerLabel: this.fb.control('Result', { nonNullable: true }),
+          centerLabelAggregation: this.fb.control(Enum_Method_Aggregation.None),
           showSeriesLabelValue: this.fb.control(true)
         }),
 
@@ -789,7 +796,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onFieldNamesChange(event: any): void {
-    var selectedFields = event.value as IWidgetFieldNameConfig[]
+    const selectedFields = event.value as IWidgetFieldNameConfig[]
     // Update form control
     this.widgetForm.patchValue({
       dataInputConfig: {
@@ -861,7 +868,7 @@ export class WidgetFormComponent implements OnInit {
       }
     });
 
-    var entityName = Enum_Entity_With_Labels[entityValue];
+    const entityName = Enum_Entity_With_Labels[entityValue];
     if (entityValue && this.entityPropertiesMap[entityName]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
         this.entityPropertiesMap[entityName],
@@ -888,7 +895,7 @@ export class WidgetFormComponent implements OnInit {
   onEntityChange(): void {
     const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
     const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
-    var entityName = Enum_Entity_With_Labels[entityValue];
+    const entityName = Enum_Entity_With_Labels[entityValue];
     if (entityValue && this.entityPropertiesMap[entityName]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
         this.entityPropertiesMap[entityName],
@@ -1257,7 +1264,7 @@ export class WidgetFormComponent implements OnInit {
 
   getAvailableColumnNames(): string[] {
     const fieldNames = this.selectedFieldNames;
-    let columns = ['count'];
+    const columns = ['count'];
 
     if (fieldNames?.length > 0) {
       fieldNames.forEach((field: IWidgetFieldNameConfig) => {
@@ -1314,7 +1321,7 @@ export class WidgetFormComponent implements OnInit {
     this.clearDataConfigArray();
 
     for (const entityValue of entityValues) {
-      var event_entity = EVENT_ENTITIES.find(entity => entity.value == entityValue)
+      const event_entity = EVENT_ENTITIES.find(entity => entity.value == entityValue)
       const entityFormGroup = this.fb.group({
         entity: this.fb.control<Enum_Entity>(entityValue, {
           validators: [Validators.required],
@@ -1416,7 +1423,7 @@ export class WidgetFormComponent implements OnInit {
     showablePropertiesArray.clear();
 
     selectedProps.forEach((prop) => {
-      var isEntityProp = this.entityProperties.find(entityProp => entityProp.name == prop);
+      const isEntityProp = this.entityProperties.find(entityProp => entityProp.name == prop);
 
       if (isEntityProp) {
         showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
@@ -1527,8 +1534,8 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           kpiConf: {
-            CountValueColumnName: 'count',
-            DisplayValueColumnName: 'displayValue',
+            countValueColumnName: 'count',
+            displayValueColumnName: 'displayValue',
             hideLabel: false,
             showChart: false
           }
@@ -1538,8 +1545,8 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           donutConf: {
-            resultLabel: 'Result',
-            seriesAggregation: Enum_Method_Aggregation.None,
+            centerLabel: 'Result',
+            centerLabelAggregation: Enum_Method_Aggregation.None,
             showSeriesLabelValue: true
           }
         }
@@ -1588,7 +1595,7 @@ export class WidgetFormComponent implements OnInit {
     const operators = this.getOpertorsByType(type);
     const processedOptions = this.setDefaultValuesByType(options, type);
 
-    let object: any = {
+    const object: any = {
       name: name,
       type: EventPropertyType[type],
       operators: operators
@@ -1630,7 +1637,7 @@ export class WidgetFormComponent implements OnInit {
       return false;
     }
 
-    let entityValidation = this.validateForm();
+    const entityValidation = this.validateForm();
 
     // if (this.requiresWidgetSpecificConfig()) {
     //   entityValidation = entityValidation && this.validateWidgetSpecificConfig();
@@ -1640,7 +1647,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   validateForm(): boolean {
-    var warnings = this.getValidationWarnings();
+    const warnings = this.getValidationWarnings();
     if (warnings.length > 0) {
       return false;
     }
@@ -1839,7 +1846,7 @@ export class WidgetFormComponent implements OnInit {
     });
 
     if (addFieldsAggregationType) {
-      var fieldAggregation = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value as Enum_Method_Aggregation;
+      const fieldAggregation = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value as Enum_Method_Aggregation;
       showableProperties.push({
         name: fieldAggregation.toString(),
         displayName: fieldAggregation.toString(),
@@ -1978,8 +1985,8 @@ export class WidgetFormComponent implements OnInit {
     // Handle widget-specific configurations
     if (widgetType === Enum_WidgetType.Donut1D) {
       const donutConf: DonutConf = {
-        resultLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value,
-        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.seriesAggregation.value,
+        centerLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabel.value,
+        centerLabelAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabelAggregation.value,
         showSeriesLabelValue: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value,
       };
 
@@ -1993,8 +2000,8 @@ export class WidgetFormComponent implements OnInit {
 
     if (widgetType === Enum_WidgetType.Donut2D) {
       const donutConf: DonutConf = {
-        resultLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value,
-        seriesAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.seriesAggregation.value,
+        centerLabel: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabel.value,
+        centerLabelAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabelAggregation.value,
         showSeriesLabelValue: this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value,
       };
 
@@ -2007,11 +2014,13 @@ export class WidgetFormComponent implements OnInit {
 
     if (widgetType === Enum_WidgetType.KPI1D) {
       const kpiConf: KPIConf = {
-        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
-        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
-        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
-        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
+        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
+        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
+        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
+        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
+        showAggregation : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
+        dataAggregationMethod : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
       };
 
       return {
@@ -2023,11 +2032,13 @@ export class WidgetFormComponent implements OnInit {
 
     if (widgetType === Enum_WidgetType.KPI2D) {
       const kpiConf: KPIConf = {
-        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value,
-        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value,
-        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.ImageColumnName.value,
+        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
+        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
+        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
+        showAggregation : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
+        dataAggregationMethod : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
         hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
-        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
+        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
       };
 
       return {
@@ -2137,12 +2148,12 @@ export class WidgetFormComponent implements OnInit {
     const widgetType = this.widgetForm.controls.widgetType.value;
 
     if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
-      const countColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName.value;
-      const displayColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName.value;
+      const countColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value;
+      const displayColumn = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value;
       const showChart = this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value;
       return `Count Column: ${countColumn}, Display Column: ${displayColumn}, Show Chart: ${showChart ? 'Yes' : 'No'}`;
     } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
-      const resultLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel.value;
+      const resultLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabel.value;
       const showSeriesLabel = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.showSeriesLabelValue.value;
       return `Result Label: ${resultLabel}, Show Series Label: ${showSeriesLabel ? 'Yes' : 'No'}`;
     } else if (widgetType === Enum_WidgetType.Table) {
@@ -2263,12 +2274,12 @@ export class WidgetFormComponent implements OnInit {
 
     if (isEnabled && this.requiresWidgetSpecificConfig()) {
       if (widgetType === Enum_WidgetType.KPI1D || widgetType === Enum_WidgetType.KPI2D) {
-        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName
+        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName
           .setValidators([Validators.required]);
-        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName
+        this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName
           .setValidators([Validators.required]);
       } else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
-        this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel
+        this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabel
           .setValidators([Validators.required]);
       } else if (widgetType === Enum_WidgetType.Table) {
         this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit
@@ -2276,11 +2287,11 @@ export class WidgetFormComponent implements OnInit {
       }
     } else {
       // Clear validators when not enabled
-      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.CountValueColumnName
+      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName
         .clearValidators();
-      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.DisplayValueColumnName
+      this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName
         .clearValidators();
-      this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.resultLabel
+      this.widgetForm.controls.widgetSpecificConfig.controls.donutConf.controls.centerLabel
         .clearValidators();
       this.widgetForm.controls.widgetSpecificConfig.controls.tableConf.controls.pageLimit
         .clearValidators();
@@ -2322,7 +2333,7 @@ export class WidgetFormComponent implements OnInit {
     this.onEntityChange();
 
     if (this.entityProperties?.length > 0) {
-      var fieldName: IWidgetFieldNameConfig = {
+      const fieldName: IWidgetFieldNameConfig = {
         name: this.entityProperties[0].name,
         type: this.entityProperties[0].type,
         rule: null
@@ -2527,7 +2538,7 @@ export class WidgetFormComponent implements OnInit {
       showablePropertiesSelection: widget.showableProperties.map(prop => prop.name),
     });
 
-    var showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    const showablePropertiesArray = this.widgetForm.controls.showableProperties;
     showablePropertiesArray.clear();
     widget.showableProperties.forEach(prop =>
       showablePropertiesArray.push(this.createShowablePropertyFormGroup(prop))
@@ -2745,9 +2756,9 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           kpiConf: {
-            CountValueColumnName: kpiConf.CountValueColumnName,
-            DisplayValueColumnName: kpiConf.DisplayValueColumnName,
-            ImageColumnName: kpiConf.ImageColumnName || '',
+            countValueColumnName: kpiConf.CountValueColumnName,
+            displayValueColumnName: kpiConf.DisplayValueColumnName,
+            imageColumnName: kpiConf.ImageColumnName || '',
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
           }
@@ -2763,8 +2774,8 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           donutConf: {
-            resultLabel: donutConf.resultLabel || 'Result',
-            seriesAggregation: donutConf.seriesAggregation || Enum_Method_Aggregation.None,
+            centerLabel: donutConf.centerLabel || 'Result',
+            centerLabelAggregation: donutConf.centerLabelAggregation || Enum_Method_Aggregation.None,
             showSeriesLabelValue: donutConf.showSeriesLabelValue !== false
           }
         }
@@ -2892,8 +2903,6 @@ export class WidgetFormComponent implements OnInit {
           errors.push('Widget heading must be 100 characters or less');
         }
         break;
-
-      case 3:
       case 3:
         errors.push(...this.validateStep3());
 
@@ -2978,13 +2987,17 @@ export class WidgetFormComponent implements OnInit {
     //     errors.push('Display Value Column is required for KPI widgets');
     //   }
     // }
-    // else if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
-    //   const donutConfig = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf;
+    if (widgetType === Enum_WidgetType.Donut1D || widgetType === Enum_WidgetType.Donut2D) {
+      const donutConfig = this.widgetForm.controls.widgetSpecificConfig.controls.donutConf;
 
-    //   if (!donutConfig.controls.resultLabel.value?.trim()) {
-    //     errors.push('Result Label is required for Donut charts');
-    //   }
-    // }
+      if (!donutConfig.controls.centerLabel.value?.trim()) {
+        errors.push('Center Label is required for Donut charts');
+      }
+      if(donutConfig.controls.centerLabelAggregation.value != Enum_Method_Aggregation.None)
+      {
+        errors.push('Center label series aggregation is required for Donut charts');
+      }
+    }
     // else if (widgetType === Enum_WidgetType.Table) {
     //   const tableConfig = this.widgetForm.controls.widgetSpecificConfig.controls.tableConf;
 

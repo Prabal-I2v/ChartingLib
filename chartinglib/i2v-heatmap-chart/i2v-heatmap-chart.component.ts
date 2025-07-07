@@ -55,6 +55,7 @@ export class I2vHeatmapChartComponent extends I2vChartsComponent {
     });
 
     this.chartData = chartData;
-    
+
+
   }
 }

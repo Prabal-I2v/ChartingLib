@@ -1,16 +1,13 @@
 import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
-import {
-  LegendItemVisualArgs,
-  SeriesLabelsContentArgs,
-} from "@progress/kendo-angular-charts";
+import { SeriesLabelsContentArgs } from "@progress/kendo-angular-charts";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartingDataService } from "../charting-data.service";
-import { Enum_Method_Aggregation } from "../Models/enums/enums";
-import { DonutChart2DWidget } from "../Models/widgetRequestModel/DonutChart2DModel";
-import { DonutChart1DWidget } from "../Models/widgetRequestModel/DonutChart1DModel";
 import { Enum_Month } from "../Models/vehicle-icon-mapping";
+import { DonutChart1DWidget } from "../Models/widgetRequestModel/DonutChart1DModel";
+import { DonutChart2DWidget } from "../Models/widgetRequestModel/DonutChart2DModel";
+import { Enum_Method_Aggregation } from "../Models/enums/enums";
 
 @Component({
   selector: "i2v-donut-chart",
@@ -18,12 +15,13 @@ import { Enum_Month } from "../Models/vehicle-icon-mapping";
   styleUrl: "./i2v-donut-chart.component.scss",
 })
 export class I2vDonutChartComponent extends I2vChartsComponent {
-  @Input() override widgetRequestModel: DonutChart1DWidget | DonutChart2DWidget = null;
-  resultHeading: string;
-  resultLabel: string;
-  resultData: string;
-  totalData: number = 0;
-  seriesDataIndexArray: boolean[] = [];
+  @Input() override widgetRequestModel:
+    | DonutChart1DWidget
+    | DonutChart2DWidget = null;
+  centerLabelHeading: string;
+  centerLabel: string;
+  centerLabelData: number;
+  seriesDataEnabledIndexArray: boolean[] = [];
   public labelContent(e: SeriesLabelsContentArgs): string {
     return e.category;
   }
@@ -44,12 +42,16 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
 
   transformChartData(data: ChartsOutputModel) {
     this.dataExists = false;
-    this.resultLabel = this.widgetRequestModel.donutConf.resultLabel;
+    this.centerLabel = this.widgetRequestModel.donutConf.centerLabel;
     const chartData = new ClientChartModel();
-    this.seriesDataIndexArray = []
+    this.seriesDataEnabledIndexArray = [];
     chartData.series = data.seriesData.map((x) => {
-      this.seriesDataIndexArray.push(true);
-      return new ChartSeries({ data: x.data, displayName: x.displayName, name: x.name });
+      this.seriesDataEnabledIndexArray.push(true);
+      return new ChartSeries({
+        data: x.data,
+        displayName: x.displayName,
+        name: x.name,
+      });
     });
 
     let isMonthData = false;
@@ -65,8 +67,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
       } else {
         chartData.xAxisFields = data.labels.xAxisFields;
       }
-    }
-    else {
+    } else {
       chartData.xAxisFields = [];
     }
 
@@ -79,51 +80,125 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     }
 
     this.chartData = chartData;
-    this.chartData.series = this.filterShowableSeries(this.chartData)
+    this.chartData.series = this.filterShowableSeries(this.chartData);
+     if(this.chartData.series.length == 0)
+    {
+      this.dataExistsForShowableProperties = false;
+    }
+    this.setLabelData();
+  }
+
+  setLabelData() {
+    if (!this.widgetRequestModel.donutConf) return;
+
+    this.centerLabelData = 0;
+
+    const donutConf = this.widgetRequestModel.donutConf;
+    const hasCenterLabel =
+      donutConf.centerLabel !== null && donutConf.centerLabel.trim() !== "";
+
+    if (hasCenterLabel) {
+      this.centerLabelHeading = donutConf.centerLabel;
+
+      if (this.chartData.xAxisFields.length > 0) {
+        if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Total
+        ) {
+          this.calculateTotalValue();
+        } else if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Least
+        ) {
+          this.calculateLeastValue();
+        } else if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Greatest
+        ) {
+          this.calculateGreatestValue();
+        }
+      } else {
+        if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Greatest
+        ) {
+          this.calculateGreatestValue(false);
+        } else if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Least
+        ) {
+          this.calculateLeastValue(false);
+        } else if (
+          donutConf.centerLabelAggregation === Enum_Method_Aggregation.Total
+        ) {
+          this.calculateTotalValue(false);
+        }
+      }
+    }
+  }
+
+  private calculateTotalValue(useXAxisFieldValue: boolean = true) {
+    this.centerLabelData = 0;
+    this.seriesDataEnabledIndexArray.forEach((isEnabled, index) => {
+      if (isEnabled) {
+        if (useXAxisFieldValue) {
+          this.chartData.xAxisFields.forEach((xAxisField) => {
+            const value = Number(
+              this.chartData.series[index].data[
+                this.chartData.xAxisFields.indexOf(xAxisField)
+              ]
+            );
+            this.centerLabelData += value;
+          });
+        } else {
+          const value = Number(this.chartData.series[index].data[0]);
+          this.centerLabelData += value;
+        }
+      }
+    });
+  }
+
+  private calculateLeastValue(useXAxisFieldValue: boolean = true) {
+    let least = Infinity;
+    this.seriesDataEnabledIndexArray.forEach((isEnabled, index) => {
+      if (isEnabled) {
+        if (useXAxisFieldValue) {
+          this.chartData.xAxisFields.forEach((xAxisField) => {
+            const value = Number(
+              this.chartData.series[index].data[
+                this.chartData.xAxisFields.indexOf(xAxisField)
+              ]
+            );
+            if (value < least) least = value;
+          });
+        } else {
+          const value = Number(this.chartData.series[index].data[0]);
+          if (value < least) least = value;
+        }
+      }
+    });
+    this.centerLabelData = least === Infinity ? 0 : least;
+  }
+
+  private calculateGreatestValue(useXAxisFieldValue: boolean = true) {
+    let greatest = -Infinity;
+    this.seriesDataEnabledIndexArray.forEach((isEnabled, index) => {
+      if (isEnabled) {
+        if (useXAxisFieldValue) {
+          this.chartData.xAxisFields.forEach((xAxisField) => {
+            const value = Number(
+              this.chartData.series[index].data[
+                this.chartData.xAxisFields.indexOf(xAxisField)
+              ]);
+            if (value > greatest) greatest = value;
+          });
+        } else {
+          const value = Number(this.chartData.series[index].data[0]);
+          if (value > greatest) greatest = value;
+        }
+      }
+    });
+    this.centerLabelData = greatest === -Infinity ? 0 : greatest;
   }
 
   onLegendItemClick(event) {
     const index = this.chartData.series.findIndex((x) => {
       return x.name == event.text;
     });
-
-    if (index != -1) {
-
-      var chartData = JSON.parse(JSON.stringify(this.chartData));
-      this.seriesDataIndexArray[index] = !this.seriesDataIndexArray[index]
-      this.seriesDataIndexArray.forEach((x, index) => {
-        if (!x) delete chartData.series[index];
-      })
-
-      var conf = this.widgetRequestModel.donutConf;
-
-      if (conf.seriesAggregation == Enum_Method_Aggregation.Greatest) {
-        var maxValue = -Infinity;
-        chartData.series.forEach((seriesData) => {
-          var res = maxValue <= seriesData.value
-          maxValue = res ? seriesData.value : maxValue;
-          if (conf.showSeriesLabelValue && res)
-            this.resultHeading = seriesData.name;
-        })
-        this.resultData = maxValue.toString();
-      }
-      else if (conf.seriesAggregation == Enum_Method_Aggregation.Least) {
-        var minValue = Infinity;
-        chartData.series.forEach((seriesData) => {
-          var res = minValue >= seriesData.value
-          minValue = res ? seriesData.value : minValue;
-          if (conf.showSeriesLabelValue && res)
-            this.resultHeading = seriesData.name;
-        })
-        this.resultData = minValue.toString();
-
-      }
-      else {
-        var value = 0;
-        chartData.series.forEach((seriesData) => {
-          value += seriesData.value;
-        })
-      }
-    }
   }
 }

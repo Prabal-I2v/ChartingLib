@@ -59,5 +59,9 @@ export class I2vLineChartComponent extends I2vChartsComponent {
     }
     this.chartData = chartData;
     this.chartData.series = this.filterShowableSeries(this.chartData)
+     if(this.chartData.series.length == 0)
+    {
+      this.dataExistsForShowableProperties = false;
+    }
   }
 }

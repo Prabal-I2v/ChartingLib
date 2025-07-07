@@ -10,9 +10,14 @@ import {
   Enum_Entity,
   widgetTypeDimensionMap,
   Enum_WidgetType,
-  WidgetDimension
+  WidgetDimension,
 } from "../Models/enums/enums";
-import { IOneDimensionDataInputConfig, IThreeDimensionDataInputConfig, ITwoDimensionDataInputConfig, IWidgetFieldNameConfig } from "../Models/interfaces/interfaces";
+import {
+  IOneDimensionDataInputConfig,
+  IThreeDimensionDataInputConfig,
+  ITwoDimensionDataInputConfig,
+  IWidgetFieldNameConfig,
+} from "../Models/interfaces/interfaces";
 
 // ===== TYPE DEFINITIONS =====
 export interface EntityOption {
@@ -43,93 +48,196 @@ export interface ValidationResult {
 
 // ===== OPERATOR CONFIGURATIONS =====
 export const RuleOperators: OperatorConfig = {
-  [EventPropertyType.Float]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
-  [EventPropertyType.Integer]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
+  [EventPropertyType.Float]: [
+    "Equal",
+    "NotEqual",
+    "GreaterThan",
+    "SmallerThan",
+  ],
+  [EventPropertyType.Integer]: [
+    "Equal",
+    "NotEqual",
+    "GreaterThan",
+    "SmallerThan",
+  ],
   [EventPropertyType.String]: ["Equal", "NotEqual", "Contains", "NotContains"],
   [EventPropertyType.Guid]: ["Equal", "NotEqual", "Contains", "NotContains"],
   [EventPropertyType.SingleSelect]: ["Equal", "NotEqual"],
   [EventPropertyType.Boolean]: ["Equal"],
   [EventPropertyType.Date]: ["Equal", "NotEqual", "GreaterThan", "SmallerThan"],
-  [EventPropertyType.MultiSelect]: ["Equal", "NotEqual"]
+  [EventPropertyType.MultiSelect]: ["Equal", "NotEqual"],
 };
 
 // ===== AGGREGATION METHOD OPTIONS =====
 export const singleEntityAggregationMethods: DropdownOption<Enum_Method>[] = [
-  { value: Enum_Method.Count, label: 'Count' },
-  { value: Enum_Method.Sum, label: 'Sum' },
-  { value: Enum_Method.Average, label: 'Average' },
+  { value: Enum_Method.Count, label: "Count" },
+  { value: Enum_Method.Sum, label: "Sum" },
+  { value: Enum_Method.Average, label: "Average" },
 ];
 
-export const multipleEntitiesAggregationMethods: DropdownOption<Enum_Method>[] = [
-  { value: Enum_Method.Count, label: 'Count' }
-];
+export const multipleEntitiesAggregationMethods: DropdownOption<Enum_Method>[] =
+  [{ value: Enum_Method.Count, label: "Count" }];
 
-export const fieldsAggregationMethods: DropdownOption<Enum_Method_Aggregation>[] = [
-  { value: Enum_Method_Aggregation.None, label: 'None' },
-  { value: Enum_Method_Aggregation.Total, label: 'Total' },
-  { value: Enum_Method_Aggregation.Least, label: 'Least' },
-  { value: Enum_Method_Aggregation.Greatest, label: 'Greatest' }
-];
+export const fieldsAggregationMethods: DropdownOption<Enum_Method_Aggregation>[] =
+  [
+    { value: Enum_Method_Aggregation.None, label: "None" },
+    { value: Enum_Method_Aggregation.Total, label: "Total" },
+    { value: Enum_Method_Aggregation.Least, label: "Least" },
+    { value: Enum_Method_Aggregation.Greatest, label: "Greatest" },
+  ];
 
-export const seriesAggregationOptions: DropdownOption<Enum_Method_Aggregation>[] = [
-  { value: Enum_Method_Aggregation.None, label: 'None' },
-  { value: Enum_Method_Aggregation.Total, label: 'Total' },
-  { value: Enum_Method_Aggregation.Least, label: 'Least' },
-  { value: Enum_Method_Aggregation.Greatest, label: 'Greatest' }
-];
+export const seriesAggregationOptions: DropdownOption<Enum_Method_Aggregation>[] =
+  [
+    { value: Enum_Method_Aggregation.None, label: "None" },
+    { value: Enum_Method_Aggregation.Total, label: "Total" },
+    { value: Enum_Method_Aggregation.Least, label: "Least" },
+    { value: Enum_Method_Aggregation.Greatest, label: "Greatest" },
+  ];
 
 // ===== ENTITY TYPE OPTIONS =====
 export const entityTypes: DropdownOption<Enum_Schema>[] = [
-  { label: 'Events', value: Enum_Schema.Events },
-  { label: 'Resource', value: Enum_Schema.Public }
+  { label: "Events", value: Enum_Schema.Events },
+  { label: "Resource", value: Enum_Schema.Public },
 ];
 
 // ===== TIME GROUPING OPTIONS =====
 export const timeGroupingOptions: DropdownOption<Enum_TimePeriod>[] = [
-  { label: 'Hour', value: Enum_TimePeriod.hour },
-  { label: 'Day', value: Enum_TimePeriod.day },
-  { label: 'Week', value: Enum_TimePeriod.week },
-  { label: 'Month', value: Enum_TimePeriod.month },
-  { label: 'Year', value: Enum_TimePeriod.year }
+  { label: "Hour", value: Enum_TimePeriod.hour },
+  { label: "Day", value: Enum_TimePeriod.day },
+  { label: "Week", value: Enum_TimePeriod.week },
+  { label: "Month", value: Enum_TimePeriod.month },
+  { label: "Year", value: Enum_TimePeriod.year },
 ];
 
 // ===== GROUP BY TYPE OPTIONS =====
 export const groupByTypes: DropdownOption<string>[] = [
-  { label: 'Field', value: 'field' },
-  { label: 'Time', value: 'time' }
+  { label: "Field", value: "field" },
+  { label: "Time", value: "time" },
 ];
 
 // ===== ENTITY DEFINITIONS =====
 const EVENT_ENTITIES: EntityOption[] = [
-  { value: Enum_Entity.Highway_ATCC, label: 'Highway_ATCC', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Vehicle_Stopped, label: 'Vehicle_Stopped', schema: Enum_Schema.Events },
-  { value: Enum_Entity.ANPR, label: 'ANPR', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Wrong_Way_Detected, label: 'Wrong Way Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Human_Crossing_Road, label: 'Human Crossing Road', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Reverse_Traffic_Detected, label: 'Reverse Traffic Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Lane_Changed, label: 'Lane Changed', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Illegal_Vehicle, label: 'Illegal Vehicle', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Safe_Distance_Violated, label: 'Safe Distance Violated', schema: Enum_Schema.Events },
+  {
+    value: Enum_Entity.Highway_ATCC,
+    label: "Highway_ATCC",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Vehicle_Stopped,
+    label: "Vehicle_Stopped",
+    schema: Enum_Schema.Events,
+  },
+  { value: Enum_Entity.ANPR, label: "ANPR", schema: Enum_Schema.Events },
+  {
+    value: Enum_Entity.Wrong_Way_Detected,
+    label: "Wrong Way Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Human_Crossing_Road,
+    label: "Human Crossing Road",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Reverse_Traffic_Detected,
+    label: "Reverse Traffic Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Lane_Changed,
+    label: "Lane Changed",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Illegal_Vehicle,
+    label: "Illegal Vehicle",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Safe_Distance_Violated,
+    label: "Safe Distance Violated",
+    schema: Enum_Schema.Events,
+  },
   // { value: Enum_Entity.Safety_Gear_Violation, label: 'Safety Gear Violation', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Intrusion_Detected, label: 'Intrusion Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Human_Detected, label: 'Human Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Deacceleration_Detected, label: 'Deacceleration Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Vehicle_Accelerated, label: 'Vehicle Accelerated', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Vehicle_Occupancy, label: 'Vehicle Occupancy', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Fire_Detected, label: 'Fire Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Smoke_Detected, label: 'Smoke Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Abandoned_Object_Detected, label: 'Abandoned Object Detected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Face_Recognition, label: 'Face Recognition', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Server_Status, label: 'Server Status', schema: Enum_Schema.Events },
-  { value: Enum_Entity.Pipeline_State, label: 'Pipeline State', schema: Enum_Schema.Events },
-  { value: Enum_Entity.DEVICE_CONNECTED, label: 'Device Connected', schema: Enum_Schema.Events },
-  { value: Enum_Entity.DEVICE_DISCONNECTED, label: 'Device Disconnected', schema: Enum_Schema.Events }
+  {
+    value: Enum_Entity.Intrusion_Detected,
+    label: "Intrusion Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Human_Detected,
+    label: "Human Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Deacceleration_Detected,
+    label: "Deacceleration Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Vehicle_Accelerated,
+    label: "Vehicle Accelerated",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Vehicle_Occupancy,
+    label: "Vehicle Occupancy",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Fire_Detected,
+    label: "Fire Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Smoke_Detected,
+    label: "Smoke Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Abandoned_Object_Detected,
+    label: "Abandoned Object Detected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Face_Recognition,
+    label: "Face Recognition",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Server_Status,
+    label: "Server Status",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.Pipeline_State,
+    label: "Pipeline State",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.DEVICE_CONNECTED,
+    label: "Device Connected",
+    schema: Enum_Schema.Events,
+  },
+  {
+    value: Enum_Entity.DEVICE_DISCONNECTED,
+    label: "Device Disconnected",
+    schema: Enum_Schema.Events,
+  },
 ];
 
 const PUBLIC_ENTITIES: EntityOption[] = [
-  { value: Enum_Entity.VideoSources, label: 'Video Sources', schema: Enum_Schema.Public },
-  { value: Enum_Entity.Persons, label: 'Persons', schema: Enum_Schema.Public },
-  { value: Enum_Entity.FacePoint, label: 'Face Point', schema: Enum_Schema.Public }
+  {
+    value: Enum_Entity.VideoSources,
+    label: "Video Sources",
+    schema: Enum_Schema.Public,
+  },
+  { value: Enum_Entity.Persons, label: "Persons", schema: Enum_Schema.Public },
+  {
+    value: Enum_Entity.FacePoint,
+    label: "Face Point",
+    schema: Enum_Schema.Public,
+  },
 ];
 
 // ===== COMBINED ENTITIES =====
@@ -140,19 +248,18 @@ export { EVENT_ENTITIES, PUBLIC_ENTITIES };
 
 // ===== WIDGET FORM UTILITIES CLASS =====
 export class WidgetFormUtils {
-
   /**
    * Get entities filtered by schema type
    */
   static getEntitiesBySchema(schema: Enum_Schema): EntityOption[] {
-    return entities.filter(entity => entity.schema === schema);
+    return entities.filter((entity) => entity.schema === schema);
   }
 
   /**
    * Get entity by label
    */
   static getEntityByLabel(label: string): EntityOption | undefined {
-    return entities.find(entity => entity.label === label);
+    return entities.find((entity) => entity.label === label);
   }
 
   /**
@@ -172,9 +279,9 @@ export class WidgetFormUtils {
   ): string[] | null {
     // Handle string options
     if (typeof options === "string") {
-      return options.includes(",") ?
-        options.split(",").map(value => value.trim()) :
-        [options.trim()];
+      return options.includes(",")
+        ? options.split(",").map((value) => value.trim())
+        : [options.trim()];
     }
 
     // Handle boolean type
@@ -195,28 +302,36 @@ export class WidgetFormUtils {
    */
   static isValidAggregationMethod(
     method: Enum_Method,
-    entityConfigType: 'single' | 'multiple'
+    entityConfigType: "single" | "multiple"
   ): boolean {
-    if (entityConfigType === 'multiple') {
-      return multipleEntitiesAggregationMethods.some(m => m.value === method);
+    if (entityConfigType === "multiple") {
+      return multipleEntitiesAggregationMethods.some((m) => m.value === method);
     }
-    return singleEntityAggregationMethods.some(m => m.value === method);
+    return singleEntityAggregationMethods.some((m) => m.value === method);
   }
 
   /**
    * Get compatible properties for aggregation method
    */
-  static getCompatibleProperties(properties: any[], method: Enum_Method): any[] {
+  static getCompatibleProperties(
+    properties: any[],
+    method: Enum_Method
+  ): any[] {
     if (this.isNumericAggregationMethod(method)) {
-      return properties.filter(prop =>
-        (prop.type === EventPropertyType.Float || prop.type === EventPropertyType.Integer) &&
-        prop.filterable
+      return properties.filter(
+        (prop) =>
+          (prop.type === EventPropertyType.Float ||
+            prop.type === EventPropertyType.Integer) &&
+          prop.filterable
       );
     }
 
     // For Count or other methods, return string properties
-    return properties.filter(prop =>
-      prop.type === EventPropertyType.String && prop.filterable
+    return properties.filter(
+      (prop) =>
+        (prop.type === EventPropertyType.String ||
+          prop.type === EventPropertyType.Guid) &&
+        prop.filterable
     );
   }
 
@@ -224,25 +339,26 @@ export class WidgetFormUtils {
    * Check if aggregation method requires numeric properties
    */
   static isNumericAggregationMethod(method: Enum_Method): boolean {
-    return [
-      Enum_Method.Sum,
-      Enum_Method.Average,
-    ].includes(method);
+    return [Enum_Method.Sum, Enum_Method.Average].includes(method);
   }
 
   /**
    * Check if property is time-based
    */
   static isTimeProperty(property: any): boolean {
-    return property?.type === EventPropertyType.Date ||
-      property?.type === EventPropertyType.DateTime;
+    return (
+      property?.type === EventPropertyType.Date ||
+      property?.type === EventPropertyType.DateTime
+    );
   }
 
   /**
    * Check if property type is numeric
    */
   static isNumericProperty(type: EventPropertyType): boolean {
-    return type === EventPropertyType.Float || type === EventPropertyType.Integer;
+    return (
+      type === EventPropertyType.Float || type === EventPropertyType.Integer
+    );
   }
 
   /**
@@ -256,11 +372,14 @@ export class WidgetFormUtils {
    * Generate a simple UUID
    */
   static generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
   }
 
   /**
@@ -274,8 +393,9 @@ export class WidgetFormUtils {
    * Convert string to title case
    */
   static toTitleCase(str: string): string {
-    return str.replace(/\w\S*/g, (txt) =>
-      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    return str.replace(
+      /\w\S*/g,
+      (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
     );
   }
 
@@ -284,7 +404,14 @@ export class WidgetFormUtils {
    */
   static getCurrentDayStart(): number {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0
+    ).getTime();
   }
 
   /**
@@ -292,18 +419,27 @@ export class WidgetFormUtils {
    */
   static getCurrentDayEnd(): number {
     const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999
+    ).getTime();
   }
 
   /**
    * Deep clone an object
    */
   static deepClone<T>(obj: T): T {
-    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj === null || typeof obj !== "object") return obj;
     if (obj instanceof Date) return new Date(obj.getTime()) as any;
-    if (obj instanceof Array) return obj.map(item => this.deepClone(item)) as any;
+    if (obj instanceof Array)
+      return obj.map((item) => this.deepClone(item)) as any;
 
-    if (typeof obj === 'object') {
+    if (typeof obj === "object") {
       const clonedObj = {} as any;
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
@@ -342,7 +478,7 @@ export class WidgetFormUtils {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
   }
@@ -356,13 +492,13 @@ export class WidgetFormUtils {
     for (const rule of rules) {
       const result = rule.validator(value);
       if (!result.isValid) {
-        errors.push(result.message || 'Validation failed');
+        errors.push(result.message || "Validation failed");
       }
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -370,35 +506,35 @@ export class WidgetFormUtils {
    * Format bytes to human readable format
    */
   static formatBytes(bytes: number, decimals: number = 2): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
 
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   }
 
   /**
    * Get nested object property safely
    */
   static getNestedProperty(obj: any, path: string): any {
-    return path.split('.').reduce((current, prop) => current?.[prop], obj);
+    return path.split(".").reduce((current, prop) => current?.[prop], obj);
   }
 
   /**
    * Set nested object property safely
    */
   static setNestedProperty(obj: any, path: string, value: any): void {
-    const keys = path.split('.');
+    const keys = path.split(".");
     const lastKey = keys.pop();
 
     if (!lastKey) return;
 
     const target = keys.reduce((current, key) => {
-      if (!current[key] || typeof current[key] !== 'object') {
+      if (!current[key] || typeof current[key] !== "object") {
         current[key] = {};
       }
       return current[key];
@@ -411,11 +547,13 @@ export class WidgetFormUtils {
    * Check if value is empty (null, undefined, empty string, empty array)
    */
   static isEmpty(value: any): boolean {
-    return value === null ||
+    return (
+      value === null ||
       value === undefined ||
-      value === '' ||
+      value === "" ||
       (Array.isArray(value) && value.length === 0) ||
-      (typeof value === 'object' && Object.keys(value).length === 0);
+      (typeof value === "object" && Object.keys(value).length === 0)
+    );
   }
 
   /**
@@ -426,7 +564,7 @@ export class WidgetFormUtils {
 
     for (const key in obj) {
       if (obj.hasOwnProperty(key) && !this.isEmpty(obj[key])) {
-        if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+        if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
           const nestedCleaned = this.removeEmptyValues(obj[key]);
           if (!this.isEmpty(nestedCleaned)) {
             cleaned[key] = nestedCleaned;
@@ -444,7 +582,7 @@ export class WidgetFormUtils {
    * Create a safe property accessor function
    */
   static createPropertyAccessor(path: string): (obj: any) => any {
-    const keys = path.split('.');
+    const keys = path.split(".");
     return (obj: any) => {
       let current = obj;
       for (const key of keys) {
@@ -463,7 +601,7 @@ export class WidgetFormUtils {
     if (obj1 == null || obj2 == null) return false;
     if (typeof obj1 !== typeof obj2) return false;
 
-    if (typeof obj1 === 'object') {
+    if (typeof obj1 === "object") {
       const keys1 = Object.keys(obj1);
       const keys2 = Object.keys(obj2);
 
@@ -484,7 +622,11 @@ export class WidgetFormUtils {
   /**
    * Sort array of objects by property
    */
-  static sortByProperty<T>(array: T[], property: keyof T, ascending: boolean = true): T[] {
+  static sortByProperty<T>(
+    array: T[],
+    property: keyof T,
+    ascending: boolean = true
+  ): T[] {
     return [...array].sort((a, b) => {
       const aVal = a[property];
       const bVal = b[property];
@@ -498,7 +640,10 @@ export class WidgetFormUtils {
   /**
    * Group array of objects by property
    */
-  static groupByProperty<T>(array: T[], property: keyof T): { [key: string]: T[] } {
+  static groupByProperty<T>(
+    array: T[],
+    property: keyof T
+  ): { [key: string]: T[] } {
     return array.reduce((groups, item) => {
       const key = String(item[property]);
       if (!groups[key]) {
@@ -516,7 +661,7 @@ export class WidgetFormUtils {
     array: T[],
     criteria: { [key in keyof T]?: any }
   ): T[] {
-    return array.filter(item => {
+    return array.filter((item) => {
       return Object.entries(criteria).every(([key, value]) => {
         if (value == null) return true;
         return item[key as keyof T] === value;
@@ -527,13 +672,12 @@ export class WidgetFormUtils {
 
 // ===== VALIDATION RULES CLASS =====
 export class ValidationRules {
-
-  static required(message: string = 'This field is required'): ValidationRule {
+  static required(message: string = "This field is required"): ValidationRule {
     return {
       validator: (value: any) => ({
         isValid: !WidgetFormUtils.isEmpty(value),
-        message
-      })
+        message,
+      }),
     };
   }
 
@@ -541,8 +685,8 @@ export class ValidationRules {
     return {
       validator: (value: string) => ({
         isValid: !value || value.length >= min,
-        message: message || `Minimum length is ${min} characters`
-      })
+        message: message || `Minimum length is ${min} characters`,
+      }),
     };
   }
 
@@ -550,31 +694,34 @@ export class ValidationRules {
     return {
       validator: (value: string) => ({
         isValid: !value || value.length <= max,
-        message: message || `Maximum length is ${max} characters`
-      })
+        message: message || `Maximum length is ${max} characters`,
+      }),
     };
   }
 
-  static pattern(regex: RegExp, message: string = 'Invalid format'): ValidationRule {
+  static pattern(
+    regex: RegExp,
+    message: string = "Invalid format"
+  ): ValidationRule {
     return {
       validator: (value: string) => ({
         isValid: !value || regex.test(value),
-        message
-      })
+        message,
+      }),
     };
   }
 
-  static email(message: string = 'Invalid email format'): ValidationRule {
+  static email(message: string = "Invalid email format"): ValidationRule {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return this.pattern(emailRegex, message);
   }
 
-  static numeric(message: string = 'Must be a number'): ValidationRule {
+  static numeric(message: string = "Must be a number"): ValidationRule {
     return {
       validator: (value: any) => ({
-        isValid: value === '' || value === null || !isNaN(Number(value)),
-        message
-      })
+        isValid: value === "" || value === null || !isNaN(Number(value)),
+        message,
+      }),
     };
   }
 
@@ -584,9 +731,9 @@ export class ValidationRules {
         const num = Number(value);
         return {
           isValid: isNaN(num) || (num >= min && num <= max),
-          message: message || `Value must be between ${min} and ${max}`
+          message: message || `Value must be between ${min} and ${max}`,
         };
-      }
+      },
     };
   }
 
@@ -596,9 +743,9 @@ export class ValidationRules {
         const num = Number(value);
         return {
           isValid: isNaN(num) || num >= min,
-          message: message || `Value must be at least ${min}`
+          message: message || `Value must be at least ${min}`,
         };
-      }
+      },
     };
   }
 
@@ -608,9 +755,9 @@ export class ValidationRules {
         const num = Number(value);
         return {
           isValid: isNaN(num) || num <= max,
-          message: message || `Value must be at most ${max}`
+          message: message || `Value must be at most ${max}`,
         };
-      }
+      },
     };
   }
 
@@ -618,8 +765,8 @@ export class ValidationRules {
     return {
       validator: (value: any[]) => ({
         isValid: !Array.isArray(value) || value.length >= min,
-        message: message || `Must select at least ${min} item(s)`
-      })
+        message: message || `Must select at least ${min} item(s)`,
+      }),
     };
   }
 
@@ -627,8 +774,8 @@ export class ValidationRules {
     return {
       validator: (value: any[]) => ({
         isValid: !Array.isArray(value) || value.length <= max,
-        message: message || `Cannot select more than ${max} item(s)`
-      })
+        message: message || `Cannot select more than ${max} item(s)`,
+      }),
     };
   }
 
@@ -639,8 +786,8 @@ export class ValidationRules {
     return {
       validator: (value: any) => ({
         isValid: validator(value),
-        message
-      })
+        message,
+      }),
     };
   }
 }
@@ -648,16 +795,25 @@ export class ValidationRules {
 // ===== CONSTANTS =====
 export const WIDGET_FORM_CONSTANTS = {
   DEFAULT_COLORS: [
-    '#0d6efd', '#6c757d', '#198754', '#dc3545',
-    '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14',
-    '#20c997', '#e83e8c', '#6610f2', '#fd6c9e'
+    "#0d6efd",
+    "#6c757d",
+    "#198754",
+    "#dc3545",
+    "#ffc107",
+    "#0dcaf0",
+    "#6f42c1",
+    "#fd7e14",
+    "#20c997",
+    "#e83e8c",
+    "#6610f2",
+    "#fd6c9e",
   ],
 
   DEFAULT_DIMENSIONS: {
     w: 4,
     h: 4,
     x: 0,
-    y: 0
+    y: 0,
   },
 
   STEP_VALIDATION_DEBOUNCE: 300,
@@ -676,49 +832,53 @@ export const WIDGET_FORM_CONSTANTS = {
   DEBOUNCE_DELAYS: {
     SEARCH: 300,
     VALIDATION: 500,
-    AUTO_SAVE: 2000
-  }
+    AUTO_SAVE: 2000,
+  },
 } as const;
 
 // ===== ERROR MESSAGES =====
 export const ERROR_MESSAGES = {
-  REQUIRED_FIELD: 'This field is required',
-  INVALID_WIDGET_TYPE: 'Please select a valid widget type',
-  INVALID_ENTITY: 'Please select at least one entity',
-  INVALID_PROPERTIES: 'Please select at least one property',
-  INVALID_TITLE: 'Widget title is required',
-  INVALID_PAGE_LIMIT: 'Page limit must be between 1 and 100',
-  INVALID_AGGREGATION: 'Selected aggregation method is not compatible',
-  FORM_VALIDATION_FAILED: 'Please complete all required fields before submitting',
-  WIDGET_CREATION_FAILED: 'Failed to create widget. Please check your configuration.',
-  CONFIGURATION_INVALID: 'Widget configuration is invalid',
-  NETWORK_ERROR: 'Network error occurred. Please try again.',
-  PERMISSION_DENIED: 'You do not have permission to perform this action',
-  DATA_LOAD_FAILED: 'Failed to load data. Please refresh and try again.',
-  UNSUPPORTED_BROWSER: 'This browser is not supported. Please use a modern browser.',
-  SESSION_EXPIRED: 'Your session has expired. Please log in again.'
+  REQUIRED_FIELD: "This field is required",
+  INVALID_WIDGET_TYPE: "Please select a valid widget type",
+  INVALID_ENTITY: "Please select at least one entity",
+  INVALID_PROPERTIES: "Please select at least one property",
+  INVALID_TITLE: "Widget title is required",
+  INVALID_PAGE_LIMIT: "Page limit must be between 1 and 100",
+  INVALID_AGGREGATION: "Selected aggregation method is not compatible",
+  FORM_VALIDATION_FAILED:
+    "Please complete all required fields before submitting",
+  WIDGET_CREATION_FAILED:
+    "Failed to create widget. Please check your configuration.",
+  CONFIGURATION_INVALID: "Widget configuration is invalid",
+  NETWORK_ERROR: "Network error occurred. Please try again.",
+  PERMISSION_DENIED: "You do not have permission to perform this action",
+  DATA_LOAD_FAILED: "Failed to load data. Please refresh and try again.",
+  UNSUPPORTED_BROWSER:
+    "This browser is not supported. Please use a modern browser.",
+  SESSION_EXPIRED: "Your session has expired. Please log in again.",
 } as const;
 
 // ===== SUCCESS MESSAGES =====
 export const SUCCESS_MESSAGES = {
-  WIDGET_CREATED: 'Widget created successfully!',
-  WIDGET_UPDATED: 'Widget updated successfully!',
-  WIDGET_DELETED: 'Widget deleted successfully!',
-  FORM_RESET: 'Form has been reset to default values',
-  CONFIGURATION_SAVED: 'Configuration saved successfully',
-  DATA_LOADED: 'Data loaded successfully',
-  VALIDATION_PASSED: 'All validations passed'
+  WIDGET_CREATED: "Widget created successfully!",
+  WIDGET_UPDATED: "Widget updated successfully!",
+  WIDGET_DELETED: "Widget deleted successfully!",
+  FORM_RESET: "Form has been reset to default values",
+  CONFIGURATION_SAVED: "Configuration saved successfully",
+  DATA_LOADED: "Data loaded successfully",
+  VALIDATION_PASSED: "All validations passed",
 } as const;
 
 // ===== INFO MESSAGES =====
 export const INFO_MESSAGES = {
-  LOADING_DATA: 'Loading data...',
-  SAVING_CONFIGURATION: 'Saving configuration...',
-  VALIDATING_FORM: 'Validating form...',
-  PROCESSING_REQUEST: 'Processing request...',
-  GROUP_BY_DISABLED: 'Group By 2 is automatically disabled when multiple fields are selected',
-  ADVANCED_MODE_INFO: 'Advanced mode provides additional configuration options',
-  SIMPLE_MODE_INFO: 'Simple mode hides advanced configuration options'
+  LOADING_DATA: "Loading data...",
+  SAVING_CONFIGURATION: "Saving configuration...",
+  VALIDATING_FORM: "Validating form...",
+  PROCESSING_REQUEST: "Processing request...",
+  GROUP_BY_DISABLED:
+    "Group By 2 is automatically disabled when multiple fields are selected",
+  ADVANCED_MODE_INFO: "Advanced mode provides additional configuration options",
+  SIMPLE_MODE_INFO: "Simple mode hides advanced configuration options",
 } as const;
 
 // ===== HELPER FUNCTIONS =====
@@ -727,9 +887,9 @@ export const INFO_MESSAGES = {
  * Get aggregation methods based on entity type
  */
 export function getAggregationMethodsByEntityType(
-  entityConfigType: 'single' | 'multiple'
+  entityConfigType: "single" | "multiple"
 ): DropdownOption<Enum_Method>[] {
-  return entityConfigType === 'single'
+  return entityConfigType === "single"
     ? singleEntityAggregationMethods
     : multipleEntitiesAggregationMethods;
 }
@@ -738,13 +898,9 @@ export function getAggregationMethodsByEntityType(
  * Check if widget type supports specific configuration
  */
 export function supportsWidgetSpecificConfig(widgetType: any): boolean {
-  const supportedTypes = [
-    'KPI1D', 'KPI2D', 'Donut1D', 'Donut2D', 'Table'
-  ];
+  const supportedTypes = ["KPI1D", "KPI2D", "Donut1D", "Donut2D", "Table"];
 
-  return supportedTypes.some(type =>
-    widgetType?.toString().includes(type)
-  );
+  return supportedTypes.some((type) => widgetType?.toString().includes(type));
 }
 
 /**
@@ -753,34 +909,34 @@ export function supportsWidgetSpecificConfig(widgetType: any): boolean {
 export function getDefaultWidgetConfig(widgetType: any): any {
   const defaults: { [key: string]: any } = {
     KPI1D: {
-      CountValueColumnName: 'count',
-      DisplayValueColumnName: 'displayValue',
-      ImageColumnName: '',
+      CountValueColumnName: "count",
+      DisplayValueColumnName: "displayValue",
+      ImageColumnName: "",
       seriesAggregation: Enum_Method_Aggregation.None,
-      showChart: false
+      showChart: false,
     },
     KPI2D: {
-      CountValueColumnName: 'count',
-      DisplayValueColumnName: 'displayValue',
-      ImageColumnName: '',
+      CountValueColumnName: "count",
+      DisplayValueColumnName: "displayValue",
+      ImageColumnName: "",
       seriesAggregation: Enum_Method_Aggregation.None,
-      showChart: false
+      showChart: false,
     },
     Donut1D: {
-      resultLabel: 'Result',
+      resultLabel: "Result",
       seriesAggregation: Enum_Method_Aggregation.Greatest,
-      showSeriesLabelValue: true
+      showSeriesLabelValue: true,
     },
     Donut2D: {
-      resultLabel: 'Result',
+      resultLabel: "Result",
       seriesAggregation: Enum_Method_Aggregation.Greatest,
-      showSeriesLabelValue: true
+      showSeriesLabelValue: true,
     },
     Table: {
       pagination: true,
       pageLimit: WIDGET_FORM_CONSTANTS.DEFAULT_PAGE_LIMIT,
-      pageNumber: 1
-    }
+      pageNumber: 1,
+    },
   };
 
   for (const [key, config] of Object.entries(defaults)) {
@@ -797,7 +953,10 @@ export function getDefaultWidgetConfig(widgetType: any): any {
  */
 export function validateWidgetCompatibility(
   widgetType: Enum_WidgetType,
-  dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig
+  dataInputConfig:
+    | IOneDimensionDataInputConfig
+    | ITwoDimensionDataInputConfig
+    | IThreeDimensionDataInputConfig
 ): ValidationResult {
   const errors: string[] = [];
   const dimension = widgetTypeDimensionMap[widgetType];
@@ -805,30 +964,36 @@ export function validateWidgetCompatibility(
   //three dimension validations
   if (dimension == WidgetDimension.ThreeDimensional) {
     if (!(dataInputConfig as IThreeDimensionDataInputConfig).groupBy2)
-      errors.push('3D widgets require both Group By 1 and Group By 2');
+      errors.push("3D widgets require both Group By 1 and Group By 2");
 
-    if ((dataInputConfig as IThreeDimensionDataInputConfig).fieldNames?.length > 1 && (dataInputConfig as IThreeDimensionDataInputConfig).fieldsAggregationType == null)
-      errors.push("With Both group by's select either one field or use field Aggregation Type");
-
+    if (
+      (dataInputConfig as IThreeDimensionDataInputConfig).fieldNames?.length >
+        1 &&
+      (dataInputConfig as IThreeDimensionDataInputConfig)
+        .fieldsAggregationType == null
+    )
+      errors.push(
+        "With Both group by's select either one field or use field Aggregation Type"
+      );
   }
 
   if (dimension == WidgetDimension.TwoDimensional) {
     if (!(dataInputConfig as ITwoDimensionDataInputConfig).groupBy1)
-      errors.push('2D widgets require at least Group By 1');
+      errors.push("2D widgets require at least Group By 1");
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
 /**
  * Create form validation summary
  */
-export function createValidationSummary(
-  validationResults: { [key: string]: ValidationResult }
-): ValidationResult {
+export function createValidationSummary(validationResults: {
+  [key: string]: ValidationResult;
+}): ValidationResult {
   const allErrors: string[] = [];
   let isValid = true;
 
@@ -836,7 +1001,7 @@ export function createValidationSummary(
     if (!result.isValid) {
       isValid = false;
       if (result.errors) {
-        allErrors.push(...result.errors.map(error => `${field}: ${error}`));
+        allErrors.push(...result.errors.map((error) => `${field}: ${error}`));
       } else if (result.message) {
         allErrors.push(`${field}: ${result.message}`);
       }
@@ -845,7 +1010,7 @@ export function createValidationSummary(
 
   return {
     isValid,
-    errors: allErrors
+    errors: allErrors,
   };
 }
 
@@ -853,10 +1018,12 @@ export function createValidationSummary(
  * Format validation errors for display
  */
 export function formatValidationErrors(errors: string[]): string {
-  if (errors.length === 0) return '';
+  if (errors.length === 0) return "";
   if (errors.length === 1) return errors[0];
 
-  return `Multiple errors found:\n${errors.map((error, index) => `${index + 1}. ${error}`).join('\n')}`;
+  return `Multiple errors found:\n${errors
+    .map((error, index) => `${index + 1}. ${error}`)
+    .join("\n")}`;
 }
 
 /**
@@ -876,7 +1043,7 @@ export function hasUnsavedChanges(
  * Generate form field ID
  */
 export function generateFieldId(prefix: string, fieldName: string): string {
-  return `${prefix}_${fieldName.replace(/[^a-zA-Z0-9]/g, '_')}`;
+  return `${prefix}_${fieldName.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
 
 /**
@@ -897,9 +1064,9 @@ export function createFieldConfig(
     type,
     label,
     required: options.required || false,
-    placeholder: options.placeholder || '',
-    helpText: options.helpText || '',
+    placeholder: options.placeholder || "",
+    helpText: options.helpText || "",
     validation: options.validation || [],
-    disabled: options.disabled || false
+    disabled: options.disabled || false,
   };
 }

@@ -39,7 +39,16 @@
       </div>
     </div>
     }
-    @if (isModel && !isLoading && dataExists) {
+     @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
+    <div class="data-container">
+      <div class="noConfExist">
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <span class="major-heading">No Data found for showable properties</span>
+      </div>
+    </div>
+    }
+    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
     <kendo-chart [chartArea]="{ background: 'transparent' }" class="chart-container"
       [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
@@ -51,11 +60,11 @@
           </kendo-chart-category-axis-item-labels>
         </kendo-chart-category-axis-item>
       </kendo-chart-category-axis>
-      <kendo-chart-tooltip>
+      <!-- <kendo-chart-tooltip>
         <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
           {{ value }}
         </ng-template>
-      </kendo-chart-tooltip>
+      </kendo-chart-tooltip> -->
       <kendo-chart-legend position="bottom" orientation="horizontal" [spacing]="140"
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>

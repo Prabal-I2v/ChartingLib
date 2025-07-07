@@ -22,11 +22,13 @@
 }
 
 .top {
+  display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex: 1;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
+  gap: 10px;
 
   .number-grp {
     display: flex;
@@ -215,4 +217,18 @@
       line-height: 32px;
     }
   }
+}
+
+.center-box{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aggregated-data-box{
+  width: 100%;
+}
+
+.overflow-data-box{
+  overflow-y: auto;
 }

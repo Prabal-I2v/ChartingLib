@@ -7,11 +7,11 @@ import { TableConf, TableWidget } from "./widgetRequestModel/TableWidgetRequestM
 import { StackedBarChartWidget } from "./widgetRequestModel/StackedBarChartRequestModel";
 import { StackedColumnChartWidget } from "./widgetRequestModel/StackedColumnChartRequestModel";
 import { WidgetConstructorProps } from "./types/types";
-import { Kpi1DWidget, KPI1DWidgetConstructorProps } from "./widgetRequestModel/KpiWidget1DModel";
-import { Kpi2DWidget, KPI2DWidgetConstructorProps, KPIConf } from "./widgetRequestModel/KpiWidget2DModel";
+import { Kpi1DWidget, KPI1DWidgetConstructorProps, KPIConf } from "./widgetRequestModel/KpiWidget1DModel";
+import { Kpi2DWidget, KPI2DWidgetConstructorProps } from "./widgetRequestModel/KpiWidget2DModel";
 import { AreaChart2DWidget } from "./widgetRequestModel/AreaChart2DModel";
-import { DonutConf, DonutChart2DWidget, Donut2DWidgetConstructorProps } from "./widgetRequestModel/DonutChart2DModel";
-import { DonutChart1DWidget, Donut1DWidgetConstructorProps } from "./widgetRequestModel/DonutChart1DModel";
+import { DonutChart2DWidget, Donut2DWidgetConstructorProps } from "./widgetRequestModel/DonutChart2DModel";
+import { DonutChart1DWidget, Donut1DWidgetConstructorProps, DonutConf } from "./widgetRequestModel/DonutChart1DModel";
 import { BarChart1DWidget } from "./widgetRequestModel/BarChart1DModel";
 import { BarChart2DWidget } from "./widgetRequestModel/BarChart2DModel";
 import { ColumnChart1DWidget } from "./widgetRequestModel/ColumnChart1DModel";

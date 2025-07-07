@@ -1,11 +1,6 @@
-import { TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../Widget";;
-import { Enum_Method_Aggregation, Enum_WidgetType, WidgetDimension } from "../enums/enums";
-
-export interface DonutConf {
-  resultLabel: string
-  seriesAggregation : Enum_Method_Aggregation,
-  showSeriesLabelValue : boolean;
-}
+import { TwoDimensionWidget, TwoDimensionWidgetConstructorProps } from "../Widget";
+import { Enum_WidgetType } from "../enums/enums";
+import { DonutConf } from "./DonutChart1DModel";
 
 export class Donut2DWidgetConstructorProps extends TwoDimensionWidgetConstructorProps {
   donutConf? : DonutConf

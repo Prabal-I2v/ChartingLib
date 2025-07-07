@@ -1,12 +1,9 @@
-import { dashboard } from "../DashboardModel";
 import { OneDimensionWidget, OneDimensionWidgetConstructorProps} from "../Widget";;
-import { Enum_Method_Aggregation, Enum_WidgetType, WidgetDimension } from "../enums/enums";
-import { ITwoDimensionDataInputConfig, IWidgetDisplayConfig, IWidgetFilterConfig, IWidgetDataOutputConfig, IShowableProperty, IWidgetInteractivityConfig, IOneDimensionDataInputConfig } from "../interfaces/interfaces";
-import { WidgetTileConf } from "../types/types";
+import { Enum_Method_Aggregation, Enum_WidgetType } from "../enums/enums";
 
 export interface DonutConf {
-  resultLabel: string
-  seriesAggregation : Enum_Method_Aggregation,
+  centerLabel: string
+  centerLabelAggregation : Enum_Method_Aggregation,
   showSeriesLabelValue : boolean;
 }
 

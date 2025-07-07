@@ -30,6 +30,8 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
+  dataExistsForShowableProperties: boolean = true;
+
   isCustomFilterApplied: boolean = false;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;

@@ -37,12 +37,24 @@
       </div>
     </div>
     }
-    @if (isModel && !isLoading && dataExists) {
+    @if (isModel && !isLoading && !dataExistsForShowableProperties) {
+    <div class="data-container">
+      <div class="noConfExist">
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <span class="major-heading">No Data found for showable properties</span>
+      </div>
+    </div>
+    }
+    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
     <kendo-chart class="chart-container" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'x' } : false"
       [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'x' } } : false">
       <kendo-chart-x-axis>
-        <kendo-chart-x-axis-item [labels]="{ rotation: 'auto' }" [line]="{ visible: false }"> </kendo-chart-x-axis-item>
+        <kendo-chart-x-axis-item [labels]="{ rotation: 'auto' }" [line]="{ visible: false }">
+             <kendo-chart-category-axis-item-labels [rotation]="'auto'">
+          </kendo-chart-category-axis-item-labels>
+        </kendo-chart-x-axis-item>
       </kendo-chart-x-axis>
 
       <kendo-chart-y-axis>

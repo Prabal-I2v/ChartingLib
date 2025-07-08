@@ -413,6 +413,7 @@ export class WidgetFormComponent implements OnInit {
           this.commonProperties = commonProperties || [];
           this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
             name: prop.name,
+            columnName: prop.columnName,
             type: prop.type,
             rule: null // Initialize with no rule
           }));
@@ -768,11 +769,14 @@ export class WidgetFormComponent implements OnInit {
     if (selectedEntity) {
       // Update entity properties for dropdown
       this.entityProperties = this.entityPropertiesMap[entityName] || [];
-      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
-        name: prop.name,
-        type: prop.type,
-        rule: null // Initialize with no rule
-      }));
+      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(
+        (prop) => ({
+          name: prop.name,
+          columnName: prop.columnName,
+          type: prop.type,
+          rule: null, // Initialize with no rule
+        })
+      );
 
 
     } else {
@@ -876,6 +880,7 @@ export class WidgetFormComponent implements OnInit {
       );
       this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
         name: prop.name,
+         columnName: prop.columnName,
         type: prop.type,
         rule: null // Initialize with no rule
       }));
@@ -901,11 +906,14 @@ export class WidgetFormComponent implements OnInit {
         this.entityPropertiesMap[entityName],
         aggregationMethod
       );
-      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
-        name: prop.name,
-        type: prop.type,
-        rule: null // Initialize with no rule
-      }));
+      this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(
+        (prop) => ({
+          name: prop.name,
+          columnName: prop.columnName,
+          type: prop.type,
+          rule: null, // Initialize with no rule
+        })
+      );
     } else {
       this.entityProperties = [];
       this.allFieldNames = [];
@@ -1360,23 +1368,18 @@ export class WidgetFormComponent implements OnInit {
 
   private updateAllShowablePropertiesName(): void {
     const fieldNames = this.selectedFieldNames;
-    const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
 
     this.allShowablePropertiesName = [];
 
     if (fieldNames && fieldNames.length > 0) {
       fieldNames.forEach((fieldName: IWidgetFieldNameConfig) => {
-        const entityName = Enum_Entity_With_Labels[entityValue];
-        const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name === fieldName.name);
 
-        if (propInfo) {
-          this.allShowablePropertiesName.push({
-            name: fieldName.name,
-            displayName: propInfo.columnName,
-            isMultiValued: false,
-            isLabel: propInfo.type === EventPropertyType.String
-          });
-        }
+        this.allShowablePropertiesName.push({
+          name: fieldName.columnName,
+          displayName: fieldName.columnName,
+          isMultiValued: false,
+          isLabel: fieldName.type === EventPropertyType.String,
+        });
       });
     }
 
@@ -2335,9 +2338,10 @@ export class WidgetFormComponent implements OnInit {
     if (this.entityProperties?.length > 0) {
       const fieldName: IWidgetFieldNameConfig = {
         name: this.entityProperties[0].name,
+        columnName: this.entityProperties[0].columnName,
         type: this.entityProperties[0].type,
-        rule: null
-      }
+        rule: null,
+      };
       this.widgetForm.patchValue({
         dataInputConfig: {
           fieldNames: [fieldName]

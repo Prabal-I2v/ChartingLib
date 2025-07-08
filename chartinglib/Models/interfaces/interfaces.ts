@@ -56,6 +56,7 @@ export interface IWidgetDataOutputConfig {
 
 export interface IWidgetFieldNameConfig {
   name: string;
+  columnName : string;
   type: EventPropertyType;
   rule?: Rule;
 }

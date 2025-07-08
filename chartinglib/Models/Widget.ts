@@ -37,7 +37,7 @@ export abstract class Widget {
     this.dashboardId = props.dashboardId ?? null;
     this.dashboard = props.dashboard ?? null;
     this.widgetTileConf = props.widgetTileConf;
-    
+
     // Display configuration
     this.displayConfig = {
       heading: props.displayConfig.heading,
@@ -45,7 +45,7 @@ export abstract class Widget {
       color: props.displayConfig.color ?? '',
       svgIcon: props.displayConfig.svgIcon,
     };
-    
+
     // Filter configuration with defaults
     this.filterConfig = {
       customFilters: props.filterConfig?.customFilters ?? {},
@@ -62,7 +62,7 @@ export abstract class Widget {
 
     // Showable properties
     this.showableProperties = props.showableProperties ?? [];
-    
+
     // Other properties
     this.isPreview = props.isPreview;
     this.allowRefresh = props.allowRefresh ?? false;
@@ -134,7 +134,7 @@ export class NoDimensionWidget extends Widget {
   dimension = WidgetDimension.NoDimension;
   dataInputConfig: INoDimensionDataInputConfig;
 
-  constructor(props: ThreeDimensionWidgetConstructorProps) {
+  constructor(props: NoDimensionWidgetConstructorProps) {
     super(props);
     this.dataInputConfig = {
       isDistinct: props.dataInputConfig?.isDistinct ?? false,
@@ -153,7 +153,7 @@ export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   displayConfig: IWidgetDisplayConfig;
   filterConfig?: IWidgetFilterConfig;
   dataOutputConfig?: IWidgetDataOutputConfig;
-  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  widgetInteractivityConfig: IWidgetInteractivityConfig;
   showableProperties: IShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;
@@ -171,7 +171,7 @@ export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   displayConfig: IWidgetDisplayConfig;
   filterConfig?: IWidgetFilterConfig;
   dataOutputConfig?: IWidgetDataOutputConfig;
-  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  widgetInteractivityConfig: IWidgetInteractivityConfig;
   showableProperties: IShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;
@@ -189,7 +189,7 @@ export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstruc
   displayConfig: IWidgetDisplayConfig;
   filterConfig?: IWidgetFilterConfig;
   dataOutputConfig?: IWidgetDataOutputConfig;
-  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  widgetInteractivityConfig: IWidgetInteractivityConfig;
   showableProperties: IShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;
@@ -206,7 +206,7 @@ export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructor
   displayConfig: IWidgetDisplayConfig;
   filterConfig?: IWidgetFilterConfig;
   dataOutputConfig?: IWidgetDataOutputConfig;
-  widgetInteractivityConfig?: IWidgetInteractivityConfig;
+  widgetInteractivityConfig: IWidgetInteractivityConfig;
   showableProperties: IShowableProperty[];
   widgetTileConf: WidgetTileConf;
   id?: string;

@@ -2,7 +2,7 @@
 import { GridStackWidget } from "gridstack";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { Enum_Entity, Enum_Schema } from "../enums/enums";
-import { OneDimensionWidgetConstructorProps, TwoDimensionWidgetConstructorProps, ThreeDimensionWidgetConstructorProps } from "../Widget";
+import { OneDimensionWidgetConstructorProps, TwoDimensionWidgetConstructorProps, ThreeDimensionWidgetConstructorProps, NoDimensionWidgetConstructorProps } from "../Widget";
 import { ITimeRange } from "../interfaces/interfaces";
 
 export class CustomFilterValueModel {
@@ -78,7 +78,7 @@ export class groupByConf {
 }
 
 // Union type for all widget constructor props
-export type WidgetConstructorProps = 
-  OneDimensionWidgetConstructorProps | 
-  TwoDimensionWidgetConstructorProps | 
-  ThreeDimensionWidgetConstructorProps;
+export type WidgetConstructorProps =
+  OneDimensionWidgetConstructorProps |
+  TwoDimensionWidgetConstructorProps |
+  ThreeDimensionWidgetConstructorProps | NoDimensionWidgetConstructorProps;

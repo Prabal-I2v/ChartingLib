@@ -2761,6 +2761,8 @@ export class WidgetFormComponent implements OnInit {
             imageColumnName: kpiConf.ImageColumnName || '',
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
+            showAggregation: kpiConf.showAggregation || false,
+            dataAggregationMethod:kpiConf.dataAggregationMethod || Enum_Method_Aggregation.None
           }
         }
       });

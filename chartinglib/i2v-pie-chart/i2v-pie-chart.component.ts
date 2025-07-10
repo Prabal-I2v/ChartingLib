@@ -34,7 +34,7 @@ export class I2vPieChartComponent extends I2vChartsComponent {
   transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ data: x.data, displayName: x.displayName, name: x.name });
+      return new ChartSeries({ data: x.data.map(y => Number(y)), displayName: x.displayName, name: x.name });
     });
 
     let isMonthData = false;
@@ -64,9 +64,8 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     }
 
     this.chartData = chartData;
-    this.chartData.series = this.filterShowableSeries(this.chartData)
-     if(this.chartData.series.length == 0)
-    {
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData)
+    if (this.widgetRequestModel.showableProperties.length == 0) {
       this.dataExistsForShowableProperties = false;
     }
   }

@@ -33,7 +33,7 @@ export class I2vStackedbarChartComponent extends I2vChartsComponent {
 
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.name, displayName : x.displayName, data: x.data });
+      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data.map(y => Number(y)) });
     });
 
     if (data.labels.xAxisFields.length > 0) {
@@ -57,9 +57,8 @@ export class I2vStackedbarChartComponent extends I2vChartsComponent {
       chartData.yAxisLabel = data.labels.yAxisLabel;
     }
     this.chartData = chartData;
-    this.chartData.series = this.filterShowableSeries(this.chartData)
-     if(this.chartData.series.length == 0)
-    {
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData)
+    if (this.widgetRequestModel.showableProperties.length == 0) {
       this.dataExistsForShowableProperties = false;
     }
   }

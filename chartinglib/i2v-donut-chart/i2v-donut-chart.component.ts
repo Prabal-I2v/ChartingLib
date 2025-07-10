@@ -48,7 +48,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     chartData.series = data.seriesData.map((x) => {
       this.seriesDataEnabledIndexArray.push(true);
       return new ChartSeries({
-        data: x.data,
+        data: x.data.map(y => Number(y)),
         displayName: x.displayName,
         name: x.name,
       });
@@ -80,9 +80,8 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     }
 
     this.chartData = chartData;
-    this.chartData.series = this.filterShowableSeries(this.chartData);
-     if(this.chartData.series.length == 0)
-    {
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData);
+    if (this.widgetRequestModel.showableProperties.length == 0) {
       this.dataExistsForShowableProperties = false;
     }
     this.setLabelData();
@@ -140,7 +139,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
           this.chartData.xAxisFields.forEach((xAxisField) => {
             const value = Number(
               this.chartData.series[index].data[
-                this.chartData.xAxisFields.indexOf(xAxisField)
+              this.chartData.xAxisFields.indexOf(xAxisField)
               ]
             );
             this.centerLabelData += value;
@@ -161,7 +160,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
           this.chartData.xAxisFields.forEach((xAxisField) => {
             const value = Number(
               this.chartData.series[index].data[
-                this.chartData.xAxisFields.indexOf(xAxisField)
+              this.chartData.xAxisFields.indexOf(xAxisField)
               ]
             );
             if (value < least) least = value;
@@ -183,7 +182,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
           this.chartData.xAxisFields.forEach((xAxisField) => {
             const value = Number(
               this.chartData.series[index].data[
-                this.chartData.xAxisFields.indexOf(xAxisField)
+              this.chartData.xAxisFields.indexOf(xAxisField)
               ]);
             if (value > greatest) greatest = value;
           });

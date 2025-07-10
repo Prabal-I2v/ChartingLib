@@ -99,7 +99,7 @@ interface WidgetFormValue {
     isDistinct: boolean;
     entityTypeSelect: Enum_Schema;
     entitySelect: Enum_Entity | null;
-    fieldNames: Property[];
+    fieldNames: IWidgetFieldNameConfig[];
     entities: Enum_Entity[];
     dataConfig: IWidgetDataConfig[];
     groupBy1: groupByConf | null;
@@ -184,8 +184,8 @@ interface WidgetFormControls {
       countValueColumnName: FormControl<string>;
       displayValueColumnName: FormControl<string>;
       imageColumnName: FormControl<string>;
-      showAggregation : FormControl<boolean>;
-      dataAggregationMethod : FormControl<Enum_Method_Aggregation>;
+      showAggregation: FormControl<boolean>;
+      dataAggregationMethod: FormControl<Enum_Method_Aggregation>;
       hideLabel: FormControl<boolean>;
       showChart: FormControl<boolean>;
     }>;
@@ -414,6 +414,7 @@ export class WidgetFormComponent implements OnInit {
           this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
             name: prop.name,
             columnName: prop.columnName,
+            applyAggregation: true,
             type: prop.type,
             rule: null // Initialize with no rule
           }));
@@ -530,8 +531,8 @@ export class WidgetFormComponent implements OnInit {
           countValueColumnName: this.fb.control('count', { nonNullable: true }),
           displayValueColumnName: this.fb.control(''),
           imageColumnName: this.fb.control(''),
-          showAggregation  :this.fb.control(false),
-          dataAggregationMethod  :this.fb.control(Enum_Method_Aggregation.None),
+          showAggregation: this.fb.control(false),
+          dataAggregationMethod: this.fb.control(Enum_Method_Aggregation.None),
           hideLabel: this.fb.control(false),
           showChart: this.fb.control(false)
         }),
@@ -773,6 +774,7 @@ export class WidgetFormComponent implements OnInit {
         (prop) => ({
           name: prop.name,
           columnName: prop.columnName,
+          applyAggregation: true,
           type: prop.type,
           rule: null, // Initialize with no rule
         })
@@ -821,12 +823,22 @@ export class WidgetFormComponent implements OnInit {
 
   onCommonPropertiesChange(event: any): void {
     const selectedProperties = event.value as Property[];
+    const selectedFieldNames: IWidgetFieldNameConfig[] = selectedProperties.map((prop) => {
+      return {
+        name: prop.name,
+        columnName: prop.columnName,
+        applyAggregation: true,
+        type: prop.type,
+        isLabel: false
+      };
+    });
 
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedProperties
+        fieldNames: selectedFieldNames
       }
     });
+
 
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
@@ -880,7 +892,8 @@ export class WidgetFormComponent implements OnInit {
       );
       this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
         name: prop.name,
-         columnName: prop.columnName,
+        columnName: prop.columnName,
+        applyAggregation: true,
         type: prop.type,
         rule: null // Initialize with no rule
       }));
@@ -910,6 +923,7 @@ export class WidgetFormComponent implements OnInit {
         (prop) => ({
           name: prop.name,
           columnName: prop.columnName,
+          applyAggregation: true,
           type: prop.type,
           rule: null, // Initialize with no rule
         })
@@ -922,21 +936,32 @@ export class WidgetFormComponent implements OnInit {
     this.createRuleGroupQueryBuilder(this.entityProperties);
   }
 
+  applyAggregationOnField(index: any, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
+    if (existingField) {
+      if (target.checked) {
+        existingField.applyAggregation = true;
+      }
+      else {
+        existingField.applyAggregation = true;
+      }
+    }
+  }
+
   // Field Rules Management
   toggleFieldRule(index: any, event: Event): void {
     const target = event.target as HTMLInputElement;
-
-    if (target.checked) {
-      const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
-      if (existingField) {
+    const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
+    if (existingField) {
+      if (target.checked) {
         existingField.rule = new Rule();
         existingField.rule.field = existingField.name;
         existingField.rule.operator = this.getOpertorsByType[existingField.type][0];
         existingField.rule.type = existingField.type;
-      }
-    } else {
-      const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
-      if (existingField) {
+
+      } else {
+
         existingField.rule = null;
       }
     }
@@ -2022,8 +2047,8 @@ export class WidgetFormComponent implements OnInit {
         ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
         hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
-        showAggregation : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
-        dataAggregationMethod : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
+        showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
+        dataAggregationMethod: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
       };
 
       return {
@@ -2038,8 +2063,8 @@ export class WidgetFormComponent implements OnInit {
         CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
         DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
         ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
-        showAggregation : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
-        dataAggregationMethod : this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
+        showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
+        dataAggregationMethod: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
         hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
       };
@@ -2127,7 +2152,7 @@ export class WidgetFormComponent implements OnInit {
   getSelectedPropertiesSummary(): string {
     const fieldNames = this.selectedFieldNames;
     if (fieldNames.length === 0) return 'None selected';
-    return fieldNames.map((field: Property) => field.name).join(', ');
+    return fieldNames.map((field: IWidgetFieldNameConfig) => field.name).join(', ');
   }
 
   getGroupingSummary(): string {
@@ -2174,7 +2199,7 @@ export class WidgetFormComponent implements OnInit {
 
   getValidationWarnings(): string[] {
     const warnings: string[] = [];
-    const widgetType = this.widgetForm.controls.widgetType.value;
+    const widgetType = this.widgetForm?.controls.widgetType.value;
 
     if (!widgetType) {
       warnings.push('Please select a widget type');
@@ -2339,6 +2364,7 @@ export class WidgetFormComponent implements OnInit {
       const fieldName: IWidgetFieldNameConfig = {
         name: this.entityProperties[0].name,
         columnName: this.entityProperties[0].columnName,
+        applyAggregation: true,
         type: this.entityProperties[0].type,
         rule: null,
       };
@@ -2766,7 +2792,7 @@ export class WidgetFormComponent implements OnInit {
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
             showAggregation: kpiConf.showAggregation || false,
-            dataAggregationMethod:kpiConf.dataAggregationMethod || Enum_Method_Aggregation.None
+            dataAggregationMethod: kpiConf.dataAggregationMethod || Enum_Method_Aggregation.None
           }
         }
       });
@@ -2999,8 +3025,7 @@ export class WidgetFormComponent implements OnInit {
       if (!donutConfig.controls.centerLabel.value?.trim()) {
         errors.push('Center Label is required for Donut charts');
       }
-      if(donutConfig.controls.centerLabelAggregation.value != Enum_Method_Aggregation.None)
-      {
+      if (donutConfig.controls.centerLabelAggregation.value != Enum_Method_Aggregation.None) {
         errors.push('Center label series aggregation is required for Donut charts');
       }
     }

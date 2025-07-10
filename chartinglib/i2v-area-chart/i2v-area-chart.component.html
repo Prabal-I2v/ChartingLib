@@ -45,7 +45,7 @@
       </div>
     </div>
     }
-    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties)  {
+    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
     <kendo-chart [chartArea]="{ background: 'transparent' }" class="chart-container"
       [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
@@ -57,17 +57,20 @@
           </kendo-chart-category-axis-item-labels>
         </kendo-chart-category-axis-item>
       </kendo-chart-category-axis>
-      <kendo-chart-tooltip>
+      <!-- <kendo-chart-tooltip>
         <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
           {{ value }}
         </ng-template>
-      </kendo-chart-tooltip>
+      </kendo-chart-tooltip> -->
       <kendo-chart-legend position="bottom" orientation="horizontal" [spacing]="140"
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>
-        @for (data of chartData.series; track seriesTrackBy) {
-        <kendo-chart-series-item type="area" [data]="data.data" [name]="data.name" [color]="data.color">
+        @for (series of chartData.series; track seriesTrackBy) {
+        @if(isShowableSeries(series)){
+        <kendo-chart-series-item type="area" [data]="series.data" [name]="series.name" [color]="series.color">
+          <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>
+        }
         }
       </kendo-chart-series>
     </kendo-chart>

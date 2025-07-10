@@ -31,6 +31,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   ResSvgIconColor: string = "#5F6F94";
   aggregatedData: number = 0;
   aggregatedDataLabel: string = "";
+  aggregatedDataImage: string = '';
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
@@ -53,7 +54,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       return new ChartSeries({
         name: x.name,
         displayName: x.displayName,
-        data: x.data,
+        data: x.data.map(y => Number(y)),
       });
     });
     let isMonthData = false;
@@ -125,32 +126,47 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       //     this.propImage = chartData.series[imageValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
       //   }
       // }
-    } else {
-      this.setData(chartData.series[0]);
     }
 
     this.chartData = chartData;
-    this.chartData.series = this.filterShowableSeries(this.chartData);
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData);
     if (this.chartData.series.length == 0) {
       this.dataExistsForShowableProperties = false;
     }
-
     if (this.widgetRequestModel.kpiConf?.showAggregation) {
       const aggregationMethod =
         this.widgetRequestModel.kpiConf.dataAggregationMethod;
 
       // Collect all relevant values with labels in one step
-      const valuesToAggregate: { value: number; label: string }[] = [];
+      const valuesToAggregate: { value: number; label: string, image: string }[] = [];
 
       this.chartData.series.forEach((series) => {
         if (this.chartData.xAxisFields.length > 0) {
           // Case: xAxisFields are present
           this.chartData.xAxisFields.forEach((xAxisField, index) => {
-            const value = Number(series.data[index]);
+            let value = Number(series.data[index]);
+            let label = `${series.displayName} - ${xAxisField}`
+            let image = ''
+            if (this.widgetRequestModel.kpiConf?.CountValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.CountValueColumnName);
+              value = Number(series.data[index])
+            }
+
+            if (this.widgetRequestModel.kpiConf?.DisplayValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.DisplayValueColumnName);
+              label = series.data[index].toString();
+            }
+
+            if (this.widgetRequestModel.kpiConf?.ImageColumnName) {
+              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.ImageColumnName);
+              image = series.data[index].toString();
+            }
+
             if (!isNaN(value)) {
               valuesToAggregate.push({
                 value: value,
-                label: `${series.displayName} - ${xAxisField}`, // Combines both
+                label: label, // Combines both
+                image: image
               });
             }
           });
@@ -161,6 +177,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             valuesToAggregate.push({
               value: value,
               label: `${series.displayName}`, // Only series name
+              image: ''
             });
           }
         }
@@ -170,6 +187,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         // Handle empty safely
         this.aggregatedData = 0;
         this.aggregatedDataLabel = "";
+        this.aggregatedDataImage = "";
         return;
       }
 
@@ -186,6 +204,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
           });
           this.aggregatedData = greatest.value;
           this.aggregatedDataLabel = "Greatest ( " + greatest.label + " )";
+          this.aggregatedDataImage = greatest.image;
           break;
 
         case Enum_Method_Aggregation.Least:
@@ -194,6 +213,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
           });
           this.aggregatedData = lowest.value;
           this.aggregatedDataLabel = "Lowest ( " + lowest.label + " )";
+          this.aggregatedDataImage = lowest.image;
           break;
 
         case Enum_Method_Aggregation.Total:
@@ -207,11 +227,13 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
   }
 
-  setData(
-    chartSeries: ChartSeries,
-    index: number = 0,
-    showSeries: boolean = false
-  ) {}
+  getSeriesDataByName(seriesName: string | undefined, index: number): any {
+    if (!seriesName) return null;
+    const series = this.chartData?.series?.find(s => s.name === seriesName);
+    return series?.data?.[index];
+  }
+
+
 
   showDetail() {
     //   const data: any = {};

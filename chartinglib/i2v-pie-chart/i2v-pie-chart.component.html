@@ -39,7 +39,7 @@
     </div>
     }
 
-     @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
+    @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
     <div class="data-container">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
@@ -59,13 +59,15 @@
         </ng-template>
       </kendo-chart-tooltip> -->
       <kendo-chart-series>
-        <kendo-chart-series-item type="pie" [data]="chartData.series" field="data[0]" categoryField="name"
+        @for (series of chartData.series; track seriesTrackBy) {
+        @if(isShowableSeries(series)){
+        <kendo-chart-series-item type="pie" [data]="series.data" categoryField="series.name"
           [autoFit]="true" [labels]="{ visible: true, content: labelContent }">
-          <kendo-chart-series-item-labels
-  [visible]="true"
-  [font]="'12px Arial, sans-serif'">
-</kendo-chart-series-item-labels>
+          <kendo-chart-series-item-labels [visible]="true" [font]="'12px Arial, sans-serif'">
+          </kendo-chart-series-item-labels>
         </kendo-chart-series-item>
+        }
+        }
       </kendo-chart-series>
     </kendo-chart>
     }

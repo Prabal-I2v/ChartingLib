@@ -37,7 +37,7 @@
       </div>
     </div>
     }
-     @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
+    @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
     <div class="data-container">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
@@ -66,13 +66,13 @@
       <kendo-chart-legend position="bottom" orientation="horizontal" [spacing]="140"
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>
-        @for (data of chartData.series; track seriesTrackBy) {
-        <kendo-chart-series-item type="bar" [gap]="2" [spacing]="0.25" [data]="data.data" [name]="data.name" [color]="data.color">
-           <kendo-chart-series-item-labels
-        [visible]="true"
-        [font]="'bold 12px Arial, sans-serif'"
-      />
+        @for (series of chartData.series; track $index) {
+        @if(isShowableSeries(series)){
+          {{series | json}}
+        <kendo-chart-series-item type="bar" [gap]="2" [spacing]="0.25" [data]="series.data" [name]="series.name">
+          <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>
+        }
         }
       </kendo-chart-series>
     </kendo-chart>

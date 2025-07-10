@@ -341,16 +341,18 @@ export abstract class I2vChartsComponent implements OnInit {
           this.dataExists = false;
 
           if (data) {
-            if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
-              this.transformChartData(data);
-              this.dataExists = true;
-            }
-            else if (this.isTableOutputModel(data)) {
-              // this.tableData = data;
-              this.dataExists = true;
-            }
+            this.transformChartData(data);
+            this.dataExists = true;
+            // if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
+            //   this.transformChartData(data);
+            //   this.dataExists = true;
+            // }
+            // else if (this.isTableOutputModel(data)) {
+            //   // this.tableData = data;
+            //   this.dataExists = true;
+            // }
           }
-
+this.cd.detectChanges();
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -561,12 +563,7 @@ export abstract class I2vChartsComponent implements OnInit {
     }
   }
 
-  filterShowableSeries(chartData: ClientChartModel): ChartSeries[] {
-    this.appendNameToAggregatedProperty(chartData);
-    return chartData.series.filter((x) => this.widgetRequestModel.showableProperties.some(prop => prop.name.toLowerCase() === x.name.toLowerCase()))
-  }
-
-  appendNameToAggregatedProperty(chartData: ClientChartModel) {
+  appendNameToAggregatedProperty(chartData: ClientChartModel): ChartSeries[] {
     if (this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Greatest || this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Least) {
       var aggregatedSeriesIndex = chartData.series.findIndex((x) => x.name.toLowerCase() == Enum_Method_Aggregation_With_Labels[this.widgetRequestModel.dataInputConfig.fieldsAggregationType].toLowerCase())
       if (aggregatedSeriesIndex !== -1) {
@@ -581,6 +578,13 @@ export abstract class I2vChartsComponent implements OnInit {
         }
       }
     }
+
+    return chartData.series;
+  }
+
+  isShowableSeries(chartSeries: ChartSeries): boolean {
+    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(x => x.name.toLowerCase() == chartSeries.name.toLowerCase());
+    return isSeriesShowable ? true : false
   }
 
   seriesTrackBy(index: number): string | number {

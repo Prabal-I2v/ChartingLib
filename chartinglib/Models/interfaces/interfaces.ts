@@ -57,6 +57,7 @@ export interface IWidgetDataOutputConfig {
 export interface IWidgetFieldNameConfig {
   name: string;
   columnName : string;
+  applyAggregation: boolean;
   type: EventPropertyType;
   rule?: Rule;
 }

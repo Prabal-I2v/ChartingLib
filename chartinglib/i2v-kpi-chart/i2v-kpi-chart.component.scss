@@ -32,10 +32,8 @@
 
   .number-grp {
     display: flex;
-    flex-direction: column;
     gap: 8px;
     height: 100%;
-    justify-content: flex-start;
     align-items: center;
     border: 1px solid #d2bebe;
     border-radius: 12px;
@@ -177,6 +175,12 @@
   width: 100%;
 }
 
+.details-grp {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .prop-image {
   height: 60px;
   width: 60px;
@@ -219,16 +223,16 @@
   }
 }
 
-.center-box{
+.center-box {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.aggregated-data-box{
+.aggregated-data-box {
   width: 100%;
 }
 
-.overflow-data-box{
+.overflow-data-box {
   overflow-y: auto;
 }

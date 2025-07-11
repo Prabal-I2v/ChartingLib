@@ -10,10 +10,10 @@
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
             <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
           </div>
-          <span class="major-heading">{{'No Configurations found' |  translate}}</span>
+          <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       }
@@ -23,7 +23,7 @@
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (editWidgetOutput)="onEditWidgetOutput()" (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
         [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
@@ -38,7 +38,7 @@
     @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
           <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
         </div>
         <span class="major-heading">{{'No Data found' | translate}}</span>
@@ -60,7 +60,7 @@
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
       [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'y' } } : false">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item 
+        <kendo-chart-category-axis-item [max]="this.widgetRequestModel?.widgetInteractivityConfig?.max ?? 20"
           [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>

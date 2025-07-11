@@ -21,7 +21,7 @@
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
-        (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
@@ -60,7 +60,7 @@
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
       [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'y' } } : false">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item 
+        <kendo-chart-category-axis-item [max]="this.widgetRequestModel?.widgetInteractivityConfig?.max ?? 20"
           [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>

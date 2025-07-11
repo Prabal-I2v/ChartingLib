@@ -475,7 +475,7 @@ export abstract class I2vChartsComponent implements OnInit {
     this.widgetResizeCallbackEmittor.emit({ "value": value, "height": height, "width": width });
   }
 
-  public widgetRemoveCallback(value: boolean) {
+  public onWidgetRemoveCallback(value: boolean) {
     this.cd.detectChanges();
     if(value)
     {

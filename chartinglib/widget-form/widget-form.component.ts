@@ -53,7 +53,8 @@ import {
   IWidgetFieldNameConfig,
   IWidgetDisplayConfig,
   IWidgetFilterConfig,
-  IWidgetInteractivityConfig
+  IWidgetInteractivityConfig,
+  ITimeRange
 } from '../Models/interfaces/interfaces';
 
 // Utils and Constants
@@ -237,6 +238,7 @@ export interface IWidgetFormDataRequestModel {
   dashboardId: string;
   operation: Enum_WidgetFormOperation;
   mode?: Enum_WidgetFormMode;
+  timeObj: ITimeRange
 }
 
 export enum Enum_WidgetFormOperation {
@@ -298,6 +300,7 @@ export class WidgetFormComponent implements OnInit {
   // Configuration Mode
   isAdvancedMode: boolean = true;
   formMode: Enum_WidgetFormMode = Enum_WidgetFormMode.normal;
+  timeObj: ITimeRange;
   selectedEntities: any[] = []; // For dropdown options
   isWidgetTypeSelectedInitially: boolean = false;
 
@@ -345,6 +348,9 @@ export class WidgetFormComponent implements OnInit {
     }
     if (modalData.event?.data?.mode) {
       this.formMode = modalData.event.data.mode;
+    }
+    if (modalData.event.data.timeObj) {
+      this.timeObj = modalData.event.data.timeObj
     }
   }
 
@@ -959,6 +965,8 @@ export class WidgetFormComponent implements OnInit {
         fieldNames: []
       }
     });
+
+    this.updateAllShowablePropertiesName();
   }
 
   onEntityChange(): void {
@@ -984,6 +992,7 @@ export class WidgetFormComponent implements OnInit {
       this.allFieldNames = [];
     }
 
+    this.updateAllShowablePropertiesName();
     this.createRuleGroupQueryBuilder(this.entityProperties);
   }
 
@@ -1362,14 +1371,29 @@ export class WidgetFormComponent implements OnInit {
     return [...new Set(columns)];
   }
 
+  shouldShowGroupBy1(): boolean {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    if (this.isWidgetTypeSelectedInitially) {
+      var TwoDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
+      var ThreeDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      var requiredTypes = [...TwoDimensionalWidgetTypes, ...ThreeDimensionalWidgetTypes];
+      if (requiredTypes.some((type) => type.value == widgetType)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   shouldShowGroupBy2(): boolean {
     if (!this.enableGroupBy1) return false;
 
     const widgetType = this.widgetForm.controls.widgetType.value;
     if (this.isWidgetTypeSelectedInitially) {
-      if (widgetType === Enum_WidgetType.StackedBarChart ||
-        widgetType === Enum_WidgetType.StackedColumnChart ||
-        widgetType === Enum_WidgetType.HeatMapChart3D) {
+      var requiredTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      if (requiredTypes.some((type) => type.value == widgetType)) {
         return true;
       } else {
         return false;
@@ -1451,7 +1475,7 @@ export class WidgetFormComponent implements OnInit {
       fieldNames.forEach((fieldName: IWidgetFieldNameConfig) => {
 
         this.allShowablePropertiesName.push({
-          name: fieldName.columnName,
+          name: fieldName.name,
           displayName: fieldName.columnName,
           isMultiValued: false,
           isLabel: fieldName.type === EventPropertyType.String,
@@ -1463,12 +1487,16 @@ export class WidgetFormComponent implements OnInit {
     const fieldAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
     if (fieldAggregationType && (fieldAggregationType == Enum_Method_Aggregation.Total || fieldAggregationType == Enum_Method_Aggregation.Least || fieldAggregationType == Enum_Method_Aggregation.Greatest)) {
       this.allShowablePropertiesName.push({
-        name: Enum_Method_Aggregation_With_Labels[fieldAggregationType].toLowerCase(),
+        name: Enum_Method_Aggregation_With_Labels[fieldAggregationType],
         displayName: Enum_Method_Aggregation_With_Labels[fieldAggregationType],
         isMultiValued: false,
         isLabel: false
       });
     }
+
+    const showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    showablePropertiesArray.clear();
+    this.widgetForm.controls.showablePropertiesSelection.reset();
   }
 
   updateRecommendedWidgets(): void {
@@ -1505,7 +1533,12 @@ export class WidgetFormComponent implements OnInit {
       const isEntityProp = this.entityProperties.find(entityProp => entityProp.name.toLowerCase() == prop.toLowerCase());
 
       if (isEntityProp) {
-        showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
+        showablePropertiesArray.push(this.createShowablePropertyFormGroup({
+          name: isEntityProp.name,
+          displayName: isEntityProp.columnName,
+          isLabel: false,
+          isMultiValued: false
+        }));
       }
       else {
         const isAggregationProp =
@@ -1514,7 +1547,7 @@ export class WidgetFormComponent implements OnInit {
         if (isAggregationProp) {
           showablePropertiesArray.push(this.createShowablePropertyFormGroup(
             {
-              name: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value].toLowerCase(),
+              name: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value],
               displayName: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value],
               isLabel: false,
               isMultiValued: false
@@ -1613,8 +1646,8 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           kpiConf: {
-            countValueColumnName: 'count',
-            displayValueColumnName: 'displayValue',
+            countValueColumnName: null,
+            displayValueColumnName: null,
             hideLabel: false,
             showChart: false
           }
@@ -1930,7 +1963,7 @@ export class WidgetFormComponent implements OnInit {
 
     const finalWidget = WidgetFactory.createWidget(constructorProps, widgetType);
     finalWidget.dimension = dimension;
-    finalWidget.isPredefinedWidget = true;
+    finalWidget.isPredefinedWidget = false;
     finalWidget.canBeRemoved = true;
     return finalWidget;
   }
@@ -2040,14 +2073,15 @@ export class WidgetFormComponent implements OnInit {
       showableProperties: showableProperties,
       widgetTileConf: this.widgetForm.controls.widgetTileConf.value,
       widgetInteractivityConfig: {
-        isWidgetHidden: false
+        isWidgetHidden: false,
+        max: 20
       },
       filterConfig: {
         customFilters: {},
         propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
         disableTimeFilter: false,
-        startTime: WidgetFormUtils.getCurrentDayStart(),
-        endTime: moment(new Date()).valueOf(),
+        startTime: this.timeObj.startTime,
+        endTime: this.timeObj.endTime,
         isDashboardFilterApplied: true
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
@@ -2345,7 +2379,7 @@ export class WidgetFormComponent implements OnInit {
     try {
       const dataConfig = this.createDataConfig();
       const dataInputConfig = this.createDataInputConfig(dimension, fieldNames, dataConfig);
-
+     
       // Widget configuration validation
       const widgetConfigurationValidation = WidgetFactory.validateWidgetConfiguration(
         widgetType,
@@ -2866,7 +2900,7 @@ export class WidgetFormComponent implements OnInit {
           kpiConf: {
             countValueColumnName: kpiConf.countValueColumnName,
             displayValueColumnName: kpiConf.displayValueColumnName,
-            imageColumnName: kpiConf.imageColumnName || '',
+            imageColumnName: kpiConf.imageColumnName || null,
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
             showAggregation: kpiConf.showAggregation || false,

@@ -10,7 +10,7 @@
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
             <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
           </div>
           <span class="major-heading">{{'No Configurations found' | translate}}</span>
@@ -18,7 +18,7 @@
       </div>
       } @if (isModel) {
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         [widgetModel]="widgetRequestModel" [customFilters]="customFilters" [isEditModeOn]="isEditModeOn"
         (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
@@ -36,7 +36,7 @@
     } @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
           <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
         </div>
         <span class="major-heading">{{'No Data found' | translate}}</span>
@@ -64,7 +64,7 @@
           : false
       ">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item 
+        <kendo-chart-category-axis-item [max]="this.widgetRequestModel?.widgetInteractivityConfig?.max ?? 20"
           [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>
@@ -87,10 +87,12 @@
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>
         @for (data of chartData.series; track seriesTrackBy) {
+        @if(isShowableSeries(data)){
         <kendo-chart-series-item type="column" [gap]="2" [spacing]="0.25" [data]="data.data" [color]="data.color"
           [name]="data.name">
           <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>
+        }
         }
       </kendo-chart-series>
     </kendo-chart>

@@ -40,9 +40,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   disableTimeFilter = false;
   showFilter = false;
   hideWidget = false;
+  removeWidget = false;
   showTimeDurationFilter: boolean = false;
   isContexMenuOpen: boolean = false;
   hideWidgetMsg: string = "Hide Widget";
+  removeWidgetMsg: string = "Remove Widget";
   position = { top: 0, left: 0 };
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
@@ -59,6 +61,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() combineFilterOutputEmittor = new EventEmitter<ICommonFilterOutputEmittorModel>();
   @Output() timePeriodOutput = new EventEmitter<string>();
   @Output() widgetResizeEmittor = new EventEmitter<boolean>();
+  @Output() widgetRemoveEmittor = new EventEmitter<boolean>();
   @Output() clearCustomFiltersValues = new EventEmitter<boolean>();
   @Output() editWidgetOutput = new EventEmitter();
 
@@ -117,7 +120,9 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       this.subHeading = this.widgetModel?.displayConfig.subHeading;
       this.disableTimeFilter = this.widgetModel.filterConfig.disableTimeFilter;
       this.hideWidget = this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
+      this.removeWidget = false;
       this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
+      this.removeWidgetMsg = !this.removeWidget ? "Remove Widget" : "Undo Remove Widget";
       this.customFilterKeys = Object.keys(this.customFilters);
       // this.customFilters = this.widgetModel.customFilters;
       if (this.widgetModel instanceof ThreeDimensionWidget && ((this.widgetModel.dataInputConfig.groupBy1 && this.widgetModel.dataInputConfig.groupBy1.isTime) || (this.widgetModel.dataInputConfig.groupBy2 && this.widgetModel.dataInputConfig.groupBy2.isTime))) {
@@ -417,6 +422,12 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     this.widgetModel.widgetInteractivityConfig.isWidgetHidden = !this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
     this.hideWidget = this.widgetModel.widgetInteractivityConfig.isWidgetHidden;
     this.hideWidgetMsg = this.hideWidget ? "Show Widget" : "Hide Widget";
+  }
+  
+  toggleRemoveWidget() {
+    this.removeWidget = !this.removeWidget
+    this.removeWidgetMsg = !this.removeWidget ? "Remove Widget" : "Undo Widget";
+    this.widgetRemoveEmittor.emit(this.removeWidget);
   }
 
   onMenuClick() {

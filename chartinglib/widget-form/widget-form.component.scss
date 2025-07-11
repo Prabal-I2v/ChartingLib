@@ -1327,3 +1327,199 @@ $transition: all 0.15s ease-in-out;
     }
   }
 }
+
+// Add these styles to the widget-form.component.scss file
+
+// ===== PRE-DEFINED WIDGET STYLES =====
+.predefined-widget-banner {
+  margin-bottom: 20px;
+
+  .alert {
+    border-left: 4px solid $info-color;
+    background-color: rgba($info-color, 0.1);
+
+    i {
+      margin-right: 8px;
+      color: $info-color;
+    }
+  }
+}
+
+// Locked step styles
+.locked-step-message {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: rgba($secondary-color, 0.05);
+  border-radius: $border-radius;
+  border: 2px dashed rgba($secondary-color, 0.3);
+
+  .locked-icon {
+    font-size: 3rem;
+    color: $secondary-color;
+    margin-bottom: 16px;
+  }
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: $dark-gray;
+    font-weight: 600;
+  }
+
+  p {
+    color: $secondary-color;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .current-config-summary {
+    background-color: white;
+    padding: 16px;
+    border-radius: $border-radius;
+    border: 1px solid $border-color;
+    margin-top: 20px;
+    text-align: left;
+
+    p {
+      margin: 0 0 8px 0;
+      font-weight: 500;
+      color: $dark-gray;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+
+      li {
+        color: #555;
+        font-size: 13px;
+        margin-bottom: 4px;
+
+        strong {
+          color: $dark-gray;
+        }
+      }
+    }
+  }
+}
+
+// Accordion header locked styles
+.accordion-header-content {
+  .step-number {
+    &.locked {
+      background-color: $secondary-color;
+      color: white;
+
+      i {
+        font-size: 12px;
+      }
+    }
+  }
+
+  .step-title {
+    &.locked-title {
+      color: $secondary-color;
+    }
+
+    .locked-indicator {
+      font-size: 12px;
+      color: $secondary-color;
+      font-weight: normal;
+      margin-left: 8px;
+    }
+  }
+}
+
+// Progress bar locked styles
+.form-progress-bar {
+  .progress-step {
+    &.locked {
+      .step-number {
+        background-color: $secondary-color;
+        color: white;
+
+        i {
+          font-size: 10px;
+        }
+      }
+
+      .step-label {
+        color: $secondary-color;
+      }
+
+      &:hover {
+        cursor: not-allowed;
+
+        .step-number {
+          transform: none;
+          box-shadow: none;
+        }
+      }
+    }
+  }
+}
+
+// PrimeNG accordion overrides for locked state
+::ng-deep {
+  .p-accordion {
+    .p-accordion-header {
+      &.p-disabled {
+        .p-accordion-header-link {
+          background-color: rgba($secondary-color, 0.1);
+          color: $secondary-color;
+          cursor: not-allowed;
+          border-left: 4px solid $secondary-color;
+
+          &:hover {
+            background-color: rgba($secondary-color, 0.1);
+          }
+
+          .p-accordion-toggle-icon {
+            color: $secondary-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Form control disabled styles for pre-defined mode
+.widget-form {
+  :disabled {
+    background-color: rgba($secondary-color, 0.1);
+    color: $secondary-color;
+    cursor: not-allowed;
+
+    &::placeholder {
+      color: rgba($secondary-color, 0.7);
+    }
+  }
+}
+
+// Responsive adjustments for pre-defined mode
+@media (max-width: 768px) {
+  .locked-step-message {
+    padding: 20px 16px;
+
+    .locked-icon {
+      font-size: 2rem;
+    }
+
+    .current-config-summary {
+      padding: 12px;
+
+      ul {
+        padding-left: 16px;
+      }
+    }
+  }
+
+  .predefined-widget-banner {
+    margin-bottom: 16px;
+
+    .alert {
+      font-size: 13px;
+      padding: 12px;
+    }
+  }
+}

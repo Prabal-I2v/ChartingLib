@@ -7,14 +7,14 @@ export class ClientChartModel {
 
 export class ChartSeries {
   name: string;
-  data: string[] | number[];
+  data: string[];
   displayName : string;
   color?: string;
 
   constructor(params: {
     name?: string;
     displayName : string;
-    data?: string[] | number[];
+    data?: string[];
     color?: string;
   }) {
     this.name = params.name;

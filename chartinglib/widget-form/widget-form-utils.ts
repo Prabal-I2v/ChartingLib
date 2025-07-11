@@ -18,6 +18,7 @@ import {
   ITwoDimensionDataInputConfig,
   IWidgetFieldNameConfig,
 } from "../Models/interfaces/interfaces";
+import { WidgetTileConf } from "../Models/types/types";
 
 // ===== TYPE DEFINITIONS =====
 export interface EntityOption {
@@ -805,7 +806,7 @@ export const WIDGET_FORM_CONSTANTS = {
     "#fd7e14",
     "#20c997",
     "#e83e8c",
-    "#6610f2",
+  "#6610f2",
     "#fd6c9e",
   ],
 
@@ -814,7 +815,11 @@ export const WIDGET_FORM_CONSTANTS = {
     h: 4,
     x: 0,
     y: 0,
-  },
+    minW : 4,
+    minH : 4,
+    initialMinHeight : 4,
+    initialMinWidth : 4
+  } as WidgetTileConf,
 
   STEP_VALIDATION_DEBOUNCE: 300,
   FORM_FIELD_DEBOUNCE: 500,
@@ -968,7 +973,7 @@ export function validateWidgetCompatibility(
 
     if (
       (dataInputConfig as IThreeDimensionDataInputConfig).fieldNames?.length >
-        1 &&
+      1 &&
       (dataInputConfig as IThreeDimensionDataInputConfig)
         .fieldsAggregationType == null
     )

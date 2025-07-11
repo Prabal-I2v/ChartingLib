@@ -48,7 +48,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
     chartData.series = data.seriesData.map((x) => {
       this.seriesDataEnabledIndexArray.push(true);
       return new ChartSeries({
-        data: x.data.map(y => Number(y)),
+        data: x.data,
         displayName: x.displayName,
         name: x.name,
       });

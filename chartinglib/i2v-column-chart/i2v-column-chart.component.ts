@@ -35,7 +35,7 @@ export class I2vColumnChartComponent extends I2vChartsComponent {
   public transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data.map(y => Number(y)) });
+      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data });
     });
 
     let isMonthData = false;

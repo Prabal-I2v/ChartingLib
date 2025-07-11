@@ -1,6 +1,10 @@
-<div
-  [ngStyle]="{ background:widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
-  class="widget-wrapper">
+<div [ngStyle]="{
+    background: isChartToBeRemoved
+      ? '#ffcccc'                               
+      : widgetRequestModel?.widgetInteractivityConfig?.isWidgetHidden
+        ? 'rgba(0, 0, 0, 0.1)'                    
+        : '#fff'                                  
+  }" class="widget-wrapper">
   <div class="widget-content">
     <div class="header-section">
       @if (!isModel) {
@@ -16,6 +20,7 @@
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
+        (widgetRemoveEmittor)="widgetRemoveCallback($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
@@ -68,7 +73,7 @@
       <kendo-chart-series>
         @for (series of chartData.series; track $index) {
         @if(isShowableSeries(series)){
-          {{series | json}}
+        {{series | json}}
         <kendo-chart-series-item type="bar" [gap]="2" [spacing]="0.25" [data]="series.data" [name]="series.name">
           <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>

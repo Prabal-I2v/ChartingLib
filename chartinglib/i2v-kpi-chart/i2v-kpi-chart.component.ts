@@ -54,7 +54,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
       return new ChartSeries({
         name: x.name,
         displayName: x.displayName,
-        data: x.data.map(y => Number(y)),
+        data: x.data,
       });
     });
     let isMonthData = false;
@@ -147,18 +147,18 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             let value = Number(series.data[index]);
             let label = `${series.displayName} - ${xAxisField}`
             let image = ''
-            if (this.widgetRequestModel.kpiConf?.CountValueColumnName) {
-              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.CountValueColumnName);
+            if (this.widgetRequestModel.kpiConf?.countValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.countValueColumnName.toLowerCase());
               value = Number(series.data[index])
             }
 
-            if (this.widgetRequestModel.kpiConf?.DisplayValueColumnName) {
-              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.DisplayValueColumnName);
+            if (this.widgetRequestModel.kpiConf?.displayValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.displayValueColumnName.toLowerCase());
               label = series.data[index].toString();
             }
 
-            if (this.widgetRequestModel.kpiConf?.ImageColumnName) {
-              const series = this.chartData?.series?.find(s => s.name === this.widgetRequestModel.kpiConf.ImageColumnName);
+            if (this.widgetRequestModel.kpiConf?.imageColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.imageColumnName.toLowerCase());
               image = series.data[index].toString();
             }
 

@@ -22,7 +22,8 @@ export abstract class Widget {
   refreshInterval?: number;
   widgetInteractivityConfig?: IWidgetInteractivityConfig;
   query?: string;
-  widgetSpecificConfig? : string;
+  widgetSpecificConfig?: string;
+  isPredefinedWidget: boolean = false;
   abstract dimension: WidgetDimension;
   abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
@@ -65,6 +66,7 @@ export abstract class Widget {
 
     // Other properties
     this.isPreview = props.isPreview;
+    this.isPredefinedWidget = props.isPredefinedWidget;
     this.allowRefresh = props.allowRefresh ?? false;
     this.refreshInterval = props.refreshInterval ?? 0;
     this.widgetInteractivityConfig = props.widgetInteractivityConfig ?? null;
@@ -160,6 +162,7 @@ export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboardId?: string;
   dashboard?: dashboard;
   isPreview?: boolean;
+  isPredefinedWidget: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -178,6 +181,7 @@ export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboardId?: string;
   dashboard?: dashboard;
   isPreview?: boolean;
+  isPredefinedWidget: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -196,6 +200,7 @@ export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstruc
   dashboardId?: string;
   dashboard?: dashboard;
   isPreview?: boolean;
+  isPredefinedWidget: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -213,6 +218,7 @@ export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructor
   dashboardId?: string;
   dashboard?: dashboard;
   isPreview?: boolean;
+  isPredefinedWidget: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;

@@ -1,6 +1,10 @@
-<div
-  [ngStyle]="{ background:widgetRequestModel?.widgetInteractivityConfig.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }"
-  class="widget-wrapper">
+<div [ngStyle]="{
+    background: isChartToBeRemoved
+      ? '#ffcccc'                               
+      : widgetRequestModel?.widgetInteractivityConfig?.isWidgetHidden
+        ? 'rgba(0, 0, 0, 0.1)'                    
+        : '#fff'                                  
+  }" class="widget-wrapper">
   <div class="widget-content">
     <div class="header-section">
       @if (!isModel) {
@@ -18,8 +22,8 @@
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" (editWidgetOutput)="onEditWidgetOutput()"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (editWidgetOutput)="onEditWidgetOutput()" (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
         [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
       </i2v-chart-header>

@@ -5,9 +5,9 @@ import {
 } from "../Widget";
 
 export interface KPIConf {
-  CountValueColumnName?: string;
-  DisplayValueColumnName?: string;
-  ImageColumnName?: string;
+  countValueColumnName?: string;
+  displayValueColumnName?: string;
+  imageColumnName?: string;
   showAggregation?: boolean;
   dataAggregationMethod?: Enum_Method_Aggregation;
   showChart?: boolean;

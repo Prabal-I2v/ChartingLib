@@ -104,7 +104,7 @@ interface WidgetFormValue {
     dataConfig: IWidgetDataConfig[];
     groupBy1: groupByConf | null;
     groupBy2: groupByConf | null;
-    commonProperties: Property[];
+    commonProperties?: Property[];
     clubbingTime: boolean;
     fieldsAggregationType: Enum_Method_Aggregation;
   };
@@ -116,9 +116,9 @@ interface WidgetFormValue {
 
   widgetSpecificConfig: {
     kpiConf: {
-      CountValueColumnName: string;
-      DisplayValueColumnName: string;
-      ImageColumnName: string;
+      countValueColumnName: string;
+      displayValueColumnName: string;
+      imageColumnName: string;
       seriesAggregation: Enum_Method_Aggregation;
       showAggregation: boolean;
       dataAggregationMethod: Enum_Method_Aggregation
@@ -126,8 +126,8 @@ interface WidgetFormValue {
       hideLabel: boolean
     };
     donutConf: {
-      resultLabel: string;
-      seriesAggregation: Enum_Method_Aggregation;
+      centerLabel: string;
+      centerLabelAggregation: Enum_Method_Aggregation;
       showSeriesLabelValue: boolean;
     };
     tableConf: {
@@ -227,10 +227,16 @@ interface WidgetRecommendation {
   label: string;
 }
 
+export enum Enum_WidgetFormMode {
+  normal = 'normal',
+  predefined = 'predefined'
+}
+
 export interface IWidgetFormDataRequestModel {
   data?: Widget;
   dashboardId: string;
   operation: Enum_WidgetFormOperation;
+  mode?: Enum_WidgetFormMode;
 }
 
 export enum Enum_WidgetFormOperation {
@@ -291,6 +297,7 @@ export class WidgetFormComponent implements OnInit {
 
   // Configuration Mode
   isAdvancedMode: boolean = true;
+  formMode: Enum_WidgetFormMode = Enum_WidgetFormMode.normal;
   selectedEntities: any[] = []; // For dropdown options
   isWidgetTypeSelectedInitially: boolean = false;
 
@@ -335,6 +342,9 @@ export class WidgetFormComponent implements OnInit {
     }
     if (modalData.event?.data.dashboardId) {
       this.dashboardId = modalData.event?.data.dashboardId;
+    }
+    if (modalData.event?.data?.mode) {
+      this.formMode = modalData.event.data.mode;
     }
   }
 
@@ -416,7 +426,7 @@ export class WidgetFormComponent implements OnInit {
             columnName: prop.columnName,
             applyAggregation: true,
             type: prop.type,
-            rule: null // Initialize with no rule
+            rule: null
           }));
 
           this.entityPropertiesMap = analytics.reduce((acc, entity) => {
@@ -434,33 +444,28 @@ export class WidgetFormComponent implements OnInit {
               this.widgetForm.patchValue({
                 id: this.finalWidget.id,
                 dashboardId: this.finalWidget.dashboardId
-              })
-              // Set basic configuration
+              });
+
+              // Initialize all configurations
               this.initializeBasicConfig(this.finalWidget);
-
-              // Set display configuration
               this.initializeDisplayConfig(this.finalWidget);
-
-              // Set data input configuration
               this.initializeDataInputConfig(this.finalWidget);
-
               this.initializeShowableProperties(this.finalWidget);
-
-              // Set widget-specific configuration
               this.initializeWidgetSpecificConfig(this.finalWidget);
-
-              // Set filter configuration
               this.initializeFilterConfig(this.finalWidget);
-
-              // Set widget tile configuration
               this.initializeWidgetTileConfig(this.finalWidget);
-
-              // Update UI state based on loaded data
               this.updateUIStateAfterLoad();
 
-              // Update step completions
-              this.updateAllStepCompletions();
+              // For pre-defined widgets, mark steps 1 and 3 as complete and disable form controls
+              if (this.formMode === Enum_WidgetFormMode.predefined) {
+                this.stepsCompleted[1] = true;
+                this.stepsCompleted[3] = true;
+                this.disableFormControlsForPredefinedMode();
+                // Start from step 2 for pre-defined widgets
+                this.currentStep = 2;
+              }
 
+              this.updateAllStepCompletions();
               console.log('Form initialized with existing widget data');
 
             } catch (error) {
@@ -472,6 +477,30 @@ export class WidgetFormComponent implements OnInit {
     } catch (error) {
       console.error('Error initializing form:', error);
       this.isFormInitialized = true;
+    }
+  }
+
+  private disableFormControlsForPredefinedMode(): void {
+    if (this.formMode === Enum_WidgetFormMode.predefined) {
+      // Disable Step 1 controls
+      this.widgetForm.controls.configurationApproach.disable();
+      this.widgetForm.controls.entityConfigType.disable();
+      this.widgetForm.controls.widgetType.disable();
+
+      // Disable Step 3 controls
+      this.widgetForm.controls.dataInputConfig.disable();
+      this.widgetForm.controls.filterConfig.disable();
+
+      // Keep Step 2, 4, and 5 controls enabled
+      this.widgetForm.controls.displayConfig.enable();
+      if (this.requiresWidgetSpecificConfig()) {
+        this.widgetForm.controls.enableWidgetSpecificConfig.enable();
+        this.widgetForm.controls.widgetSpecificConfig.enable();
+      }
+      this.widgetForm.controls.allowRefresh.enable();
+      this.widgetForm.controls.refreshInterval.enable();
+      this.widgetForm.controls.showablePropertiesSelection.enable();
+      this.widgetForm.controls.showableProperties.enable();
     }
   }
 
@@ -593,6 +622,13 @@ export class WidgetFormComponent implements OnInit {
     }
 
     labels.push('Review & Submit');
+
+    // Add indicators for pre-defined mode
+    if (this.formMode === Enum_WidgetFormMode.predefined) {
+      labels[0] = '🔒 Choose Approach'; // Step 1 - locked
+      labels[2] = '🔒 Data Config & Filters'; // Step 3 - locked
+    }
+
     return labels;
   }
 
@@ -600,8 +636,23 @@ export class WidgetFormComponent implements OnInit {
     return this.stepsCompleted[step] === true;
   }
 
+  isStepEditable(step: number): boolean {
+    if (this.formMode === Enum_WidgetFormMode.predefined) {
+      // Only allow editing steps 2, 4, and 5 for pre-defined widgets
+      return step === 2 || step === 4 || step === 5;
+    }
+    return true; // Normal mode allows all steps
+  }
+
   canNavigateToStep(step: number): boolean {
     if (step === 1) return true;
+
+    // For pre-defined widgets, restrict navigation to steps 1 and 3
+    if (this.formMode === Enum_WidgetFormMode.predefined) {
+      if (step === 1 || step === 3) {
+        return false; // Disable steps 1 and 3
+      }
+    }
 
     for (let i = 1; i < step; i++) {
       if (!this.isStepComplete(i)) {
@@ -1451,7 +1502,7 @@ export class WidgetFormComponent implements OnInit {
     showablePropertiesArray.clear();
 
     selectedProps.forEach((prop) => {
-      const isEntityProp = this.entityProperties.find(entityProp => entityProp.name == prop);
+      const isEntityProp = this.entityProperties.find(entityProp => entityProp.name.toLowerCase() == prop.toLowerCase());
 
       if (isEntityProp) {
         showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
@@ -1600,7 +1651,7 @@ export class WidgetFormComponent implements OnInit {
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
       if (property.type !== EventPropertyType.Guid) {
-        if (property.name === "VideoSourceId") {
+        if (property.name.toLowerCase() === "videoSourceid") {
           const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
           let videoSourcesName = "";
           for (let i = 0; i < videoSources.length; i++) {
@@ -1782,11 +1833,48 @@ export class WidgetFormComponent implements OnInit {
 
   // Widget Creation (Updated to use typed form)
   private createWidget(): Widget {
-    const formValue = this.widgetForm.value as WidgetFormValue;
+    // For pre-defined widgets, ensure we use the original data configuration
+    if (this.formMode === Enum_WidgetFormMode.predefined && this.finalWidget) {
+      const formValue = this.widgetForm.getRawValue() as any; // Use getRawValue to include disabled controls
 
+      // Create updated widget preserving original data configuration
+      const updatedWidget = { ...this.finalWidget };
+
+      // Update only editable configurations
+      // Step 2 - Display Config
+      updatedWidget.displayConfig = {
+        heading: formValue.displayConfig.heading,
+        subHeading: formValue.displayConfig.subHeading,
+        color: formValue.displayConfig.color,
+        svgIcon: this.finalWidget.displayConfig?.svgIcon
+      };
+
+      // Step 4 - Widget Type (if changed)
+      if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
+        updatedWidget.widgetType = formValue.widgetType!;
+      }
+
+      // Step 5 - Widget Specific Config and other settings
+      if (this.requiresWidgetSpecificConfig() && this.isSpecificConfigEnabled) {
+        this.updateWidgetSpecificConfigForPredefined(updatedWidget, formValue);
+      }
+
+      // Update refresh settings
+      updatedWidget.allowRefresh = formValue.allowRefresh;
+      updatedWidget.refreshInterval = formValue.refreshInterval;
+
+      // Update showable properties
+      updatedWidget.showableProperties = this.showableProperties;
+
+      return updatedWidget;
+    }
+
+    // For normal mode, use the existing createWidget logic
+    const formValue = this.widgetForm.value as WidgetFormValue;
     const dimension = this.determineDimension();
     const fieldNames = this.selectedFieldNames;
     const fieldsAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
+
 
     let showablePropertiesArray = [];
     if (fieldNames && fieldNames.length > 0) {
@@ -1862,7 +1950,7 @@ export class WidgetFormComponent implements OnInit {
 
     props.forEach((propValue: IWidgetFieldNameConfig) => {
       const entityName = Enum_Entity_With_Labels[entityValue];
-      const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name === propValue.name);
+      const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name.toLowerCase() === propValue.name.toLowerCase());
       if (propInfo) {
         showableProperties.push({
           name: propValue.name,
@@ -2042,9 +2130,9 @@ export class WidgetFormComponent implements OnInit {
 
     if (widgetType === Enum_WidgetType.KPI1D) {
       const kpiConf: KPIConf = {
-        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
-        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
-        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
+        countValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
+        displayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
+        imageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
         hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
         showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
         showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
@@ -2060,9 +2148,9 @@ export class WidgetFormComponent implements OnInit {
 
     if (widgetType === Enum_WidgetType.KPI2D) {
       const kpiConf: KPIConf = {
-        CountValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
-        DisplayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
-        ImageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
+        countValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.countValueColumnName.value,
+        displayValueColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.displayValueColumnName.value,
+        imageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
         showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
         dataAggregationMethod: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
         hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
@@ -2133,13 +2221,49 @@ export class WidgetFormComponent implements OnInit {
     });
   }
 
+  private updateWidgetSpecificConfigForPredefined(widget: Widget, formValue: WidgetFormValue): void {
+    const widgetType = widget.widgetType;
+
+    switch (widgetType) {
+      case Enum_WidgetType.KPI1D:
+      case Enum_WidgetType.KPI2D:
+        (widget as any).kpiConf = {
+          CountValueColumnName: formValue.widgetSpecificConfig.kpiConf.countValueColumnName,
+          DisplayValueColumnName: formValue.widgetSpecificConfig.kpiConf.displayValueColumnName,
+          ImageColumnName: formValue.widgetSpecificConfig.kpiConf.imageColumnName,
+          showChart: formValue.widgetSpecificConfig.kpiConf.showChart,
+          hideLabel: formValue.widgetSpecificConfig.kpiConf.hideLabel,
+          showAggregation: formValue.widgetSpecificConfig.kpiConf.showAggregation,
+          dataAggregationMethod: formValue.widgetSpecificConfig.kpiConf.dataAggregationMethod
+        };
+        break;
+
+      case Enum_WidgetType.Donut1D:
+      case Enum_WidgetType.Donut2D:
+        (widget as any).donutConf = {
+          centerLabel: formValue.widgetSpecificConfig.donutConf.centerLabel,
+          centerLabelAggregation: formValue.widgetSpecificConfig.donutConf.centerLabelAggregation,
+          showSeriesLabelValue: formValue.widgetSpecificConfig.donutConf.showSeriesLabelValue
+        };
+        break;
+
+      case Enum_WidgetType.Table:
+        (widget as any).tableConf = {
+          pagination: formValue.widgetSpecificConfig.tableConf.pagination,
+          pageLimit: formValue.widgetSpecificConfig.tableConf.pageLimit,
+          pageNumber: formValue.widgetSpecificConfig.tableConf.pageNumber
+        };
+        break;
+    }
+  }
+
   // Template Helper Methods
   getPropertyDisplayName(property: Property): string {
     return property.columnName;
   }
 
   isPropertySelected(property: Property, selectedProperties: Property[]): boolean {
-    return selectedProperties.some(selected => selected.name === property.name);
+    return selectedProperties.some(selected => selected.name.toLowerCase() === property.name.toLowerCase());
   }
 
   // Summary Methods for Review Step
@@ -2242,15 +2366,15 @@ export class WidgetFormComponent implements OnInit {
   // Add reactive validation to form controls
   private setupFormValidation(): void {
     // Add required validator to critical fields
-    this.widgetForm.controls.configurationApproach.setValidators([Validators.required]);
-    this.widgetForm.controls.displayConfig.controls.heading.setValidators([
+    this.widgetForm?.controls.configurationApproach.setValidators([Validators.required]);
+    this.widgetForm?.controls.displayConfig.controls.heading.setValidators([
       Validators.required,
       Validators.maxLength(100),
       Validators.pattern(/^(?!\s*$).+/) // Not just whitespace
     ]);
 
     // Conditional validators
-    this.widgetForm.controls.configurationApproach.valueChanges.subscribe(value => {
+    this.widgetForm?.controls.configurationApproach.valueChanges.subscribe(value => {
       if (value === 'widgetFirst') {
         this.widgetForm.controls.widgetType.setValidators([Validators.required]);
       } else {
@@ -2260,7 +2384,7 @@ export class WidgetFormComponent implements OnInit {
     });
 
     // Entity selection validation
-    this.widgetForm.controls.entityConfigType.valueChanges.subscribe(value => {
+    this.widgetForm?.controls.entityConfigType.valueChanges.subscribe(value => {
       if (value === 'single') {
         this.widgetForm.controls.dataInputConfig.controls.entitySelect.setValidators([Validators.required]);
         this.widgetForm.controls.dataInputConfig.controls.entities.clearValidators();
@@ -2273,7 +2397,7 @@ export class WidgetFormComponent implements OnInit {
     });
 
     // Refresh interval validation
-    this.widgetForm.controls.allowRefresh.valueChanges.subscribe(value => {
+    this.widgetForm?.controls.allowRefresh.valueChanges.subscribe(value => {
       if (value) {
         this.widgetForm.controls.refreshInterval.setValidators([
           Validators.required,
@@ -2287,11 +2411,11 @@ export class WidgetFormComponent implements OnInit {
     });
 
     // Widget-specific config validation
-    this.widgetForm.controls.enableWidgetSpecificConfig.valueChanges.subscribe(value => {
+    this.widgetForm?.controls.enableWidgetSpecificConfig.valueChanges.subscribe(value => {
       this.updateWidgetSpecificValidation();
     });
 
-    this.widgetForm.controls.widgetType.valueChanges.subscribe(value => {
+    this.widgetForm?.controls.widgetType.valueChanges.subscribe(value => {
       this.updateWidgetSpecificValidation();
     });
   }
@@ -2460,53 +2584,6 @@ export class WidgetFormComponent implements OnInit {
     return WidgetFormUtils.generateUUID();
   }
 
-  // Edit Mode Methods
-  private async initializeFormWithExistingWidget(): Promise<void> {
-    if (!this.finalWidget) return;
-
-    try {
-      // Wait for form initialization to complete
-      if (!this.isFormInitialized) {
-        await this.initializeForm();
-      }
-
-      this.widgetForm.patchValue({
-        id: this.finalWidget.id,
-        dashboardId: this.finalWidget.dashboardId
-      })
-      // Set basic configuration
-      this.initializeBasicConfig(this.finalWidget);
-
-      // Set display configuration
-      this.initializeDisplayConfig(this.finalWidget);
-
-      // Set data input configuration
-      this.initializeDataInputConfig(this.finalWidget);
-
-      this.initializeShowableProperties(this.finalWidget);
-
-      // Set widget-specific configuration
-      this.initializeWidgetSpecificConfig(this.finalWidget);
-
-      // Set filter configuration
-      this.initializeFilterConfig(this.finalWidget);
-
-      // Set widget tile configuration
-      this.initializeWidgetTileConfig(this.finalWidget);
-
-      // Update UI state based on loaded data
-      this.updateUIStateAfterLoad();
-
-      // Update step completions
-      this.updateAllStepCompletions();
-
-      console.log('Form initialized with existing widget data');
-
-    } catch (error) {
-      console.error('Error initializing form with widget data:', error);
-    }
-  }
-
   private initializeBasicConfig(widget: Widget): void {
     // Determine configuration approach based on widget structure
     const configApproach = this.determineConfigurationApproach(widget);
@@ -2648,7 +2725,7 @@ export class WidgetFormComponent implements OnInit {
         this.groupBy1SelectionType = 'field';
         // Find the property in available properties
         const allProps = this.getAllAvailableProperties();
-        this.groupBy1Option = allProps.find(p => p.name === groupBy1.name) || null;
+        this.groupBy1Option = allProps.find(p => p.name.toLowerCase() === groupBy1.name.toLowerCase()) || null;
       }
 
       this.groupBy1Model = groupBy1;
@@ -2669,7 +2746,7 @@ export class WidgetFormComponent implements OnInit {
         this.groupBy2SelectionType = 'field';
         // Find the property in available properties
         const allProps = this.getAllAvailableProperties();
-        this.groupBy2Option = allProps.find(p => p.name === groupBy2.name) || null;
+        this.groupBy2Option = allProps.find(p => p.name.toLowerCase() === groupBy2.name.toLowerCase()) || null;
       }
 
       this.groupBy2Model = groupBy2;
@@ -2786,9 +2863,9 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           kpiConf: {
-            countValueColumnName: kpiConf.CountValueColumnName,
-            displayValueColumnName: kpiConf.DisplayValueColumnName,
-            imageColumnName: kpiConf.ImageColumnName || '',
+            countValueColumnName: kpiConf.countValueColumnName,
+            displayValueColumnName: kpiConf.displayValueColumnName,
+            imageColumnName: kpiConf.imageColumnName || '',
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
             showAggregation: kpiConf.showAggregation || false,
@@ -3084,8 +3161,9 @@ export class WidgetFormComponent implements OnInit {
       'dataInputConfig.fieldNames': 'Properties',
       'dataInputConfig.method': 'Aggregation Method',
       'refreshInterval': 'Refresh Interval',
-      'widgetSpecificConfig.kpiConf.CountValueColumnName': 'Count Value Column',
-      'widgetSpecificConfig.kpiConf.DisplayValueColumnName': 'Display Value Column',
+      'widgetSpecificConfig.kpiConf.countValueColumnName': 'KPI Count Column',
+      'widgetSpecificConfig.kpiConf.displayValueColumnName': 'KPI Label Column',
+      'widgetSpecificConfig.kpiConf.imageColumnName': 'KPI Image Column',
       'widgetSpecificConfig.donutConf.resultLabel': 'Result Label',
       'widgetSpecificConfig.tableConf.pageLimit': 'Page Limit'
     };
@@ -3141,7 +3219,14 @@ export class WidgetFormComponent implements OnInit {
 
   // Update the form title based on mode
   getFormTitle(): string {
+    if (this.formMode === Enum_WidgetFormMode.predefined) {
+      return this.isEditMode() ? 'Customize Pre-defined Widget' : 'Configure Pre-defined Widget';
+    }
     return this.isEditMode() ? 'Edit Widget' : 'Create New Widget';
+  }
+
+  isPredefinedMode(): boolean {
+    return this.formMode === Enum_WidgetFormMode.predefined;
   }
 
   // Update submit button text based on mode

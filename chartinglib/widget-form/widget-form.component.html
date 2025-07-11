@@ -16,6 +16,17 @@
   </div>
 </div>
 }
+
+@if(isPredefinedMode()) {
+<div class="predefined-widget-banner">
+  <div class="alert alert-info">
+    <i class="pi pi-info-circle"></i>
+    <span>You are customizing a pre-defined widget. Only display settings, widget type selection, and specific
+      configurations can be modified.</span>
+  </div>
+</div>
+}
+
 <div class="widget-form-container">
   <!-- Loading Indicator -->
   @if(!isFormInitialized){
@@ -49,8 +60,19 @@
       <p-accordionTab [disabled]="false">
         <ng-template pTemplate="header">
           <div class="accordion-header-content">
-            <span class="step-number">1</span>
-            <h2 class="step-title">Choose Configuration Approach</h2>
+            <span class="step-number" [class.locked]="isPredefinedMode()">
+              @if(isPredefinedMode()) {
+              <i class="pi pi-lock"></i>
+              } @else {
+              1
+              }
+            </span>
+            <h2 class="step-title" [class.locked-title]="isPredefinedMode()">
+              Choose Configuration Approach
+              @if(isPredefinedMode()) {
+              <span class="locked-indicator">(Pre-configured)</span>
+              }
+            </h2>
             @if(isStepComplete(1)){
             <span class="step-status">✓</span>
             } @if(getStepErrors(1).length > 0) {
@@ -60,6 +82,25 @@
         </ng-template>
 
         <div class="step-content">
+          @if(isPredefinedMode()) {
+          <div class="locked-step-message">
+            <i class="pi pi-lock locked-icon"></i>
+            <h4>Configuration Approach: Pre-defined</h4>
+            <p>This widget uses a pre-configured setup. The configuration approach and data settings cannot be modified.
+            </p>
+            <div class="current-config-summary">
+              <p><strong>Current Configuration:</strong></p>
+              <ul>
+                <li>Approach: {{ widgetForm.controls.configurationApproach.value | titlecase }}</li>
+                <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
+                @if(widgetForm.controls.configurationApproach.value === 'widgetFirst' &&
+                widgetForm.controls.widgetType.value) {
+                <li>Widget Type: {{ getWidgetTypeLabel() }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          }@else {
           <div class="form-group">
             <label class="form-label required">Configuration Method</label>
             <div class="radio-group">
@@ -116,13 +157,19 @@
             }
           </div>
           }
+          }
 
           <div class="step-actions">
             <div></div>
-            <!-- Empty div for spacing -->
+            @if(!isPredefinedMode()) {
             <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(1)" (click)="goToNextStep()">
               Next
             </button>
+            } @else {
+            <button type="button" class="btn btn-primary" (click)="goToStep(2)">
+              Continue to Display Settings
+            </button>
+            }
           </div>
         </div>
       </p-accordionTab>
@@ -180,8 +227,19 @@
       <p-accordionTab [disabled]="!isStepComplete(2)">
         <ng-template pTemplate="header">
           <div class="accordion-header-content">
-            <span class="step-number">3</span>
-            <h2 class="step-title">Data Configuration</h2>
+            <span class="step-number" [class.locked]="isPredefinedMode()">
+              @if(isPredefinedMode()) {
+              <i class="pi pi-lock"></i>
+              } @else {
+              3
+              }
+            </span>
+            <h2 class="step-title" [class.locked-title]="isPredefinedMode()">
+              Data Configuration
+              @if(isPredefinedMode()) {
+              <span class="locked-indicator">(Pre-configured)</span>
+              }
+            </h2>
             @if(isStepComplete(3)){
             <span class="step-status">✓</span>
             } @if(getStepErrors(3).length > 0) {
@@ -191,6 +249,31 @@
         </ng-template>
 
         <div class="step-content">
+          @if(isPredefinedMode()) {
+          <div class="locked-step-message">
+            <i class="pi pi-lock locked-icon"></i>
+            <h4>Data Configuration: Pre-defined</h4>
+            <p>This widget uses a pre-configured data setup. Data sources, entities, and filters cannot be modified.</p>
+            <div class="current-config-summary">
+              <p><strong>Current Data Configuration:</strong></p>
+              <ul>
+                <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
+                @if(widgetForm.controls.entityConfigType.value === 'single') {
+                <li>Selected Entity: {{ getEntityLabel(widgetForm.controls.dataInputConfig.controls.entitySelect.value)
+                  }}</li>
+                } @else {
+                <li>Number of Entities: {{ widgetForm.controls.dataInputConfig.controls.entities.value?.length || 0 }}
+                </li>
+                }
+                <li>Aggregation Method: {{ widgetForm.controls.dataInputConfig.controls.method.value }}</li>
+                <li>Selected Properties: {{ getSelectedPropertiesSummary() }}</li>
+                @if(enableGroupBy1 || enableGroupBy2) {
+                <li>Grouping: {{ getGroupingSummary() }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          } @else {
           <div formGroupName="dataInputConfig" class="data-input-config">
             <!-- Entity Type Selection -->
             <div class="form-group">
@@ -488,9 +571,9 @@
                 <div class="field-rule-item">
                   <div class="field-rule-header">
                     <div class="checkbox-label">
-                      <input type="checkbox" (change)="applyAggregationOnField($index, $event)" [value]="field.applyAggregation"
-                        class="form-checkbox" />
-                      <span class="checkbox-text">Apply Aggregation {{ field.name }}</span>
+                      <input type="checkbox" (change)="applyAggregationOnField($index, $event)"
+                        [checked]="field.applyAggregation" class="form-checkbox" />
+                      <span class="checkbox-text">Apply Aggregation for {{ field.name }}</span>
                     </div>
                   </div>
                   @if(widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count){
@@ -774,14 +857,21 @@
             </div>
           </div>
           }
+          }
 
           <div class="step-actions">
             <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
               Previous
             </button>
+            @if(!isPredefinedMode()) {
             <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(3)" (click)="goToNextStep()">
               Next
             </button>
+            } @else {
+            <button type="button" class="btn btn-primary" (click)="goToStep(4)">
+              Continue to Widget Configuration
+            </button>
+            }
           </div>
         </div>
       </p-accordionTab>
@@ -1255,10 +1345,13 @@
     <div class="form-progress-bar">
       <div *ngFor="let step of getStepLabels(); let i = index" class="progress-step"
         [class.completed]="isStepComplete(i + 1)" [class.active]="currentStep === i + 1"
-        [class.disabled]="!canNavigateToStep(i + 1)" [class.has-errors]="getStepErrors(i + 1).length > 0"
-        (click)="canNavigateToStep(i + 1) && goToStep(i + 1)">
+        [class.disabled]="!canNavigateToStep(i + 1)" [class.locked]="isPredefinedMode() && (i + 1 === 1 || i + 1 === 3)"
+        [class.has-errors]="getStepErrors(i + 1).length > 0" (click)="canNavigateToStep(i + 1) && goToStep(i + 1)">
+
         <div class="step-number">
-          @if(getStepErrors(i+1).length > 0) {
+          @if(isPredefinedMode() && (i + 1 === 1 || i + 1 === 3)) {
+          <i class="pi pi-lock"></i>
+          } @else if(getStepErrors(i+1).length > 0) {
           <i class="pi pi-exclamation-triangle"></i>
           } @else {
           {{ i + 1 }}

@@ -33,12 +33,14 @@ export abstract class I2vChartsComponent implements OnInit {
   dataExistsForShowableProperties: boolean = true;
 
   isCustomFilterApplied: boolean = false;
+  isChartToBeRemoved : boolean = false;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
+  @Output() widgetRemoveCallbackEmittor = new EventEmitter<any>();
   @Output() editWidgetOutput = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
@@ -341,18 +343,18 @@ export abstract class I2vChartsComponent implements OnInit {
           this.dataExists = false;
 
           if (data) {
-            this.transformChartData(data);
-            this.dataExists = true;
-            // if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
-            //   this.transformChartData(data);
-            //   this.dataExists = true;
-            // }
-            // else if (this.isTableOutputModel(data)) {
-            //   // this.tableData = data;
-            //   this.dataExists = true;
-            // }
+            // this.transformChartData(data);
+            // this.dataExists = true;
+            if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
+              this.transformChartData(data);
+              this.dataExists = true;
+            }
+            else if (this.isTableOutputModel(data)) {
+              // this.tableData = data;
+              this.dataExists = true;
+            }
           }
-this.cd.detectChanges();
+          this.cd.detectChanges();
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -471,6 +473,18 @@ this.cd.detectChanges();
     const height = this.elementRef.nativeElement.offsetHeight;
     const width = this.elementRef.nativeElement.offsetWidth;
     this.widgetResizeCallbackEmittor.emit({ "value": value, "height": height, "width": width });
+  }
+
+  public widgetRemoveCallback(value: boolean) {
+    this.cd.detectChanges();
+    if(value)
+    {
+      this.isChartToBeRemoved = true;
+    }
+    else{
+      this.isChartToBeRemoved = false
+    }
+    this.widgetRemoveCallbackEmittor.emit(value);
   }
 
   onTimeDurationChanged(event: string) {

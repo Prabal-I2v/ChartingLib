@@ -33,7 +33,7 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
 
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
-      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data.map(y => Number(y)) });
+      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data});
     });
 
     if (data.labels.xAxisFields.length > 0) {

@@ -10,9 +10,10 @@
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-          <span class="major-heading">No Configurations found</span>
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" l>
+            <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+          </div>
+          <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       }
@@ -37,9 +38,10 @@
     @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
-        <span class="major-heading">No Data found</span>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+        </div>
+        <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
     }

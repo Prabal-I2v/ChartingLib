@@ -18,7 +18,6 @@ import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filt
 import { CustomFilterValueModel } from "../Models/types/types";
 import { ThreeDimensionWidget, Widget } from "../Models/Widget";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ICommonFilterOutputEmittorModel, ITimeRange } from "../Models/interfaces/interfaces";
-import { Enum_WidgetFormOperation, IWidgetFormDataRequestModel, IWidgetFormDataResponseModel, WidgetFormComponent } from "../widget-form/widget-form.component";
 
 declare let $: any;
 
@@ -34,7 +33,7 @@ interface DateRange {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class I2vChartHeaderComponent implements OnInit, OnChanges {
-  svgIcon: string = ""
+  svgIcon: string = 'assets/fill/va/default.svg'
   heading = "";
   subHeading = "";
   disableTimeFilter = false;

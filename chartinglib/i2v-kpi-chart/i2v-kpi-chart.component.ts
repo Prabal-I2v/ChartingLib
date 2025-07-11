@@ -3,9 +3,14 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
-import { Enum_Method_Aggregation } from "../Models/Widget";
-import { emotionIconColorMapping, eventIconMapping } from "../Models/vehicle-icon-mapping";
-import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetRequestModel";
+import {
+  emotionIconColorMapping,
+  Enum_Month,
+  eventIconMapping,
+} from "../Models/vehicle-icon-mapping";
+import { Enum_Method_Aggregation } from "../Models/enums/enums";
+import { Kpi1DWidget } from "../Models/widgetRequestModel/KpiWidget1DModel";
+import { Kpi2DWidget } from "../Models/widgetRequestModel/KpiWidget2DModel";
 
 // export enum RiseLevel {
 //   Increase,
@@ -18,15 +23,15 @@ import { KPIConf, KpiWidget } from "../Models/widgetRequestModel/KpiWidgetReques
   styleUrl: "./i2v-kpi-chart.component.scss",
 })
 export class I2vKpiChartComponent extends I2vChartsComponent {
-  @Input() override widgetRequestModel: KpiWidget = null;
+  chartData: ClientChartModel;
+  @Input() override widgetRequestModel: Kpi1DWidget | Kpi2DWidget = null;
   percentValue: number = 0;
-  PropName: string = "";
-  PropIcon: string = "";
-  PropValue: number = 0;
-  propImage : string;
   svgIcon: string = "";
   ResSvgIcon: string = "";
   ResSvgIconColor: string = "#5F6F94";
+  aggregatedData: number = 0;
+  aggregatedDataLabel: string = "";
+  aggregatedDataImage: string = '';
   //  RiseLevel: RiseLevel;
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
@@ -42,180 +47,211 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   ngOnInit(): void {
     super.ngOnInit();
   }
-  transformChartData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel) {
+    this.dataExistsForShowableProperties = true;
     const chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({ name: x.label, data: x.data });
-    });
-    if (data.labels.length > 0) {
-      chartData.chartCategories = data.labels[0].value;
-      chartData.x_label = data.labels[0].key;
-    } else {
-      chartData.chartCategories = data.data.map((x) => {
-        return x.label;
+    chartData.series = data.seriesData.map((x) => {
+      return new ChartSeries({
+        name: x.name,
+        displayName: x.displayName,
+        data: x.data,
       });
-    }
+    });
+    let isMonthData = false;
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
 
-    //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
-    if (this.widgetRequestModel.clubbingAggregationType != null) {
-      if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Greatest) {
-        const greatestSeries = chartData.series.find((x) => {
-          return x.name.toLowerCase() == "greatest";
+    if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
+      if (isMonthData) {
+        const monthData: any[] = [];
+        data.labels.xAxisFields.forEach((x) => {
+          monthData.push(Enum_Month[parseInt(x) - 1]);
         });
-
-        const maxValuesSeriesLastValue = greatestSeries.data[greatestSeries.data.length - 1];
-        const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
-          return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
-        });
-
-        this.setData(chartData.series[maxValuesSeriesIndex], 0);
-        this.PropName = chartData.series[maxValuesSeriesIndex].name;
-      }
-      else if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Lowest) {
-        const lowestSeries = chartData.series.find((x) => {
-          return x.name.toLowerCase() == "lowest";
-        });
-
-        const minValuesSeriesLastValue =
-          lowestSeries.data[lowestSeries.data.length - 1];
-        const minValuesSeriesIndex = chartData.series.findIndex((x) => {
-          return x.data[x.data.length - 1] == minValuesSeriesLastValue;
-        });
-
-        this.setData(chartData.series[minValuesSeriesIndex], 0);
-        this.PropName = chartData.series[minValuesSeriesIndex].name;
-      }
-
-      else if (this.widgetRequestModel.clubbingAggregationType == Enum_Method_Aggregation.Total) {
-        const totalSeries = chartData.series.find((x) => {
-          return x.name.toLowerCase() == "total";
-        });
-        this.setData(totalSeries, 0);
-      }
-    }
-    else if (this.widgetRequestModel.kpiConf) {
-      const resultIndexBasedOnCountValueColumnName = this.findValueAsPerAggregation(this.widgetRequestModel.kpiConf, chartData.series);
-      var countValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.CountValueColumnName)
-      var displayValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.DisplayValueColumnName)
-            
-      this.setData(chartData.series[countValueSeriesIndex], resultIndexBasedOnCountValueColumnName, this.widgetRequestModel.kpiConf.showChart);
-      this.PropName = chartData.series[displayValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
-      if(this.widgetRequestModel.kpiConf.ImageColumnName)
-      {
-        var imageValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.ImageColumnName)
-        this.propImage = chartData.series[imageValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
-      }
-
-    }
-    else {
-      this.setData(chartData.series[0]);
-    }
-
-    if (this.widgetRequestModel.findResultSvgIcon == true) {
-      //svg icon as per result
-      var uppercaseRes = chartData.series[0].name.toUpperCase();
-      if(this.widgetRequestModel.kpiConf)
-      {
-        uppercaseRes =  this.PropName.toUpperCase();
-        if(chartData.series[0].name.toUpperCase() == "EMOTION"){
-          this.ResSvgIconColor = emotionIconColorMapping[uppercaseRes]
-        }
-          
-      }
-      
-      this.ResSvgIcon = eventIconMapping[uppercaseRes];
-       
-    }
-    return chartData;
-  }
-
-  setData(chartSeries: ChartSeries, index: number = 0, showSeries: boolean = false) {
-    if(showSeries)
-    {
-      this.showChart = true;
-    }
-    if (chartSeries.data.length > 1) {
-      this.PropValue = Number(chartSeries.data[index]);
-      if (showSeries) {
-        this.percentValue = (
-          (Number(chartSeries.data[index]) - Number(chartSeries.data[index])) /
-          Number(chartSeries.data[index])) * 100;
-      }
-    } else if (chartSeries.data.length == 1) {
-      this.PropValue = Number(chartSeries.data[index]);
-      if (showSeries) {
-        this.percentValue = 100;
+        chartData.xAxisFields = monthData;
+      } else {
+        chartData.xAxisFields = data.labels.xAxisFields;
       }
     } else {
-      this.PropValue = 0;
-      if (showSeries) {
-        this.percentValue = 0;
+      chartData.xAxisFields = [];
+    }
+
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
+
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
+    }
+
+    if (chartData.series.length > 0) {
+      //if we don't have multivaluedColumn then we used clubbingAggregationType property and we get series as Lowest/greatest/total
+      // if (this.widgetRequestModel.dataInputConfig.fieldsAggregationType != Enum_Method_Aggregation.None) {
+      //   if (this.widgetRequestModel.dataInputConfig?.fieldsAggregationType == Enum_Method_Aggregation.Greatest) {
+      //     const greatestSeries = chartData.series.find((x) => {
+      //       return x.name.toLowerCase() == "greatest";
+      //     });
+      //     const maxValuesSeriesLastValue = greatestSeries.data[greatestSeries.data.length - 1];
+      //     const maxValuesSeriesIndex = chartData.series.findIndex((x) => {
+      //       return x.data[x.data.length - 1] == maxValuesSeriesLastValue;
+      //     });
+      //     this.setData(chartData.series[maxValuesSeriesIndex], 0);
+      //     this.PropName = chartData.series[maxValuesSeriesIndex].name;
+      //   }
+      //   else if (this.widgetRequestModel.dataInputConfig?.fieldsAggregationType == Enum_Method_Aggregation.Least) {
+      //     const lowestSeries = chartData.series.find((x) => {
+      //       return x.name.toLowerCase() == "least";
+      //     });
+      //     const minValuesSeriesLastValue =
+      //       lowestSeries.data[lowestSeries.data.length - 1];
+      //     const minValuesSeriesIndex = chartData.series.findIndex((x) => {
+      //       return x.data[x.data.length - 1] == minValuesSeriesLastValue;
+      //     });
+      //     this.setData(chartData.series[minValuesSeriesIndex], 0);
+      //     this.PropName = chartData.series[minValuesSeriesIndex].name;
+      //   }
+      //   else if (this.widgetRequestModel.dataInputConfig?.fieldsAggregationType == Enum_Method_Aggregation.Total) {
+      //     const totalSeries = chartData.series.find((x) => {
+      //       return x.name.toLowerCase() == "total";
+      //     });
+      //     this.setData(totalSeries, 0);
+      //   }
+      // }
+      // else if (this.widgetRequestModel.kpiConf) {
+      //   const resultIndexBasedOnCountValueColumnName = this.findValueAsPerAggregation(this.widgetRequestModel.kpiConf, chartData.series);
+      //   var countValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.CountValueColumnName)
+      //   var displayValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.DisplayValueColumnName)
+      //   this.setData(chartData.series[countValueSeriesIndex], resultIndexBasedOnCountValueColumnName, this.widgetRequestModel.kpiConf.showChart);
+      //   this.PropName = chartData.series[displayValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
+      //   if (this.widgetRequestModel.kpiConf.ImageColumnName) {
+      //     var imageValueSeriesIndex = chartData.series.findIndex(series => series.name == this.widgetRequestModel.kpiConf.ImageColumnName)
+      //     this.propImage = chartData.series[imageValueSeriesIndex].data[resultIndexBasedOnCountValueColumnName];
+      //   }
+      // }
+    }
+
+    this.chartData = chartData;
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData);
+    if (this.chartData.series.length == 0) {
+      this.dataExistsForShowableProperties = false;
+    }
+    if (this.widgetRequestModel.kpiConf?.showAggregation) {
+      const aggregationMethod =
+        this.widgetRequestModel.kpiConf.dataAggregationMethod;
+
+      // Collect all relevant values with labels in one step
+      const valuesToAggregate: { value: number; label: string, image: string }[] = [];
+
+      this.chartData.series.forEach((series) => {
+        if (this.chartData.xAxisFields.length > 0) {
+          // Case: xAxisFields are present
+          this.chartData.xAxisFields.forEach((xAxisField, index) => {
+            let value = Number(series.data[index]);
+            let label = `${series.displayName} - ${xAxisField}`
+            let image = ''
+            if (this.widgetRequestModel.kpiConf?.countValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.countValueColumnName.toLowerCase());
+              value = Number(series.data[index])
+            }
+
+            if (this.widgetRequestModel.kpiConf?.displayValueColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.displayValueColumnName.toLowerCase());
+              label = series.data[index].toString();
+            }
+
+            if (this.widgetRequestModel.kpiConf?.imageColumnName) {
+              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.imageColumnName.toLowerCase());
+              image = series.data[index].toString();
+            }
+
+            if (!isNaN(value)) {
+              valuesToAggregate.push({
+                value: value,
+                label: label, // Combines both
+                image: image
+              });
+            }
+          });
+        } else {
+          // Case: xAxisFields are absent
+          const value = Number(series.data[0]);
+          if (!isNaN(value)) {
+            valuesToAggregate.push({
+              value: value,
+              label: `${series.displayName}`, // Only series name
+              image: ''
+            });
+          }
+        }
+      });
+
+      if (valuesToAggregate.length === 0) {
+        // Handle empty safely
+        this.aggregatedData = 0;
+        this.aggregatedDataLabel = "";
+        this.aggregatedDataImage = "";
+        return;
+      }
+
+      // Find Greatest & Lowest in a single pass
+      let greatest = valuesToAggregate[0];
+      let lowest = valuesToAggregate[0];
+      let sum = 0;
+
+      // Calculate Aggregation
+      switch (aggregationMethod) {
+        case Enum_Method_Aggregation.Greatest:
+          valuesToAggregate.forEach((item) => {
+            if (item.value > greatest.value) greatest = item;
+          });
+          this.aggregatedData = greatest.value;
+          this.aggregatedDataLabel = "Greatest ( " + greatest.label + " )";
+          this.aggregatedDataImage = greatest.image;
+          break;
+
+        case Enum_Method_Aggregation.Least:
+          valuesToAggregate.forEach((item) => {
+            if (item.value < lowest.value) lowest = item;
+          });
+          this.aggregatedData = lowest.value;
+          this.aggregatedDataLabel = "Lowest ( " + lowest.label + " )";
+          this.aggregatedDataImage = lowest.image;
+          break;
+
+        case Enum_Method_Aggregation.Total:
+          valuesToAggregate.forEach((item) => {
+            sum += item.value;
+          });
+          this.aggregatedData = sum;
+          this.aggregatedDataLabel = "Total";
+          break;
       }
     }
   }
 
-  findValueAsPerAggregation(conf: KPIConf, arr: ChartSeries[]): number {
-    if (arr.length === 0) {
-      return 0;
-    }
-    if (!conf.seriesAggregation) {
-      return 0;
-    }
-    else if (conf.seriesAggregation === Enum_Method_Aggregation.Greatest) {
-      let maxLastValue = -Infinity;
-      let maxIndex = -1;
-
-      var series = arr.find(series => series.name == conf.CountValueColumnName)
-      if (series) {
-        series.data.forEach((x, index) => {
-          if (Number(x) > Number(maxLastValue)) {
-            maxLastValue = x;
-            maxIndex = index;
-          }
-        })
-      }
-
-      return maxIndex;
-    }
-    else if (conf.seriesAggregation === Enum_Method_Aggregation.Lowest) {
-      let minLastValue = Infinity;
-      let minIndex = -1;
-
-      var series = arr.find(series => series.name == conf.CountValueColumnName)
-      if (series) {
-        series.data.forEach((x, index) => {
-          if (Number(x) < Number(minLastValue)) {
-            minLastValue = x;
-            minIndex = index;
-          }
-        })
-
-        return minIndex;
-      }
-    }
-    // Default return if no condition is met
-    return 0; // Or any default value you prefer
+  getSeriesDataByName(seriesName: string | undefined, index: number): any {
+    if (!seriesName) return null;
+    const series = this.chartData?.series?.find(s => s.name === seriesName);
+    return series?.data?.[index];
   }
+
+
 
   showDetail() {
-  //   const data: any = {};
-  //   data.component = ShowDetectionPopupFrsComponent;
-  //   data.data = {};
-  //   const dialogData: CommonModalData = {
-  //     event: data,
-  //     width: '100%',
-  //     heading: 'Person Detail',
-  //     footerButtons: [],
-  //     showPreviousButton: false,
-  //     showNextButton: false,
-  //     showBackButton: false,
-  //   };
-
-  //   const ref = this.dialog.open(CommonModalComponent, {
-  //     panelClass: 'custom-dialog-container',
-  //     data: dialogData,
-  //   });
-  //   ref.afterClosed().subscribe(() => { });
+    //   const data: any = {};
+    //   data.component = ShowDetectionPopupFrsComponent;
+    //   data.data = {};
+    //   const dialogData: CommonModalData = {
+    //     event: data,
+    //     width: '100%',
+    //     heading: 'Person Detail',
+    //     footerButtons: [],
+    //     showPreviousButton: false,
+    //     showNextButton: false,
+    //     showBackButton: false,
+    //   };
+    //   const ref = this.dialog.open(CommonModalComponent, {
+    //     panelClass: 'custom-dialog-container',
+    //     data: dialogData,
+    //   });
+    //   ref.afterClosed().subscribe(() => { });
   }
-
 }

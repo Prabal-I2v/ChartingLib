@@ -1,21 +1,14 @@
-<div [ngStyle]="{ background:widgetRequestModel?.isWidgetHidden ? 'rgba(0, 0, 0, 0.1)' : '#fff' }" style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: fit-content; min-width: fit-content;background: white;">
-  <div style="display: flex; flex-direction: column; width: 100%; height: 100%; padding: 16px; overflow-x: auto">
-    <div style="
-      display: flex;
-      justify-items: center;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-    ">
-      <div *ngIf="!isModel" class="data-container" style="
-        overflow-x: hidden;
-        height: 100%;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 10px 15px;
-        background-color: #fff;
-      ">
+<div [ngStyle]="{
+    background: isChartToBeRemoved
+      ? '#ffcccc'                               
+      : widgetRequestModel?.widgetInteractivityConfig?.isWidgetHidden
+        ? 'rgba(0, 0, 0, 0.1)'                    
+        : '#fff'                                  
+  }" class="widget-wrapper">
+  <div class="widget-content">
+    <div class="header-section">
+      @if (!isModel) {
+      <div class="data-container no-data-background">
         <div class="noConfExist">
           <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
             <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
@@ -23,41 +16,27 @@
           <span class="major-heading">{{'No Configurations found' |  translate}}</span>
         </div>
       </div>
-      <i2v-chart-header *ngIf="isModel" style="width: 100%; " [(showFilterValues)]="showFilterValues"
-        [widgetModel]="widgetRequestModel" [customFilters]="customFilters" [isEditModeOn]="isEditModeOn"
-        (daysFilterOutput)="onTimeChange($event)" (customFilterOutput)="onCustomFilterValuesChange($event)" (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
-        (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
-        (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (timePeriodOutput)="onTimeDurationChanged($event)" 
-        [applyToAllEnabled]="applyToAllEnabled" [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval"></i2v-chart-header>
+      }
+      @if (isModel) {
+      <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
+        [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
+        (customFilterOutput)="onCustomFilterValuesChange($event)"
+        (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
+        (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (editWidgetOutput)="onEditWidgetOutput()" (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
+        (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
+        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
+      </i2v-chart-header>
+      }
     </div>
-    <ng-container *ngIf="isModel && isLoading">
-      <div style="
-        display: flex;
-        width: 360px;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        flex: 1;
-        height: 100%;
-        width: 100%;
-      ">
-        <span style="
-          width: 50px;
-          height: 50px;
-          background: url(assets/gifs/horizontal-loader.gif) no-repeat center;
-          background-size: 100% 100%;
-        "></span>
-      </div>
-    </ng-container>
-    <div *ngIf="isModel && !isLoading && !dataExists" class="data-container" style="
-      overflow-x: hidden;
-      height: 100%;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 10px 15px;
-    ">
+    @if (isModel && isLoading) {
+    <div class="loading-container">
+      <span class="loading-spinner"></span>
+    </div>
+    }
+    @if (isModel && !isLoading && !dataExists) {
+    <div class="data-container">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
           <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
@@ -65,33 +44,51 @@
         <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
     </div>
-    <kendo-chart [chartArea]="{ background: 'transparent' }" style=" height: 100%" *ngIf="isModel && !isLoading && dataExists" [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
-      [pannable]="widgetRequestModel.isPannable ? { lock: 'y' } : false" [zoomable]="
-      widgetRequestModel.isZoomable ? { mousewheel: { lock: 'y' } } : false
-    ">
+    }
+    @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
+    <div class="data-container">
+      <div class="noConfExist">
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
+          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <span class="major-heading">No Data found for showable properties</span>
+      </div>
+    </div>
+    }
+    @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
+    <kendo-chart [chartArea]="{ background: 'transparent' }" class="chart-container"
+      [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
+      [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'y' } : false"
+      [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'y' } } : false">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item [max]="widgetRequestModel.max" [categories]="chartData.chartCategories"
-          [title]="{ text: chartData.x_label }">
+        <kendo-chart-category-axis-item [max]="widgetRequestModel.widgetInteractivityConfig.max"
+          [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>
         </kendo-chart-category-axis-item>
       </kendo-chart-category-axis>
-      <kendo-chart-tooltip>
+      <!-- <kendo-chart-tooltip>
         <ng-template kendoChartSeriesTooltipTemplate let-value="value" let-category="category">
           {{ value }}
         </ng-template>
-      </kendo-chart-tooltip>
+      </kendo-chart-tooltip> -->
       <kendo-chart-legend position="bottom" orientation="horizontal" [spacing]="140"
         [padding]="{ left: 80, right: 80 }"></kendo-chart-legend>
       <kendo-chart-series>
-        <kendo-chart-series-item type="column" [stack]="true" *ngFor="let data of chartData.series" [data]="data.data"
-          [name]="data.name">
+        @for (series of chartData.series; track seriesTrackBy) {
+        @if(isShowableSeries(series)){
+        <kendo-chart-series-item type="column" [stack]="true" [data]="series.data" [name]="series.name">
+          <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>
+        }
+        }
       </kendo-chart-series>
     </kendo-chart>
-  </div> 
-  <div *ngIf="showFilterValues && !isEditModeOn" style="display: flex; padding : 10px; border-top: 1px solid rgb(188, 188, 188)">
-    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.customFilters">
+    }
+  </div>
+  @if (showFilterValues && !isEditModeOn) {
+  <div class="filter-details-section">
+    <app-details-widget [commonWidgetCustomFilter]="widgetRequestModel.filterConfig.customFilters">
     </app-details-widget>
   </div>
+  }
 </div>

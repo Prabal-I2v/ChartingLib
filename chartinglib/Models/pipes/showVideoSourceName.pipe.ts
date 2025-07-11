@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { CustomFilterValueModel } from '../Widget';
+import { CustomFilterValueModel } from '../types/types';
 
 @Pipe({
   name: 'showVideoSourceName'

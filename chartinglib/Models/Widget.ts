@@ -24,6 +24,7 @@ export abstract class Widget {
   query?: string;
   widgetSpecificConfig?: string;
   isPredefinedWidget: boolean = false;
+  canBeRemoved : boolean = false;
   abstract dimension: WidgetDimension;
   abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
@@ -163,6 +164,7 @@ export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -182,6 +184,7 @@ export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -201,6 +204,7 @@ export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstruc
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -219,6 +223,7 @@ export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructor
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;

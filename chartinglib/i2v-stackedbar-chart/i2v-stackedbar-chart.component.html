@@ -59,7 +59,7 @@
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'x' } : false"
       [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'x' } } : false">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item [max]="widgetRequestModel.widgetInteractivityConfig.max"
+        <kendo-chart-category-axis-item 
           [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>

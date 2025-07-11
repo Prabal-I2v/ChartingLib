@@ -51,7 +51,7 @@
   <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
     [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
 
-  @if (!this.widgetModel.isPredefinedWidget;) {
+  @if (this.widgetModel.canBeRemoved) {
   <i2v-context-menu-item [icon]="removeWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
     [label]="removeWidgetMsg" (click)="toggleRemoveWidget()"></i2v-context-menu-item>
   }

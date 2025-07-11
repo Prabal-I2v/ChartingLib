@@ -1930,7 +1930,8 @@ export class WidgetFormComponent implements OnInit {
 
     const finalWidget = WidgetFactory.createWidget(constructorProps, widgetType);
     finalWidget.dimension = dimension;
-
+    finalWidget.isPredefinedWidget = true;
+    finalWidget.canBeRemoved = true;
     return finalWidget;
   }
 

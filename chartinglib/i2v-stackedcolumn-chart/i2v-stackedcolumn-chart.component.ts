@@ -24,9 +24,9 @@ export class I2vStackedcolumnChartComponent extends I2vChartsComponent {
    super.ngOnInit();
   }
 
-  transformData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel): ClientChartModel {
     let isMonthData = false;
-    if (data.labels[0].key == Enum_TimePeriod.month) isMonthData = true;
+    if (data.labels[0].key.toLocaleLowerCase() == Enum_TimePeriod.month) isMonthData = true;
     const chartData = new ClientChartModel();
 
     chartData.series = data.data.map((x) => {

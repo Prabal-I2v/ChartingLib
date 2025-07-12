@@ -46,7 +46,7 @@
   
     @if (showEntity) {
       <p-dropdown [options]="customFilterKeys" [(ngModel)]="selectedCustomFilterkey" [placeholder]="'Select an Entity' | translate"
-        [editable]="false" [showClear]="true" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
+        [editable]="false" (onChange)="onCustomFilterKeyChange($event)" [appendTo]="'body'">
       </p-dropdown>
     }
   

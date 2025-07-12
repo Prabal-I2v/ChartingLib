@@ -227,6 +227,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   clearCustomFilters(): void {
     if (this.showFilterValues)
       this.toggleShowFilterValues();
+     this.selectedCustomFilterkey = "";
+      this.selectedCustomFilterValue = [];
+      this.timeFilterValue = "";
+      this.enableCustomTime = false;
+      this.updateUIFilterModelValues();
     this.clearCustomFiltersValues.emit(true);
   }
 

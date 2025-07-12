@@ -475,6 +475,26 @@
                       </div>
                     </ng-container>
 
+                    <!-- Query Builder Input - SingleSelect -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        let options = options;
+                        type: 'MultiSelect';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
+                            [(ngModel)]="rule.value"
+                            placeholder="Select VideoSources" [showClear]="true"
+                            (ngModelChange)="onChange()" [appendTo]="'body'">
+                          </p-multiSelect>
+                        </div>
+                      </div>
+                    </ng-container>
+
                     <!-- Query Builder Input - Integer -->
                     <ng-container *queryInput="
                         let rule;

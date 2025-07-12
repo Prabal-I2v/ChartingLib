@@ -33,7 +33,7 @@ export abstract class I2vChartsComponent implements OnInit {
   dataExistsForShowableProperties: boolean = true;
 
   isCustomFilterApplied: boolean = false;
-  isChartToBeRemoved : boolean = false;
+  isChartToBeRemoved: boolean = false;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
@@ -238,14 +238,14 @@ export abstract class I2vChartsComponent implements OnInit {
     commonCall: boolean = false,
   ) {
     switch (event.key) {
-      case null: {
-        // Check if Video Sources exists in the customFilters
-        if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
-          // Remove Video Sources from customFilters
-          delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
-          }
-        }
-      
+      // case null: {
+      //   // Check if Video Sources exists in the customFilters
+      //   if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
+      //     // Remove Video Sources from customFilters
+      //     delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
+      //     }
+      //   }
+
       case "Video Sources": {
         this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
           event.key
@@ -533,11 +533,10 @@ export abstract class I2vChartsComponent implements OnInit {
 
   public onWidgetRemoveCallback(value: boolean) {
     this.cd.detectChanges();
-    if(value)
-    {
+    if (value) {
       this.isChartToBeRemoved = true;
     }
-    else{
+    else {
       this.isChartToBeRemoved = false
     }
     this.widgetRemoveCallbackEmittor.emit(value);
@@ -610,6 +609,9 @@ export abstract class I2vChartsComponent implements OnInit {
 
   updateCustomFiltersValues() {
     if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied || this.applyToAllEnabled) {
+      //apply time without checking apply to all
+      this.setValueAsPerWidgetCustomFiltersValue({ 'Time': this.dashboardCustomFilterValue['Time'] });
+
       if (this.isCustomFilterApplied) {
         this.widgetRequestModel.filterConfig.isDashboardFilterApplied = this.applyToAllEnabled;
         const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;

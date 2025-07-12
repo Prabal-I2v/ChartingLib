@@ -1684,13 +1684,14 @@ export class WidgetFormComponent implements OnInit {
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
       if (property.type !== EventPropertyType.Guid) {
-        if (property.name.toLowerCase() === "videoSourceid") {
+        if (property.name.toLowerCase() === "videosourceid") {
           const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
           let videoSourcesName = "";
           for (let i = 0; i < videoSources.length; i++) {
             videoSourcesName += videoSources[i].name + ",";
           }
           property.defaultValues = videoSourcesName.slice(0, -1);
+          property.type = EventPropertyType.MultiSelect
         }
 
         this.createFilterPropertyObject(

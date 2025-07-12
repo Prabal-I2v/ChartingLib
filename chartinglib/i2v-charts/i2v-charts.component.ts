@@ -238,6 +238,15 @@ export abstract class I2vChartsComponent implements OnInit {
     commonCall: boolean = false,
   ) {
     switch (event.key) {
+      case null: {
+        // Check if Video Sources exists in the customFilters
+        if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
+          // Remove Video Sources from customFilters
+          delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
+          }
+        }
+        break;
+      
       case "Video Sources": {
         this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
           event.key

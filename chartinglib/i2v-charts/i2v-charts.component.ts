@@ -245,7 +245,6 @@ export abstract class I2vChartsComponent implements OnInit {
           delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
           }
         }
-        break;
       
       case "Video Sources": {
         this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
@@ -339,11 +338,59 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   // The actual API call is moved to this method
+  private setTimeAccordingToWidget(widgetRequestModel: Widget): void {
+    if (!widgetRequestModel?.filterConfig?.customFilters?.Time?.[0]) {
+      return;
+    }
+
+    const timeFilter = widgetRequestModel.filterConfig.customFilters.Time[0];
+    const today = new Date();
+    let startDate: Date;
+
+    switch (timeFilter.displayName) {
+      case 'Today':
+        // Set to start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 7 days':
+        // Set to 7 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 30 days':
+        // Set to 30 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Custom':
+        // For custom, use the timeRange values directly from the filter
+        const timeRange = timeFilter.returnValue as ITimeRange;
+        if (timeRange) {
+          widgetRequestModel.filterConfig.startTime = timeRange.startTime;
+          widgetRequestModel.filterConfig.endTime = timeRange.endTime;
+        }
+        break;
+    }
+
+    // Update the time range in customFilters as well
+    widgetRequestModel.filterConfig.customFilters.Time[0].returnValue = {
+      startTime: widgetRequestModel.filterConfig.startTime,
+      endTime: widgetRequestModel.filterConfig.endTime
+    };
+  }
+
   private fetchDataFromServer(widgetRequestModel: Widget) {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
     }
-
+    this.setTimeAccordingToWidget(widgetRequestModel);
     this.apiSubscription = this.chartingDataService
       .getChartingData(widgetRequestModel)
       .subscribe(
@@ -432,7 +479,7 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.interval) {
       clearInterval(this.interval);
     }
-    if (this.widgetRequestModel.refreshInterval != -1) {
+    if (this.widgetRequestModel.refreshInterval != 0) {
       this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);

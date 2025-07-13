@@ -259,8 +259,7 @@
               <ul>
                 <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
                 @if(widgetForm.controls.entityConfigType.value === 'single') {
-                <li>Selected Entity: {{ getEntityLabel(widgetForm.controls.dataInputConfig.controls.entitySelect.value)
-                  }}</li>
+                <li>Selected Entity: {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}</li>
                 } @else {
                 <li>Number of Entities: {{ widgetForm.controls.dataInputConfig.controls.entities.value?.length || 0 }}
                 </li>
@@ -1280,12 +1279,7 @@
               </p>
               <div class="summary-item" *ngIf="widgetForm.controls.entityConfigType.value === 'single'">
                 <strong>Selected Entity:</strong>
-                {{
-                getEntityLabel(
-                widgetForm.controls.dataInputConfig.controls.entitySelect
-                .value
-                )
-                }}
+                {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}
               </div>
               <div class="summary-item" *ngIf="
                   widgetForm.controls.entityConfigType.value === 'multiple'

@@ -5,9 +5,7 @@ import {
   Enum_Method,
   Enum_Method_Aggregation,
   Enum_Schema,
-  Enum_Entity_With_Labels,
   Enum_TimePeriod,
-  Enum_Entity,
   widgetTypeDimensionMap,
   Enum_WidgetType,
   WidgetDimension,
@@ -19,10 +17,11 @@ import {
   IWidgetFieldNameConfig,
 } from "../Models/interfaces/interfaces";
 import { WidgetTileConf } from "../Models/types/types";
+import { AnalyticEventModel } from "src/app/Models/analyticEvent.Model";
 
 // ===== TYPE DEFINITIONS =====
 export interface EntityOption {
-  value: Enum_Entity;
+  value: string;
   label: string;
   schema: Enum_Schema;
 }
@@ -117,151 +116,152 @@ export const groupByTypes: DropdownOption<string>[] = [
 ];
 
 // ===== ENTITY DEFINITIONS =====
-const EVENT_ENTITIES: EntityOption[] = [
-  {
-    value: Enum_Entity.Highway_ATCC,
-    label: "Highway_ATCC",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Vehicle_Stopped,
-    label: "Vehicle_Stopped",
-    schema: Enum_Schema.Events,
-  },
-  { value: Enum_Entity.ANPR, label: "ANPR", schema: Enum_Schema.Events },
-  {
-    value: Enum_Entity.Wrong_Way_Detected,
-    label: "Wrong Way Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Human_Crossing_Road,
-    label: "Human Crossing Road",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Reverse_Traffic_Detected,
-    label: "Reverse Traffic Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Lane_Changed,
-    label: "Lane Changed",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Illegal_Vehicle,
-    label: "Illegal Vehicle",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Safe_Distance_Violated,
-    label: "Safe Distance Violated",
-    schema: Enum_Schema.Events,
-  },
-  // { value: Enum_Entity.Safety_Gear_Violation, label: 'Safety Gear Violation', schema: Enum_Schema.Events },
-  {
-    value: Enum_Entity.Intrusion_Detected,
-    label: "Intrusion Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Human_Detected,
-    label: "Human Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Deacceleration_Detected,
-    label: "Deacceleration Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Vehicle_Accelerated,
-    label: "Vehicle Accelerated",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Vehicle_Occupancy,
-    label: "Vehicle Occupancy",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Fire_Detected,
-    label: "Fire Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Smoke_Detected,
-    label: "Smoke Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Abandoned_Object_Detected,
-    label: "Abandoned Object Detected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Face_Recognition,
-    label: "Face Recognition",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Server_Status,
-    label: "Server Status",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.Pipeline_State,
-    label: "Pipeline State",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.DEVICE_CONNECTED,
-    label: "Device Connected",
-    schema: Enum_Schema.Events,
-  },
-  {
-    value: Enum_Entity.DEVICE_DISCONNECTED,
-    label: "Device Disconnected",
-    schema: Enum_Schema.Events,
-  },
-];
+// const EVENT_ENTITIES: EntityOption[] = [
+//   {
+//     value: Enum_Entity.Highway_ATCC,
+//     label: "Highway_ATCC",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Vehicle_Stopped,
+//     label: "Vehicle_Stopped",
+//     schema: Enum_Schema.Events,
+//   },
+//   { value: Enum_Entity.ANPR, label: "ANPR", schema: Enum_Schema.Events },
+//   {
+//     value: Enum_Entity.Wrong_Way_Detected,
+//     label: "Wrong Way Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Human_Crossing_Road,
+//     label: "Human Crossing Road",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Reverse_Traffic_Detected,
+//     label: "Reverse Traffic Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Lane_Changed,
+//     label: "Lane Changed",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Illegal_Vehicle,
+//     label: "Illegal Vehicle",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Safe_Distance_Violated,
+//     label: "Safe Distance Violated",
+//     schema: Enum_Schema.Events,
+//   },
+//   // { value: Enum_Entity.Safety_Gear_Violation, label: 'Safety Gear Violation', schema: Enum_Schema.Events },
+//   {
+//     value: Enum_Entity.Intrusion_Detected,
+//     label: "Intrusion Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Human_Detected,
+//     label: "Human Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Deacceleration_Detected,
+//     label: "Deacceleration Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Vehicle_Accelerated,
+//     label: "Vehicle Accelerated",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Vehicle_Occupancy,
+//     label: "Vehicle Occupancy",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Fire_Detected,
+//     label: "Fire Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Smoke_Detected,
+//     label: "Smoke Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Abandoned_Object_Detected,
+//     label: "Abandoned Object Detected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Face_Recognition,
+//     label: "Face Recognition",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Server_Status,
+//     label: "Server Status",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.Pipeline_State,
+//     label: "Pipeline State",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.DEVICE_CONNECTED,
+//     label: "Device Connected",
+//     schema: Enum_Schema.Events,
+//   },
+//   {
+//     value: Enum_Entity.DEVICE_DISCONNECTED,
+//     label: "Device Disconnected",
+//     schema: Enum_Schema.Events,
+//   },
+//    {
+//     value: Enum_Entity.Object_Entered,
+//     label: "Device Disconnected",
+//     schema: Enum_Schema.Events,
+//   },
+//    {
+//     value: Enum_Entity.Object_Exit,
+//     label: "Device Disconnected",
+//     schema: Enum_Schema.Events,
+//   },
+// ];
 
-const PUBLIC_ENTITIES: EntityOption[] = [
+
+export const PUBLIC_ENTITIES: EntityOption[] = [
   {
-    value: Enum_Entity.VideoSources,
+    value: "VideoSources",
     label: "Video Sources",
     schema: Enum_Schema.Public,
   },
-  { value: Enum_Entity.Persons, label: "Persons", schema: Enum_Schema.Public },
+  { value: "Persons", label: "Persons", schema: Enum_Schema.Public },
   {
-    value: Enum_Entity.FacePoint,
+    value: "FacePoint",
     label: "Face Point",
     schema: Enum_Schema.Public,
   },
 ];
 
-// ===== COMBINED ENTITIES =====
-export const entities: EntityOption[] = [...EVENT_ENTITIES, ...PUBLIC_ENTITIES];
-
-// Export entity arrays for external use
-export { EVENT_ENTITIES, PUBLIC_ENTITIES };
-
 // ===== WIDGET FORM UTILITIES CLASS =====
 export class WidgetFormUtils {
-  /**
-   * Get entities filtered by schema type
-   */
-  static getEntitiesBySchema(schema: Enum_Schema): EntityOption[] {
-    return entities.filter((entity) => entity.schema === schema);
-  }
 
-  /**
-   * Get entity by label
-   */
-  static getEntityByLabel(label: string): EntityOption | undefined {
-    return entities.find((entity) => entity.label === label);
-  }
+ static createEventEntities(analytics: AnalyticEventModel[]): EntityOption[] {
+  return analytics.map((entity: any) => ({
+    value: entity.name,
+    label: entity.name,
+    schema: Enum_Schema.Events
+  }));
+}
+
 
   /**
    * Get operators for a specific property type
@@ -432,59 +432,6 @@ export class WidgetFormUtils {
   }
 
   /**
-   * Deep clone an object
-   */
-  static deepClone<T>(obj: T): T {
-    if (obj === null || typeof obj !== "object") return obj;
-    if (obj instanceof Date) return new Date(obj.getTime()) as any;
-    if (obj instanceof Array)
-      return obj.map((item) => this.deepClone(item)) as any;
-
-    if (typeof obj === "object") {
-      const clonedObj = {} as any;
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          clonedObj[key] = this.deepClone(obj[key]);
-        }
-      }
-      return clonedObj;
-    }
-
-    return obj;
-  }
-
-  /**
-   * Debounce function for performance optimization
-   */
-  static debounce<T extends (...args: any[]) => any>(
-    func: T,
-    wait: number
-  ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-  }
-
-  /**
-   * Throttle function for performance optimization
-   */
-  static throttle<T extends (...args: any[]) => any>(
-    func: T,
-    limit: number
-  ): (...args: Parameters<T>) => void {
-    let inThrottle: boolean;
-    return (...args: Parameters<T>) => {
-      if (!inThrottle) {
-        func.apply(this, args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
-  }
-
-  /**
    * Validate form field value
    */
   static validateField(value: any, rules: ValidationRule[]): ValidationResult {
@@ -501,21 +448,6 @@ export class WidgetFormUtils {
       isValid: errors.length === 0,
       errors,
     };
-  }
-
-  /**
-   * Format bytes to human readable format
-   */
-  static formatBytes(bytes: number, decimals: number = 2): string {
-    if (bytes === 0) return "0 Bytes";
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   }
 
   /**
@@ -806,7 +738,7 @@ export const WIDGET_FORM_CONSTANTS = {
     "#fd7e14",
     "#20c997",
     "#e83e8c",
-  "#6610f2",
+    "#6610f2",
     "#fd6c9e",
   ],
 
@@ -815,10 +747,10 @@ export const WIDGET_FORM_CONSTANTS = {
     h: 4,
     x: 0,
     y: 0,
-    minW : 4,
-    minH : 4,
-    initialMinHeight : 4,
-    initialMinWidth : 4
+    minW: 4,
+    minH: 4,
+    initialMinHeight: 4,
+    initialMinWidth: 4
   } as WidgetTileConf,
 
   STEP_VALIDATION_DEBOUNCE: 300,

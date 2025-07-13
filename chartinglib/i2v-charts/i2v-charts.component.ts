@@ -87,9 +87,7 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.widgetRequestModel) {
       this.isModel = true;
       if (this.widgetRequestModel.allowRefresh) {
-        this.interval = setInterval(() => {
-          this.getDataFromServer(this.widgetRequestModel);
-        }, this.widgetRequestModel.refreshInterval * 1000);
+        this.setRefreshInterval()
       }
       if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
         this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
@@ -479,7 +477,7 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.interval) {
       clearInterval(this.interval);
     }
-    if (this.widgetRequestModel.refreshInterval != 0) {
+    if (this.widgetRequestModel.refreshInterval != -1) {
       this.interval = setInterval(() => {
         this.getDataFromServer(this.widgetRequestModel);
       }, this.widgetRequestModel.refreshInterval * 1000);
@@ -621,7 +619,7 @@ export abstract class I2vChartsComponent implements OnInit {
       }
       if (!this.applyToAllEnabled) {
         this.widgetRequestModel.filterConfig.customFilters = {
-          ...(this.customFilterValues ?? this.dashboardCustomFilterValue)
+          ...(this.customFilterValues)
         };
         this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.filterConfig.customFilters);
         this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));

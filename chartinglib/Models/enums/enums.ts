@@ -14,65 +14,6 @@ export const Enum_Method_Aggregation_With_Labels : Record<Enum_Method_Aggregatio
   [Enum_Method_Aggregation.Least] : "Least"
 }
 
-export enum Enum_Entity {
-  VideoSources,
-  Persons,
-  FacePoint,
-  Highway_ATCC,
-  VIDS,
-  Vehicle_Stopped,
-  ANPR,
-  Wrong_Way_Detected,
-  Human_Crossing_Road,
-  Reverse_Traffic_Detected,
-  Lane_Changed,
-  Illegal_Vehicle,
-  Safe_Distance_Violated,
-  Intrusion_Detected,
-  Human_Detected,
-  Deacceleration_Detected,
-  Vehicle_Accelerated,
-  Vehicle_Occupancy,
-  Fire_Detected,
-  Smoke_Detected,
-  Abandoned_Object_Detected,
-  Face_Recognition,
-  Server_Status,
-  Pipeline_State,
-  DEVICE_CONNECTED,
-  DEVICE_DISCONNECTED
-}
-
-
-export const Enum_Entity_With_Labels: Record<Enum_Entity, string> = {
-  [Enum_Entity.VideoSources]: 'VideoSources',
-  [Enum_Entity.Persons]: 'Persons',
-  [Enum_Entity.FacePoint]: 'FacePoint',
-  [Enum_Entity.Highway_ATCC]: 'Highway_ATCC',
-  [Enum_Entity.VIDS]: 'VIDS',
-  [Enum_Entity.Vehicle_Stopped]: 'Vehicle_Stopped',
-  [Enum_Entity.ANPR]: 'ANPR',
-  [Enum_Entity.Wrong_Way_Detected]: 'Wrong_Way_Detected',
-  [Enum_Entity.Human_Crossing_Road]: 'Human_Crossing_Road',
-  [Enum_Entity.Reverse_Traffic_Detected]: 'Reverse_Traffic_Detected',
-  [Enum_Entity.Lane_Changed]: 'Lane_Changed',
-  [Enum_Entity.Illegal_Vehicle]: 'Illegal_Vehicle',
-  [Enum_Entity.Safe_Distance_Violated]: 'Safe_Distance_Violated',
-  [Enum_Entity.Intrusion_Detected]: 'Intrusion_Detected',
-  [Enum_Entity.Human_Detected]: 'Human_Detected',
-  [Enum_Entity.Deacceleration_Detected]: 'Deacceleration_Detected',
-  [Enum_Entity.Vehicle_Accelerated]: 'Vehicle_Accelerated',
-  [Enum_Entity.Vehicle_Occupancy]: 'Vehicle_Occupancy',
-  [Enum_Entity.Fire_Detected]: 'Fire_Detected',
-  [Enum_Entity.Smoke_Detected]: 'Smoke_Detected',
-  [Enum_Entity.Abandoned_Object_Detected]: 'Abandoned_Object_Detected',
-  [Enum_Entity.Face_Recognition]: 'Face_Recognition',
-  [Enum_Entity.Server_Status]: 'Server_Status',
-  [Enum_Entity.Pipeline_State]: 'Pipeline_State',
-  [Enum_Entity.DEVICE_CONNECTED]: 'DEVICE_CONNECTED',
-  [Enum_Entity.DEVICE_DISCONNECTED]: 'DEVICE_DISCONNECTED'
-};
-
 
 export enum Enum_Method {
   Count,

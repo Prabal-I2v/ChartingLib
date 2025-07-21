@@ -405,6 +405,7 @@ export abstract class I2vChartsComponent implements OnInit {
             }
             else if (this.isTableOutputModel(data)) {
               // this.tableData = data;
+              this.transformChartData(data);
               this.dataExists = true;
             }
           }

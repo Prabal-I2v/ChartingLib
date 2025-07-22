@@ -1,0 +1,62 @@
+<ng-container *ngIf="widget.widgetType === Enum_WidgetType.KPI1D || widget.widgetType === Enum_WidgetType.KPI2D">
+                  <i2v-kpi-chart
+                      style="display: flex; min-height: fit-content; min-width: fit-content; height: 100%; width: 100%;"
+                      [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-kpi-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.ColumnChart1D || widget.widgetType === Enum_WidgetType.ColumnChart2D">
+                  <i2v-column-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-column-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.LineChart1D || widget.widgetType === Enum_WidgetType.LineChart2D">
+                  <i2v-line-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-line-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.BarChart1D || widget.widgetType === Enum_WidgetType.BarChart2D">
+                  <i2v-bar-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-bar-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.PieChart1D || widget.widgetType === Enum_WidgetType.PieChart2D">
+                  <i2v-pie-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-pie-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.Donut1D || widget.widgetType === Enum_WidgetType.Donut2D">
+                  <i2v-donut-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject" 
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-donut-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.AreaChart1D || widget.widgetType === Enum_WidgetType.AreaChart2D">
+                  <i2v-area-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-area-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.HeatMapChart1D || widget.widgetType === Enum_WidgetType.HeatMapChart2D || widget.widgetType === Enum_WidgetType.HeatMapChart3D">
+                  <i2v-heatmap-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-heatmap-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.StackedColumnChart">
+                  <i2v-stackedcolumn-chart [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-stackedcolumn-chart>
+              </ng-container>
+              <ng-container *ngIf="widget.widgetType === Enum_WidgetType.Table">
+                  <i2v-table-grid [widgetRequestModel]="widget" [customFilters]="widget.filterConfig.customFilters"
+                      [isEditModeOn]="false" [refreshCallSubject]="refreshCallSubject"
+                      [showTimeFilter]="true" [showRefreshInterval]="false">
+                  </i2v-table-grid>
+              </ng-container>

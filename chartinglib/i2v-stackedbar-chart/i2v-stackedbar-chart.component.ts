@@ -3,6 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
+import { Enum_Month } from "../Models/vehicle-icon-mapping";
 
 @Component({
   selector: "i2v-stackedbar-chart",
@@ -10,35 +11,55 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
   styleUrl: "./i2v-stackedbar-chart.component.scss",
 })
 export class I2vStackedbarChartComponent extends I2vChartsComponent {
+
+  chartData: ClientChartModel;
+
   constructor(
     chartingDataService: ChartingDataService,
     cd: ChangeDetectorRef,
     elementRef: ElementRef
   ) {
-    super(cd, chartingDataService,elementRef);
+    super(cd, chartingDataService, elementRef);
   }
 
   ngOnInit(): void {
     super.ngOnInit();
   }
 
-  transformChartData(data: ChartsOutputModel): ClientChartModel {
-    const chartData = new ClientChartModel();
+  // Chart transformation (your original logic)
+  public transformChartData(data: ChartsOutputModel) {
+    let isMonthData = false;
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
 
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({
-        name: x.label,
-        data: x.data.map((str) => parseInt(str, 10)),
-      });
+    const chartData = new ClientChartModel();
+    chartData.series = data.seriesData.map((x) => {
+      return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data});
     });
-    if (data.labels.length > 0) {
-      chartData.chartCategories = data.labels[0].value;
-      chartData.x_label = data.labels[0].key;
-    } else {
-      chartData.chartCategories = data.data.map((x) => {
-        return x.label;
-      });
+
+    if (data.labels.xAxisFields.length > 0) {
+      if (isMonthData) {
+        const monthData: any[] = [];
+        data.seriesData[0].data.forEach((x) => {
+          monthData.push(Enum_Month[parseInt(x) - 1]);
+        });
+
+        chartData.xAxisFields = data.labels.xAxisFields;
+      } else {
+        chartData.xAxisFields = data.labels.xAxisFields;
+      }
     }
-    return chartData;
+
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
+
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
+    }
+    this.chartData = chartData;
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData)
+    if (this.widgetRequestModel.showableProperties.length == 0) {
+      this.dataExistsForShowableProperties = false;
+    }
   }
 }

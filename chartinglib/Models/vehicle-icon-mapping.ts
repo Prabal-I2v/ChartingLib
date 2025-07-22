@@ -23,7 +23,7 @@ export const emotionIconColorMapping = {
   SAD : "blue",
   DISGUSTING : "yellow",
 }
-export enum month {
+export enum Enum_Month {
   Jan,
   Feb,
   Mar,

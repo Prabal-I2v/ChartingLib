@@ -3,6 +3,7 @@ import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
+import { Enum_Month } from "../Models/vehicle-icon-mapping";
 
 @Component({
   selector: "i2v-pie-chart",
@@ -10,6 +11,9 @@ import { ClientChartModel, ChartSeries } from "../Models/ClientChartModel";
   styleUrl: "./i2v-pie-chart.component.scss",
 })
 export class I2vPieChartComponent extends I2vChartsComponent {
+
+  chartData: ClientChartModel;
+
   public labelContent(args: any): string {
     var x = `${args.dataItem.name}`;
     return x;
@@ -20,22 +24,51 @@ export class I2vPieChartComponent extends I2vChartsComponent {
     cd: ChangeDetectorRef,
     elementRef: ElementRef
   ) {
-    super(cd, chartingDataService,elementRef);
+    super(cd, chartingDataService, elementRef);
   }
 
   ngOnInit(): void {
     super.ngOnInit();
   }
 
-  transformChartData(data: ChartsOutputModel): ClientChartModel {
+  transformChartData(data: ChartsOutputModel) {
     const chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({ value: Number(x.data[0]), name: x.label });
+    chartData.series = data.seriesData.map((x) => {
+      return new ChartSeries({ data: x.data, displayName: x.displayName, name: x.name });
     });
 
-    chartData.chartCategories = data.data.map((x) => {
-      return x.label;
-    });
-    return chartData;
+    let isMonthData = false;
+    if (data.labels.xAxisLabel?.toLowerCase() === "month") isMonthData = true;
+
+    if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
+      if (isMonthData) {
+        const monthData: any[] = [];
+        data.labels.xAxisFields.forEach((x) => {
+          monthData.push(Enum_Month[parseInt(x) - 1]);
+        });
+        chartData.xAxisFields = monthData;
+      } else {
+        chartData.xAxisFields = data.labels.xAxisFields;
+      }
+    }
+    else {
+      chartData.xAxisFields = [];
+    }
+
+    if (data.labels.xAxisLabel) {
+      chartData.xAxisLabel = data.labels.xAxisLabel;
+    }
+
+    if (data.labels.yAxisLabel) {
+      chartData.yAxisLabel = data.labels.yAxisLabel;
+    }
+
+    this.chartData = chartData;
+    this.chartData.series = this.appendNameToAggregatedProperty(this.chartData)
+    this.chartData.series = this.chartData.series.filter(x => this.widgetRequestModel.showableProperties.some(prop => prop.name.toLowerCase() == x.name.toLowerCase()))
+
+    if (this.widgetRequestModel.showableProperties.length == 0) {
+      this.dataExistsForShowableProperties = false;
+    }
   }
 }

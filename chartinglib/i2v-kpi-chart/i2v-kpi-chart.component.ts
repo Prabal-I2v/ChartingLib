@@ -148,8 +148,12 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             let label = `${series.displayName} - ${xAxisField}`
             let image = ''
             if (this.widgetRequestModel.kpiConf?.countValueColumnName) {
-              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.countValueColumnName.toLowerCase());
-              value = Number(series.data[index])
+              const series = this.chartData?.series?.find(s => 
+                s.name?.toLowerCase() === this.widgetRequestModel.kpiConf.countValueColumnName?.toLowerCase()
+              );
+              if (series?.data?.[index] !== undefined) {
+                value = Number(series.data[index]);
+              }
             }
 
             if (this.widgetRequestModel.kpiConf?.displayValueColumnName) {

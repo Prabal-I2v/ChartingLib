@@ -1,0 +1,1422 @@
+<!-- widget-form.component.html - Complete with inline validation -->
+
+<!-- Global Form Errors -->
+@if(getGlobalErrors().length > 0) {
+<div class="global-error-container">
+  <div class="alert alert-danger">
+    <h5>
+      <i class="pi pi-exclamation-triangle"></i> Please fix the following
+      errors:
+    </h5>
+    <ul class="error-list">
+      @for(error of getGlobalErrors(); track error) {
+      <li>{{ error }}</li>
+      }
+    </ul>
+  </div>
+</div>
+}
+
+@if(isPredefinedMode()) {
+<div class="predefined-widget-banner">
+  <div class="alert alert-info">
+    <i class="pi pi-info-circle"></i>
+    <span>You are customizing a pre-defined widget. Only display settings, widget type selection, and specific
+      configurations can be modified.</span>
+  </div>
+</div>
+}
+
+<div class="widget-form-container">
+  <!-- Loading Indicator -->
+  @if(!isFormInitialized){
+  <div class="loader-container">
+    <i class="pi pi-spin pi-spinner loader-icon"></i>
+    <p class="loader-text">Loading form data...</p>
+  </div>
+  }
+
+  <!-- Form Actions -->
+  @if(isFormInitialized){
+  <!-- <div class="form-actions">
+    <div class="config-mode-toggle">
+      <span class="toggle-label">Enable advance configuration:</span>
+      <label [class]="'i2v-toggle custom-default-small'">
+        <input type="checkbox" [checked]="isAdvancedMode" (change)="toggleConfigurationMode()" />
+        <span></span>
+      </label>
+    </div>
+
+    <button type="button" class="btn btn-outline-info btn-prefill" (click)="preFillForm()">
+      <i class="pi pi-magic-wand"></i>
+      Pre-fill with Sample Data
+    </button>
+  </div> -->
+
+  <!-- Main Form -->
+  <form [formGroup]="widgetForm" class="widget-form" novalidate>
+    <p-accordion [activeIndex]="currentStep - 1" (onOpen)="accordionTabOpened($event)" class="form-accordion">
+      <!-- Step 1: Configuration Approach -->
+      <p-accordionTab [disabled]="false">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number" [class.locked]="isPredefinedMode()">
+              @if(isPredefinedMode()) {
+              <i class="pi pi-lock"></i>
+              } @else {
+              1
+              }
+            </span>
+            <h2 class="step-title" [class.locked-title]="isPredefinedMode()">
+              Choose Configuration Approach
+              @if(isPredefinedMode()) {
+              <span class="locked-indicator">(Pre-configured)</span>
+              }
+            </h2>
+            @if(isStepComplete(1)){
+            <span class="step-status">✓</span>
+            } @if(getStepErrors(1).length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content">
+          @if(isPredefinedMode()) {
+          <div class="locked-step-message">
+            <i class="pi pi-lock locked-icon"></i>
+            <h4>Configuration Approach: Pre-defined</h4>
+            <p>This widget uses a pre-configured setup. The configuration approach and data settings cannot be modified.
+            </p>
+            <div class="current-config-summary">
+              <p><strong>Current Configuration:</strong></p>
+              <ul>
+                <li>Approach: {{ widgetForm.controls.configurationApproach.value | titlecase }}</li>
+                <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
+                @if(widgetForm.controls.configurationApproach.value === 'widgetFirst' &&
+                widgetForm.controls.widgetType.value) {
+                <li>Widget Type: {{ getWidgetTypeLabel() }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          }@else {
+          <div class="form-group">
+            <label class="form-label required">Configuration Method</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" formControlName="configurationApproach" value="widgetFirst"
+                  (change)="onConfigurationApproachChange()" />
+                <span class="radio-text">Widget First - Choose widget type first, then configure
+                  data</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" formControlName="configurationApproach" value="propertiesFirst"
+                  (change)="onConfigurationApproachChange()" />
+                <span class="radio-text">Properties First - Configure data first, then get widget
+                  recommendations</span>
+              </label>
+            </div>
+            @if(hasFieldError('configurationApproach')) {
+            <div class="field-error">
+              {{ getFieldError("configurationApproach") }}
+            </div>
+            }
+          </div>
+
+          <!-- Widget Type Selection (if widgetFirst approach) -->
+          @if(widgetForm.get('configurationApproach')?.value === 'widgetFirst'){
+          <div class="form-group">
+            <label for="widgetType" class="form-label required">Select Widget Type</label>
+            <p-dropdown id="widgetType" [options]="widgetTypes" formControlName="widgetType" optionLabel="label"
+              optionValue="value" placeholder="Select Widget Type" appendTo="body" [showClear]="true"
+              (onChange)="onWidgetTypeChange()" styleClass="form-dropdown" [class.error]="hasFieldError('widgetType')">
+            </p-dropdown>
+            @if(hasFieldError('widgetType')) {
+            <div class="field-error">{{ getFieldError("widgetType") }}</div>
+            }
+          </div>
+          }
+
+          <!-- Entity Configuration Type (for properties-first approach) -->
+          @if(widgetForm.get('configurationApproach')?.value ===
+          'propertiesFirst'){
+          <div class="form-group">
+            <label class="form-label required">Entity Configuration</label>
+            <p-dropdown [options]="[
+                { label: 'Single Entity', value: 'single' },
+                { label: 'Multiple Entities', value: 'multiple' }
+              ]" formControlName="entityConfigType" optionLabel="label" optionValue="value"
+              placeholder="Select Entity Configuration" appendTo="body" (onChange)="onEntityConfigTypeChange()"
+              styleClass="form-dropdown" [class.error]="hasFieldError('entityConfigType')">
+            </p-dropdown>
+            @if(hasFieldError('entityConfigType')) {
+            <div class="field-error">
+              {{ getFieldError("entityConfigType") }}
+            </div>
+            }
+          </div>
+          }
+          }
+
+          <div class="step-actions">
+            <div></div>
+            @if(!isPredefinedMode()) {
+            <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(1)" (click)="goToNextStep()">
+              Next
+            </button>
+            } @else {
+            <button type="button" class="btn btn-primary" (click)="goToStep(2)">
+              Continue to Display Settings
+            </button>
+            }
+          </div>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 2: Display Configuration -->
+      <p-accordionTab [disabled]="!isStepComplete(1)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">2</span>
+            <h2 class="step-title">Display Configuration</h2>
+            @if(isStepComplete(2)){
+            <span class="step-status">✓</span>
+            } @if(getStepErrors(2).length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content" formGroupName="displayConfig">
+          <div class="form-group">
+            <label for="heading" class="form-label required">Widget Heading</label>
+            <input type="text" id="heading" formControlName="heading" class="form-control"
+              [class.error]="hasFieldError('displayConfig.heading')" placeholder="Enter widget heading"
+              (input)="onHeadingChange()" (blur)="markFieldAsTouched('displayConfig.heading')" />
+            @if(hasFieldError('displayConfig.heading')) {
+            <div class="field-error">
+              {{ getFieldError("displayConfig.heading") }}
+            </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="subHeading" class="form-label">Sub Heading</label>
+            <input type="text" id="subHeading" formControlName="subHeading" class="form-control"
+              placeholder="Enter sub heading (optional)" />
+          </div>
+
+          <div class="form-group">
+            <label for="color" class="form-label">Widget Color</label>
+            <input type="color" id="color" formControlName="color" class="form-control color-input" />
+          </div>
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(2)" (click)="goToNextStep()">
+              Next
+            </button>
+          </div>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 3: Data Configuration -->
+      <p-accordionTab [disabled]="!isStepComplete(2)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number" [class.locked]="isPredefinedMode()">
+              @if(isPredefinedMode()) {
+              <i class="pi pi-lock"></i>
+              } @else {
+              3
+              }
+            </span>
+            <h2 class="step-title" [class.locked-title]="isPredefinedMode()">
+              Data Configuration
+              @if(isPredefinedMode()) {
+              <span class="locked-indicator">(Pre-configured)</span>
+              }
+            </h2>
+            @if(isStepComplete(3)){
+            <span class="step-status">✓</span>
+            } @if(getStepErrors(3).length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content">
+          @if(isPredefinedMode()) {
+          <div class="locked-step-message">
+            <i class="pi pi-lock locked-icon"></i>
+            <h4>Data Configuration: Pre-defined</h4>
+            <p>This widget uses a pre-configured data setup. Data sources, entities, and filters cannot be modified.</p>
+            <div class="current-config-summary">
+              <p><strong>Current Data Configuration:</strong></p>
+              <ul>
+                <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
+                @if(widgetForm.controls.entityConfigType.value === 'single') {
+                <li>Selected Entity: {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}</li>
+                } @else {
+                <li>Number of Entities: {{ widgetForm.controls.dataInputConfig.controls.entities.value?.length || 0 }}
+                </li>
+                }
+                <li>Aggregation Method: {{ widgetForm.controls.dataInputConfig.controls.method.value }}</li>
+                <li>Selected Properties: {{ getSelectedPropertiesSummary() }}</li>
+                @if(enableGroupBy1 || enableGroupBy2) {
+                <li>Grouping: {{ getGroupingSummary() }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          } @else {
+          <div formGroupName="dataInputConfig" class="data-input-config">
+            <!-- Entity Type Selection -->
+            <div class="form-group">
+              <label for="entityTypeSelect" class="form-label">Schema Type</label>
+              <p-dropdown id="entityTypeSelect" [options]="[
+                  { label: 'Events', value: Enum_Schema.Events },
+                  { label: 'Resources', value: Enum_Schema.Public }
+                ]" formControlName="entityTypeSelect" optionLabel="label" optionValue="value" appendTo="body"
+                (onChange)="onEntityTypeSelectChange()" styleClass="form-dropdown">
+              </p-dropdown>
+            </div>
+
+            <div class="entity-config">
+              <!-- Single Entity Configuration -->
+              @if (widgetForm.controls.entityConfigType.value === 'single') {
+
+              <!-- Entity Selection -->
+              <div class="form-group">
+                <label for="entitySelect" class="form-label required">Select Entity</label>
+                <p-dropdown id="entitySelect" [options]="selectedEntities" formControlName="entitySelect"
+                  optionLabel="label" optionValue="value" placeholder="Select Entity" appendTo="body" [showClear]="true"
+                  (onChange)="onEntitySelectChange()" styleClass="form-dropdown"
+                  [class.error]="hasFieldError('dataInputConfig.entitySelect')">
+                </p-dropdown>
+                @if(hasFieldError('dataInputConfig.entitySelect')) {
+                <div class="field-error">
+                  {{ getFieldError("dataInputConfig.entitySelect") }}
+                </div>
+                }
+              </div>
+
+              @if (isAdvancedMode) {
+              <!-- Property Filters -->
+              <div class="property-filters">
+                <div class="property-filters-header">
+                  <div class="checkbox-label">
+                    <input type="checkbox" id="enablePropertyFilters" [checked]="enablePropertyFilters"
+                      (change)="togglePropertyFilters($event)" class="form-checkbox" />
+                    <span class="checkbox-text">Enable Property Filters</span>
+                  </div>
+                </div>
+
+                @if (enablePropertyFilters) {
+                <div class="property-filters-content">
+                  <lib-query-builder class="query-builder" [config]="config" [ngModel]="ruleData"
+                    [ngModelOptions]="{ standalone: true }" [allowRuleset]="true" name="name">
+                    <!-- Query Builder Button Group -->
+                    <ng-container *queryButtonGroup="
+                        let ruleset;
+                        let addRule = addRule;
+                        let addRuleSet = addRuleSet;
+                        let removeRuleSet = removeRuleSet
+                      ">
+                      <div class="query-builder-actions">
+                        <button class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRule()"
+                          libSvgElement [appSvg]="'assets/Outline/plus.svg'" matTooltip="Add rule"></button>
+                        <button *ngIf="addRuleSet" class="flex-row-center-center i2v-btn-icon medium primary-outline"
+                          (click)="addRuleSet()" libSvgElement [appSvg]="'assets/Outline/plus-multiple.svg'"
+                          matTooltip="Add rule set"></button>
+                        <button *ngIf="removeRuleSet" class="flex-row-center-center i2v-btn-icon medium tertiary-danger"
+                          (click)="removeRuleSet()" libSvgElement [appSvg]="'assets/Outline/trash.svg'"
+                          matTooltip="Remove rule set"></button>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Switch Group -->
+                    <ng-container *querySwitchGroup="
+                        let ruleset;
+                        let onChange = onChange;
+                        let index = i
+                      ">
+                      <div class="rulesetGroupIndex">
+                        <div class="rule-index-badge">
+                          <span class="ruleSetId">{{ ruleset.id }}</span>
+                        </div>
+                        <mat-radio-group *ngIf="ruleset" [(ngModel)]="ruleset.condition"
+                          [ngModelOptions]="{ standalone: true }" (ngModelChange)="onChange($event)"
+                          class="condition-radio-group">
+                          <mat-radio-button value="and">AND</mat-radio-button>
+                          <mat-radio-button value="or">OR</mat-radio-button>
+                        </mat-radio-group>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Entity -->
+                    <ng-container *queryEntity="
+                        let rule;
+                        let entities = entities;
+                        let onChange = onChange
+                      ">
+                      <mat-form-field class="entity-select-field">
+                        <mat-select [(ngModel)]="rule.entity" (ngModelChange)="onChange($event, rule)">
+                          <mat-option *ngFor="let entity of entities" [value]="entity.value">
+                            {{ entity.name }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </ng-container>
+
+                    <!-- Query Builder Field -->
+                    <ng-container *queryField="
+                        let rule;
+                        let fields = fields;
+                        let onChange = onChange;
+                        let getFields = getFields
+                      ">
+                      <div class="field-rule-container">
+                        <div class="rulesetIndex">
+                          <div class="rule-index-badge">
+                            <span class="ruleSetId">{{ rule.id }}</span>
+                          </div>
+                        </div>
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property</label>
+                          <select class="custom-select" name="field" [ngModelOptions]="{ standalone: true }"
+                            [(ngModel)]="rule.field" (ngModelChange)="onChange($event, rule)">
+                            <option *ngFor="let field of getFields(rule.entity)" [value]="field.value">
+                              {{ field.name }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Operator -->
+                    <ng-container *queryOperator="
+                        let rule;
+                        let operators = operators;
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Is</label>
+                          <select class="custom-select" name="operator" [ngModelOptions]="{ standalone: true }"
+                            [(ngModel)]="rule.operator" (ngModelChange)="onChange()">
+                            <option *ngFor="let value of operators" [value]="value">
+                              {{ value }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - String -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        type: 'String';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                            (ngModelChange)="onChange()" [pattern]="'^\\S.*'" required />
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - Boolean -->
+                    <ng-container *queryInput="
+                        let rule;
+                        type: 'Boolean';
+                        let onChange = onChange;
+                        let options = options
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                            (ngModelChange)="onChange()">
+                            <option *ngFor="let opt of options" [value]="opt">
+                              {{ opt }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - SingleSelect -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        let options = options;
+                        type: 'SingleSelect';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                            (ngModelChange)="onChange()">
+                            <option *ngFor="let opt of options" [value]="opt">
+                              {{ opt }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - SingleSelect -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        let options = options;
+                        type: 'MultiSelect';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
+                            [(ngModel)]="rule.value"
+                            placeholder="Select VideoSources" [showClear]="true"
+                            (ngModelChange)="onChange()" [appendTo]="'body'">
+                          </p-multiSelect>
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - Integer -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        type: 'Integer';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                            (ngModelChange)="onChange()" type="number" min="0" step="1"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Input - Float -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        type: 'Float';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value" type="number"
+                            (ngModelChange)="onChange()" />
+                        </div>
+                      </div>
+                    </ng-container>
+
+                    <!-- Query Builder Remove Button -->
+                    <ng-container *queryRemoveButton="let rule; let removeRule = removeRule">
+                      <button class="flex-row-center-center i2v-btn-icon medium tertiary-danger" libSvgElement
+                        [appSvg]="'assets/Outline/trash.svg'" (click)="removeRule(rule)"
+                        matTooltip="Remove rule"></button>
+                    </ng-container>
+                  </lib-query-builder>
+                </div>
+                }
+              </div>
+              }
+
+              <!-- Aggregation Method -->
+              <div class="form-group">
+                <label for="method" class="form-label required">Aggregation Method</label>
+                <p-dropdown id="method" [options]="singleEntityAggregationMethods" formControlName="method"
+                  optionLabel="label" optionValue="value" appendTo="body" (onChange)="aggregationMethodChange($event)"
+                  styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+
+              <!-- Field Names Selection -->
+              @if (entityAggregationMethod == Enum_method.Sum &&
+              entityProperties.length == 0) {
+              <span>
+                Chnage aggregation method as this entity method does not have
+                property</span>
+              } @else if (entityProperties.length > 0) {
+              <div class="form-group">
+                <label class="form-label" [ngClass]="
+                    entityAggregationMethod === Enum_method.Sum
+                      ? 'required'
+                      : ''
+                  ">Select Properties</label>
+                <p-multiSelect [options]="allFieldNames" formControlName="fieldNames" optionLabel="name" [filter]="true"
+                  placeholder="Select Properties" appendTo="body" [showToggleAll]="true"
+                  (onChange)="onFieldNamesChange($event)" styleClass="form-multiselect"
+                  [class.error]="hasFieldError('dataInputConfig.fieldNames')">
+
+                </p-multiSelect>
+                @if(hasFieldError('dataInputConfig.fieldNames')) {
+                <div class="field-error">
+                  {{ getFieldError("dataInputConfig.fieldNames") }}
+                </div>
+                }
+
+                <!-- Display selected field names -->
+                @if (selectedFieldNames.length > 0) {
+                <div class="selected-fields-info">
+                  <small>Selected: {{ selectedFieldNames.length }} properties</small>
+                </div>
+                }
+              </div>
+
+              <!-- Field Configs -->
+              @if (selectedFieldNames.length >0) {
+              <div class="field-rules-container">
+                @for (field of selectedFieldNames; track $index) {
+                <div class="field-rule-item">
+                  <div class="field-rule-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" (change)="applyAggregationOnField($index, $event)"
+                        [checked]="field.applyAggregation" class="form-checkbox" />
+                      <span class="checkbox-text">Apply Aggregation for {{ field.name }}</span>
+                    </div>
+                  </div>
+                  @if(widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count){
+                  <div class="field-rule-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [value]="field.rule"
+                        class="form-checkbox" />
+                      <span class="checkbox-text">{{ field.name }}</span>
+                    </div>
+                  </div>
+
+                  @if (field.rule) {
+                  <div class="field-rule-controls">
+                    <div class="rule-control">
+                      <label class="form-label">Operator</label>
+                      <select class="form-control" [value]="field.rule.operator"
+                        (change)="onFieldRuleOperatorChange($index, $event)">
+                        @for (condition of getOpertorsByType(field.type); track
+                        condition) {
+                        <option [value]="condition">{{ condition }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="rule-control">
+                      <label class="form-label">Value</label>
+
+                      @if (field.type === EventPropertyType.String) {
+                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
+                        (input)="onFieldRuleValueChange($index, $event)" />
+                      } @if (field.type === EventPropertyType.Boolean) {
+                      <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                      </select>
+                      } @if (field.type === EventPropertyType.Integer ||
+                      field.type === EventPropertyType.Float) {
+                      <input type="number" class="form-control" [placeholder]="'Enter value for ' + field.name"
+                        (input)="onFieldRuleValueChange($index, $event)" />
+                      }
+                    </div>
+                  </div>
+                  }
+                  }
+                </div>
+                }
+              </div>
+              }
+
+              <!-- Fields Aggregation Type -->
+              @if (selectedFieldNames.length > 0) {
+              <div class="form-group">
+                <label for="fieldsAggregationType" class="form-label">Selected Properties Aggregation Method</label>
+                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
+                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+              } }
+
+              <!-- Distinct Option -->
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="isDistinct" formControlName="isDistinct" class="form-checkbox" />
+                  <span class="checkbox-text">Get only distinct (unique) aggregation for selected
+                    properties</span>
+                </div>
+              </div>
+              }
+
+              <!-- Multiple Entities Configuration -->
+              @if(widgetForm.controls.entityConfigType.value === 'multiple'){
+              <!-- Multiple Entities Selection -->
+              <div class="form-group">
+                <label for="entities" class="form-label required">Select Entities</label>
+                <p-multiSelect id="entities" [options]="selectedEntities" formControlName="entities" optionLabel="label"
+                  optionValue="value" placeholder="Select Multiple Entities" appendTo="body" [showToggleAll]="true"
+                  (onChange)="onEntitiesChange($event)" styleClass="form-multiselect"
+                  [class.error]="hasFieldError('dataInputConfig.entities')">
+                </p-multiSelect>
+                @if(hasFieldError('dataInputConfig.entities')) {
+                <div class="field-error">
+                  {{ getFieldError("dataInputConfig.entities") }}
+                </div>
+                }
+              </div>
+
+              <!-- Common Properties Selection -->
+              <div class="form-group" *ngIf="commonFieldNames.length > 0">
+                <label class="form-label">Select Common Properties</label>
+                <p-multiSelect [options]="commonFieldNames" formControlName="fieldNames" optionLabel="name"
+                  [filter]="true" placeholder="Select Common Properties" appendTo="body" [showToggleAll]="true"
+                  (onChange)="onCommonPropertiesChange($event)" styleClass="form-multiselect">
+                </p-multiSelect>
+
+                <!-- Display selected common properties -->
+                <div class="selected-fields-info" *ngIf="selectedFieldNames.length > 0">
+                  <small>Selected: {{ selectedFieldNames.length }} common
+                    properties</small>
+                </div>
+              </div>
+
+              <!-- Fields Aggregation Type -->
+              <div class="form-group">
+                <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
+                <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
+                  formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                </p-dropdown>
+              </div>
+              }
+            </div>
+
+            <!-- Advanced Configuration Section -->
+            @if (isAdvancedMode && shouldShowGroupBy1() ) {
+            <div class="advanced-config">
+              <h4>Advanced Configuration</h4>
+
+              <div class="group-by-configs">
+                <!-- Group By 1 Configuration -->
+                <div class="form-group group-by-section">
+                  <div class="group-by-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" id="enableGroupBy1" [checked]="enableGroupBy1"
+                        (change)="toggleGroupBy1($event)" class="form-checkbox" />
+                      <span class="checkbox-text">Enable Group By 1</span>
+                    </div>
+                  </div>
+
+                  @if (enableGroupBy1) {
+                  <div class="group-by-container">
+                    <!-- Group By 1 Type Selection -->
+                    <div class="form-group">
+                      <label class="form-label required">Group By 1 Type</label>
+                      <p-dropdown [options]="getAvailableGroupByTypes(1)" [(ngModel)]="groupBy1SelectionType"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value"
+                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(1, $event)"
+                        styleClass="form-dropdown" [class.error]="hasGroupBy1TypeError()">
+                      </p-dropdown>
+                      @if(hasGroupBy1TypeError()) {
+                      <div class="field-error">
+                        {{ getGroupBy1TypeError() }}
+                      </div>
+                      }
+                    </div>
+
+                    <!-- Field Selection for Group By 1 - Add error handling -->
+                    @if (groupBy1SelectionType === 'field') {
+                    <div class="form-group">
+                      <label class="form-label required">Select Field for Group By 1</label>
+                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy1Option"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="columnName" placeholder="Select Property"
+                        appendTo="body" [showClear]="true" (onChange)="onGroupBy1Change($event)"
+                        styleClass="form-dropdown" [class.error]="hasGroupBy1FieldError()">
+                      </p-dropdown>
+                      @if(hasGroupBy1FieldError()) {
+                      <div class="field-error">
+                        {{ getGroupBy1FieldError() }}
+                      </div>
+                      }
+                    </div>
+                    }
+
+                    <!-- Time Grouping for Group By 1 - Add error handling -->
+                    @if (groupBy1SelectionType === 'time') {
+                    <div class="form-group">
+                      <label class="form-label required">Time Grouping</label>
+                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping1"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" appendTo="body"
+                        (onChange)="updateTimeGrouping(1, $event)" styleClass="form-dropdown"
+                        [class.error]="hasGroupBy1TimeError()">
+                      </p-dropdown>
+                      @if(hasGroupBy1TimeError()) {
+                      <div class="field-error">
+                        {{ getGroupBy1TimeError() }}
+                      </div>
+                      }
+                    </div>
+                    <!-- Time Clubbing Option -->
+                    <div class="form-group">
+                      <div class="checkbox-label">
+                        <input type="checkbox" id="clubbingTime" formControlName="clubbingTime" class="form-checkbox" />
+                        <span class="checkbox-text">Enable time clubbing</span>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+
+                @if (shouldShowGroupBy2()) {
+                <div class="group-by-divider"></div>
+
+                <!-- Group By 2 Configuration -->
+                <div class="form-group group-by-section">
+                  <div class="group-by-header">
+                    <div class="checkbox-label">
+                      <input type="checkbox" id="enableGroupBy2" [checked]="enableGroupBy2"
+                        (change)="toggleGroupBy2($event)" class="form-checkbox" />
+                      <span class="checkbox-text">Enable Group By 2</span>
+                    </div>
+                  </div>
+
+                  @if (enableGroupBy2) {
+                  <div class="group-by-container">
+                    <!-- Group By 2 Type Selection -->
+                    <div class="form-group">
+                      <label class="form-label required">Group By 2 Type</label>
+                      <p-dropdown [options]="getAvailableGroupByTypes(2)" [(ngModel)]="groupBy2SelectionType"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value"
+                        placeholder="Select Type" appendTo="body" (onChange)="onSelectGroupByType(2, $event)"
+                        styleClass="form-dropdown" [class.error]="hasGroupBy2TypeError()">
+                      </p-dropdown>
+                      @if(hasGroupBy2TypeError()) {
+                      <div class="field-error">
+                        {{ getGroupBy2TypeError() }}
+                      </div>
+                      }
+                    </div>
+
+                    <!-- Field Selection for Group By 2 -->
+                    @if (groupBy2SelectionType === 'field') {
+                    <div class="form-group">
+                      <label class="form-label required">Select Field for Group By 2</label>
+                      <p-dropdown [options]="getAllAvailableProperties()" [(ngModel)]="groupBy2Option"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="columnName" placeholder="Select Property"
+                        appendTo="body" [showClear]="true" (onChange)="onGroupBy2Change($event)"
+                        styleClass="form-dropdown" [class.error]="hasGroupBy2FieldError()">
+                      </p-dropdown>
+                      @if(hasGroupBy2FieldError()) {
+                      <div class="field-error">
+                        {{ getGroupBy2FieldError() }}
+                      </div>
+                      }
+                    </div>
+                    }
+
+                    <!-- Time Grouping for Group By 2 -->
+                    @if (groupBy2SelectionType === 'time') { @if
+                    (groupBy2SelectionType === 'time') {
+                    <div class="form-group">
+                      <label class="form-label required">Time Grouping</label>
+                      <p-dropdown [options]="timeGroupingOptions" [(ngModel)]="selectedTimeGrouping2"
+                        [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" appendTo="body"
+                        (onChange)="updateTimeGrouping(2, $event)" styleClass="form-dropdown"
+                        [class.error]="hasGroupBy2TimeError()">
+                      </p-dropdown>
+                      @if(hasGroupBy2TimeError()) {
+                      <div class="field-error">
+                        {{ getGroupBy2TimeError() }}
+                      </div>
+                      }
+                    </div>
+                    <!-- Time Clubbing Option -->
+                    <div class="form-group">
+                      <div class="checkbox-label">
+                        <input type="checkbox" id="clubbingTime" formControlName="clubbingTime" class="form-checkbox" />
+                        <span class="checkbox-text">Enable time clubbing</span>
+                      </div>
+                    </div>
+                    } }
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Step 3 Validation Summary -->
+          @if(getStepErrors(3).length > 0) {
+          <div class="step-validation-summary">
+            <div class="alert alert-warning">
+              <h6><i class="pi pi-exclamation-triangle"></i> Step Issues:</h6>
+              <ul>
+                @for(error of getStepErrors(3); track error) {
+                <li>{{ error }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          }
+          }
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
+              Previous
+            </button>
+            @if(!isPredefinedMode()) {
+            <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(3)" (click)="goToNextStep()">
+              Next
+            </button>
+            } @else {
+            <button type="button" class="btn btn-primary" (click)="goToStep(4)">
+              Continue to Widget Configuration
+            </button>
+            }
+          </div>
+        </div>
+      </p-accordionTab>
+
+      <!-- Step 4: Widget Type Selection (for properties-first approach) -->
+      @if(widgetForm.controls.configurationApproach.value ===
+      'propertiesFirst'){
+      <p-accordionTab [disabled]="!isStepComplete(3)">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">4</span>
+            <h2 class="step-title">Select Widget Type</h2>
+            @if(isStepComplete(4)){
+            <span class="step-status">✓</span>
+            } @if(getStepErrors(4).length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content">
+          <!-- Widget Recommendations -->
+          <div *ngIf="recommendedWidgets.length > 0" class="widget-type-selection">
+            <h4>Recommended Widgets</h4>
+            <p class="recommendation-text">
+              Based on your configuration, these widget types are recommended:
+            </p>
+
+            <div class="widget-cards">
+              <div *ngFor="let widget of recommendedWidgets" class="widget-card" [class.selected]="
+                  widgetForm.controls.widgetType.value === widget.value
+                " [class.error]="hasFieldError('widgetType')" (click)="selectWidget(widget.value)">
+                <div class="widget-icon">
+                  <i class="pi pi-chart-bar"></i>
+                </div>
+                <div class="widget-name">{{ widget.label }}</div>
+              </div>
+            </div>
+            @if(hasFieldError('widgetType')) {
+            <div class="field-error">{{ getFieldError("widgetType") }}</div>
+            }
+          </div>
+
+          @if(recommendedWidgets.length === 0) {
+          <div class="no-recommendations">
+            <div class="alert alert-info">
+              <i class="pi pi-info-circle"></i>
+              Please complete the previous steps to see widget recommendations.
+            </div>
+          </div>
+          }
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(4)" (click)="goToNextStep()">
+              Next
+            </button>
+          </div>
+        </div>
+      </p-accordionTab>
+      }
+
+      <!-- Step 5: Widget-Specific Configuration -->
+      <p-accordionTab [disabled]="
+          !isStepComplete(
+            widgetForm.controls.configurationApproach.value ===
+              'propertiesFirst'
+              ? 4
+              : 3
+          )
+        ">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">
+              {{
+              widgetForm.controls.configurationApproach.value ===
+              "propertiesFirst"
+              ? "5"
+              : "4"
+              }}
+            </span>
+            <h2 class="step-title">Widget Configuration</h2>
+            @if(isStepComplete(5)){
+            <span class="step-status">✓</span>
+            } @if(getStepErrors(5).length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content">
+          @if(allShowablePropertiesName.length > 0) {
+          <div class="form-group">
+            <label class="form-label">Showable Properties</label>
+            <p-multiSelect [options]="allShowablePropertiesName" formControlName="showablePropertiesSelection"
+              optionLabel="displayName" optionValue="name" [filter]="true" placeholder="Select Showable Properties"
+              appendTo="body" (onChange)="onShowablePropertiesChange($event)" styleClass="form-multiselect">
+            </p-multiSelect>
+          </div>
+          }
+
+          <div class="form-group">
+            <div class="checkbox-label">
+              <input type="checkbox" formControlName="allowRefresh" class="form-checkbox" />
+              <span class="checkbox-text">Allow Auto Refresh for widgets</span>
+              @if(allowRefresh == true){
+              <input class="i2v-input primary-default medium" type="number" formControlName="refreshInterval"
+                [class.error]="hasFieldError('refreshInterval')" min="30" max="3600"
+                (blur)="markFieldAsTouched('refreshInterval')" />
+              (in seconds) @if(hasFieldError('refreshInterval')) {
+              <div class="field-error">
+                {{ getFieldError("refreshInterval") }}
+              </div>
+              } }
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="requiresWidgetSpecificConfig()">
+            <div class="checkbox-label">
+              <input type="checkbox" formControlName="enableWidgetSpecificConfig" class="form-checkbox" />
+              <span class="checkbox-text">Enable Widget Specific Config</span>
+            </div>
+          </div>
+
+          @if(isSpecificConfigEnabled){
+          <div class="step-content widget-specific-config" formGroupName="widgetSpecificConfig">
+            <!-- KPI Configuration -->
+            <div *ngIf="
+                widgetForm.controls.widgetType.value ===
+                  Enum_WidgetType.KPI1D ||
+                widgetForm.controls.widgetType.value === Enum_WidgetType.KPI2D
+              " formGroupName="kpiConf" class="config-section">
+              <h3 class="config-title">KPI Configuration</h3>
+
+              <div class="form-group">
+                <label for="kpiCountColumn" class="form-label required">Count Value Column</label>
+                <p-dropdown id="kpiCountColumn" [options]="getAvailableColumnNames()"
+                  formControlName="countValueColumnName" placeholder="Select Column" appendTo="body" [showClear]="true"
+                  styleClass="form-dropdown" [class.error]="
+                    hasFieldError(
+                      'widgetSpecificConfig.kpiConf.countValueColumnName'
+                    )
+                  ">
+                </p-dropdown>
+                @if(hasFieldError('widgetSpecificConfig.kpiConf.countValueColumnName'))
+                {
+                <div class="field-error">
+                  {{
+                  getFieldError(
+                  "widgetSpecificConfig.kpiConf.countValueColumnName"
+                  )
+                  }}
+                </div>
+                }
+                <small class="form-help">Column name that contains the count/numeric value to
+                  display</small>
+              </div>
+
+              <div class="form-group">
+                <label for="kpiDisplayColumn" class="form-label required">Display Value Column</label>
+                <p-dropdown id="kpiDisplayColumn" [options]="getAvailableColumnNames()"
+                  formControlName="displayValueColumnName" placeholder="Select Column" appendTo="body"
+                  [showClear]="true" styleClass="form-dropdown" [class.error]="
+                    hasFieldError(
+                      'widgetSpecificConfig.kpiConf.displayValueColumnName'
+                    )
+                  ">
+                </p-dropdown>
+                @if(hasFieldError('widgetSpecificConfig.kpiConf.displayValueColumnName'))
+                {
+                <div class="field-error">
+                  {{
+                  getFieldError(
+                  "widgetSpecificConfig.kpiConf.displayValueColumnName"
+                  )
+                  }}
+                </div>
+                }
+                <small class="form-help">Column name that contains the display label/text</small>
+              </div>
+
+              <div class="form-group">
+                <label for="kpiImageColumn" class="form-label">Image Column (Optional)</label>
+                <p-dropdown id="kpiImageColumn" [options]="getAvailableColumnNames()" formControlName="imageColumnName"
+                  placeholder="Select Column" appendTo="body" [showClear]="true" styleClass="form-dropdown">
+                </p-dropdown>
+                <small class="form-help">Column name that contains image URLs (optional)</small>
+              </div>
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="showChart" formControlName="showAggregation" class="form-checkbox" />
+                  <span class="checkbox-text">Show Aggregation</span>
+                </div>
+                <small class="form-help">Display aggregation of showable properties</small>
+              </div>
+              <div class="form-group">
+                <label for="kpiDataAggregationMethod" class="form-label required">Data Aggregation Method</label>
+                <p-dropdown id="kpiImageColumn" [options]="fieldsAggregationMethods"
+                  formControlName="dataAggregationMethod" placeholder="Select Column" appendTo="body"
+                  styleClass="form-dropdown">
+                </p-dropdown>
+                @if(hasFieldError('widgetSpecificConfig.kpiConf.DataAggregationMethod'))
+                {
+                <div class="field-error">
+                  {{
+                  getFieldError(
+                  "widgetSpecificConfig.kpiConf.DataAggregationMethod"
+                  )
+                  }}
+                </div>
+                }
+                <small class="form-help">Method using which showable properties get aggregated</small>
+              </div>
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="showChart" formControlName="showChart" class="form-checkbox" />
+                  <span class="checkbox-text">Show Chart</span>
+                </div>
+                <small class="form-help">Display a small chart alongside the KPI value</small>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="hideLabel" formControlName="hideLabel" class="form-checkbox" />
+                  <span class="checkbox-text">Hide label of value</span>
+                </div>
+                <small class="form-help">Hide the small label present alongside the KPI value</small>
+              </div>
+            </div>
+
+            <!-- Donut Configuration -->
+            <div *ngIf="
+                widgetForm.controls.widgetType.value ===
+                  Enum_WidgetType.Donut1D ||
+                widgetForm.controls.widgetType.value === Enum_WidgetType.Donut2D
+              " formGroupName="donutConf" class="config-section">
+              <h3 class="config-title">Donut Chart Configuration</h3>
+
+              <div class="form-group">
+                <label for="donutCenterLabel" class="form-label required">Result Label</label>
+                <input type="text" id="donutCenterLabel" formControlName="centerLabel" class="form-control"
+                  [class.error]="
+                    hasFieldError('widgetSpecificConfig.donutConf.centerLabel')
+                  " placeholder="Enter result label" (blur)="
+                    markFieldAsTouched(
+                      'widgetSpecificConfig.donutConf.centerLabel'
+                    )
+                  " />
+                @if(hasFieldError('widgetSpecificConfig.donutConf.centerLabel'))
+                {
+                <div class="field-error">
+                  {{
+                  getFieldError("widgetSpecificConfig.donutConf.centerLabel")
+                  }}
+                </div>
+                }
+                <small class="form-help">Label to display for the chart results</small>
+              </div>
+
+              <div class="form-group">
+                <label for="donutCenterLabelSeriesAggregation" class="form-label">Center Label Series
+                  Aggregation</label>
+                <p-dropdown id="donutCenterLabelSeriesAggregation" [options]="seriesAggregationOptions"
+                  formControlName="centerLabelAggregation" optionLabel="label" optionValue="value" appendTo="body"
+                  styleClass="form-dropdown">
+                </p-dropdown>
+                <small class="form-help">How to aggregate multiple data series</small>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="showSeriesLabelValue" formControlName="showSeriesLabelValue"
+                    class="form-checkbox" />
+                  <span class="checkbox-text">Show Series Label Value</span>
+                </div>
+                <small class="form-help">Display values on chart segments</small>
+              </div>
+            </div>
+
+            <!-- Table Configuration -->
+            <div *ngIf="
+                widgetForm.controls.widgetType.value === Enum_WidgetType.Table
+              " formGroupName="tableConf" class="config-section">
+              <h3 class="config-title">Table Configuration</h3>
+
+              <div class="form-group">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="pagination" formControlName="pagination" class="form-checkbox" />
+                  <span class="checkbox-text">Enable Pagination</span>
+                </div>
+                <small class="form-help">Enable pagination for large datasets</small>
+              </div>
+
+              <div class="form-group" *ngIf="
+                  widgetForm.controls.widgetSpecificConfig.controls.tableConf
+                    .controls.pagination.value
+                ">
+                <label for="pageLimit" class="form-label">Page Limit</label>
+                <p-inputNumber id="pageLimit" formControlName="pageLimit" placeholder="Enter page limit"
+                  class="form-input" [class.error]="
+                    hasFieldError('widgetSpecificConfig.tableConf.pageLimit')
+                  ">
+                </p-inputNumber>
+                @if(hasFieldError('widgetSpecificConfig.tableConf.pageLimit')) {
+                <div class="field-error">
+                  {{
+                  getFieldError("widgetSpecificConfig.tableConf.pageLimit")
+                  }}
+                </div>
+                }
+                <small class="form-help">Number of rows to display per page (1-100)</small>
+              </div>
+            </div>
+          </div>
+          }
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
+              Previous
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="!isStepComplete(5)" (click)="goToNextStep()">
+              Next
+            </button>
+          </div>
+        </div>
+      </p-accordionTab>
+
+      <!-- Review Step -->
+      <p-accordionTab [disabled]="!canProceedToReview()">
+        <ng-template pTemplate="header">
+          <div class="accordion-header-content">
+            <span class="step-number">{{ getStepLabels().length }}</span>
+            <h2 class="step-title">Review & Preview</h2>
+            @if(getValidationWarnings().length > 0) {
+            <span class="step-error-indicator">⚠</span>
+            }
+          </div>
+        </ng-template>
+
+        <div class="step-content">
+          <div class="widget-summary">
+            <h3 class="summary-title">Configuration Summary</h3>
+
+            <div class="summary-section">
+              <h4 class="section-title">Display Settings</h4>
+              <p class="summary-item">
+                <strong>Configuration Approach:</strong>
+                {{
+                widgetForm.controls.configurationApproach.value | titlecase
+                }}
+              </p>
+              <p class="summary-item">
+                <strong>Widget Type:</strong>
+                {{ getWidgetTypeLabel() }}
+              </p>
+              <p class="summary-item">
+                <strong>Widget Heading:</strong>
+                {{
+                widgetForm.controls.displayConfig.controls.heading.value ||
+                "Not set"
+                }}
+              </p>
+              <div class="summary-item" *ngIf="
+                  widgetForm.controls.displayConfig.controls.subHeading.value
+                ">
+                <strong>Sub Heading:</strong>
+                {{
+                widgetForm.controls.displayConfig.controls.subHeading.value
+                }}
+              </div>
+              <div class="summary-item color-preview">
+                <span><strong>Widget Color:</strong></span>
+                <div class="color-box" [style.background-color]="
+                    widgetForm.controls.displayConfig.controls.color.value
+                  "></div>
+              </div>
+            </div>
+
+            <div class="summary-section">
+              <h4 class="section-title">Data Configuration</h4>
+              <p class="summary-item">
+                <strong>Entity Configuration:</strong>
+                {{ widgetForm.controls.entityConfigType.value | titlecase }}
+              </p>
+              <div class="summary-item" *ngIf="widgetForm.controls.entityConfigType.value === 'single'">
+                <strong>Selected Entity:</strong>
+                {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}
+              </div>
+              <div class="summary-item" *ngIf="
+                  widgetForm.controls.entityConfigType.value === 'multiple'
+                ">
+                <strong>Selected Entities:</strong>
+                {{
+                widgetForm.controls.dataInputConfig.controls.entities.value
+                ?.length || 0
+                }}
+                entities
+              </div>
+              <p class="summary-item">
+                <strong>Selected Properties:</strong>
+                {{ getSelectedPropertiesSummary() }}
+              </p>
+              <div class="summary-item" *ngIf="enableGroupBy1 || enableGroupBy2">
+                <strong>Grouping Configuration:</strong>
+                {{ getGroupingSummary() }}
+              </div>
+              <div class="summary-item" *ngIf="enablePropertyFilters">
+                <strong>Property Filters:</strong>
+                Enabled
+              </div>
+            </div>
+
+            <div class="summary-section" *ngIf="requiresWidgetSpecificConfig()">
+              <h4 class="section-title">Widget-Specific Configuration</h4>
+              <p class="summary-item">
+                <strong>Configuration:</strong>
+                {{ getWidgetSpecificConfigSummary() }}
+              </p>
+            </div>
+
+            <!-- Validation Warnings -->
+            <div *ngIf="getValidationWarnings().length > 0" class="validation-warnings">
+              <h5>Please Note:</h5>
+              <ul>
+                <li *ngFor="let warning of getValidationWarnings()">
+                  {{ warning }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Final Validation Warnings -->
+          @if(getValidationWarnings().length > 0) {
+          <div class="final-validation-warnings">
+            <div class="alert alert-warning">
+              <h5><i class="pi pi-exclamation-triangle"></i> Please Review:</h5>
+              <ul>
+                @for(warning of getValidationWarnings(); track warning) {
+                <li>{{ warning }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+          }
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-secondary" (click)="goToPreviousStep()">
+              Previous
+            </button>
+            <!-- <button type="submit" class="btn btn-primary btn-submit" (click)="getPreview()" [disabled]="!isFormValid">
+              <i class="pi pi-eye"></i>
+              Get Preview
+            </button>
+            <button type="submit" class="btn btn-success btn-submit" (click)="onSubmit()" [disabled]="!isFormValid">
+              <i class="pi pi-check"></i>
+              {{ getSubmitButtonText() }}
+            </button> -->
+          </div>
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+
+    <!-- Progress Bar -->
+    <div class="form-progress-bar">
+      <div *ngFor="let step of getStepLabels(); let i = index" class="progress-step"
+        [class.completed]="isStepComplete(i + 1)" [class.active]="currentStep === i + 1"
+        [class.disabled]="!canNavigateToStep(i + 1)" [class.locked]="isPredefinedMode() && (i + 1 === 1 || i + 1 === 3)"
+        [class.has-errors]="getStepErrors(i + 1).length > 0" (click)="canNavigateToStep(i + 1) && goToStep(i + 1)">
+
+        <div class="step-number">
+          @if(isPredefinedMode() && (i + 1 === 1 || i + 1 === 3)) {
+          <i class="pi pi-lock"></i>
+          } @else if(getStepErrors(i+1).length > 0) {
+          <i class="pi pi-exclamation-triangle"></i>
+          } @else {
+          {{ i + 1 }}
+          }
+        </div>
+        <div class="step-label">{{ step }}</div>
+      </div>
+    </div>
+
+    <!-- Form Reset -->
+    <div class="form-reset">
+      <button type="button" class="btn btn-outline-secondary" (click)="onReset()">
+        <i class="pi pi-refresh"></i>
+        Reset Form
+      </button>
+    </div>
+
+    <!-- Form Status Indicator -->
+    @if(widgetForm.invalid && (widgetForm.touched || attemptedSubmit)) {
+    <div class="form-status">
+      <div class="alert alert-danger">
+        <i class="pi pi-times-circle"></i>
+        <span class="status-text">Please fix all validation errors before proceeding</span>
+      </div>
+    </div>
+    }
+
+    <!-- Debug Information (remove in production) -->
+    <div class="debug-info" *ngIf="false">
+      <p-accordion>
+        <p-accordionTab header="Form Debug Information">
+          <h5>Form Value</h5>
+          <pre>{{ widgetForm.value | json }}</pre>
+
+          <h5>Form Status</h5>
+          <pre>
+Valid: {{ widgetForm.valid }}, Touched: {{ widgetForm.touched }}, Dirty: {{
+              widgetForm.dirty
+            }}</pre>
+
+          <h5>Selected Field Names</h5>
+          <pre>{{ selectedFieldNames | json }}</pre>
+
+          <h5>Entity Properties</h5>
+          <pre>{{ entityProperties | json }}</pre>
+
+          <h5>Step Completions</h5>
+          <pre>{{ stepsCompleted | json }}</pre>
+        </p-accordionTab>
+      </p-accordion>
+    </div>
+  </form>
+  }
+</div>

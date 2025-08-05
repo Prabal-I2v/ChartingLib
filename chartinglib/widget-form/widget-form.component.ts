@@ -875,23 +875,13 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onCommonPropertiesChange(event: any): void {
-    const selectedProperties = event.value as Property[];
-    const selectedFieldNames: IWidgetFieldNameConfig[] = selectedProperties.map((prop) => {
-      return {
-        name: prop.name,
-        columnName: prop.columnName,
-        applyAggregation: true,
-        type: prop.type,
-        isLabel: false
-      };
-    });
+    const selectedProperties = event.value as IWidgetFieldNameConfig[];
 
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedFieldNames
+        fieldNames: selectedProperties
       }
     });
-
 
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
@@ -998,7 +988,7 @@ export class WidgetFormComponent implements OnInit {
         existingField.applyAggregation = true;
       }
       else {
-        existingField.applyAggregation = true;
+        existingField.applyAggregation = false;
       }
     }
   }

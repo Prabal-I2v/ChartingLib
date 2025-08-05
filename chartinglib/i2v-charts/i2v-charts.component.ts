@@ -654,8 +654,12 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   isShowableSeries(chartSeries: ChartSeries): boolean {
-    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(x => x.name.toLowerCase() == chartSeries.name.toLowerCase());
-    return isSeriesShowable ? true : false
+    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(
+      x =>
+        x.displayName.toLowerCase() === chartSeries.name.toLowerCase() ||
+        x.name.toLowerCase() === chartSeries.displayName.toLowerCase()
+    );
+    return isSeriesShowable ? true : false;
   }
 
   seriesTrackBy(index: number): string | number {

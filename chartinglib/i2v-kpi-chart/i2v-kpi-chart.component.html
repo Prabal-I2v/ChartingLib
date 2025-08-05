@@ -64,17 +64,26 @@
           }
 
           <div class="content-section">
-            <div class="number-grp">
+            <div class="number-grp" 
+                [ngClass]="{
+                  'greatest': isGreatest,
+                  'least': isLowest
+                }">
               @if(aggregatedDataImage != ''){
               <div>
                 <img style="height: 50px; width: 50px; border-radius: 8px;" [src]="aggregatedDataImage">
               </div>
               }
               <div class="details-grp">
+                @if(!isGreatest && !isLowest) {
                 <div class="minorheader" style="font-style: italic">
                   {{ this.aggregatedDataLabel | uppercase }}
                 </div>
-
+                }@else{
+                <div class="minorheader" style="font-style: italic">
+                  {{ this.aggregatedDataActualLabel | uppercase }}
+                </div>
+                }
                 <div class="digits">{{ aggregatedData }}</div>
               </div>
             </div>
@@ -94,7 +103,7 @@
         </div>
         }
 
-        <div class="content-section">
+        <div class="content-section" [class.show-aggregation]="widgetRequestModel.kpiConf?.showAggregation">
           @if(chartData.xAxisFields.length> 0) { @for (series of
           chartData.series; track $index) {
           @if(isShowableSeries(series)){
@@ -133,11 +142,14 @@
           } } }
           }@else{ @for (series of chartData.series; track seriesTrackBy) {
           @if(isShowableSeries(series)){
-          <div class="number-grp">
+          <div class="number-grp" [ngClass]="{
+            'greatest': series.displayName?.toLowerCase()?.includes('greatest'),
+            'least': series.displayName?.toLowerCase()?.includes('lowest')
+          }">
             <div class="details-grp">
               @if (!widgetRequestModel.kpiConf?.hideLabel) {
               <div class="minorheader" style="font-style: italic">
-                {{ series.displayName | uppercase | translate }}
+                {{ getFormattedLabel(series.displayName) | translate }}
               </div>
               }
               <div class="digits">{{ series.data[0] }}</div>

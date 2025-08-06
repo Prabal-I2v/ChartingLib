@@ -79,6 +79,7 @@ import { WidgetTileConf } from '../Models/types/types';
 import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from '@i2v-systems/common-components';
 import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
 import { AnalyticEventModel } from 'src/app/Models/analyticEvent.Model';
+import { ToastrService } from 'ngx-toastr';
 
 // Form value interfaces (what the form contains)
 interface WidgetFormValue {
@@ -331,6 +332,7 @@ export class WidgetFormComponent implements OnInit {
   attemptedSubmit = false;
 
   constructor(
+    private toastr: ToastrService,
     private fb: FormBuilder,
     private analyticService: AnalyticService,
     private eventService: EventService,
@@ -1765,14 +1767,14 @@ export class WidgetFormComponent implements OnInit {
     try {
       const finalWidget = this.createWidget();
       this.finalWidget = finalWidget;
-      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
+      this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
       this.dialogRef.close({
         widgetData: this.finalWidget,
         operation: this.modalData.event?.data?.operation
       });
     } catch (error) {
       console.error('Error creating widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 
@@ -1821,7 +1823,7 @@ export class WidgetFormComponent implements OnInit {
       ref.afterClosed().subscribe((data) => { });
     } catch (error) {
       console.error('Error in preview widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 

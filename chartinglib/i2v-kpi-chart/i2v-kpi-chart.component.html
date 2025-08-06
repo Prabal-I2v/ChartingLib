@@ -75,15 +75,9 @@
               </div>
               }
               <div class="details-grp">
-                @if(!isGreatest && !isLowest) {
                 <div class="minorheader" style="font-style: italic">
                   {{ this.aggregatedDataLabel | uppercase }}
                 </div>
-                }@else{
-                <div class="minorheader" style="font-style: italic">
-                  {{ this.aggregatedDataActualLabel | uppercase }}
-                </div>
-                }
                 <div class="digits">{{ aggregatedData }}</div>
               </div>
             </div>
@@ -144,7 +138,7 @@
           @if(isShowableSeries(series)){
           <div class="number-grp" [ngClass]="{
             'greatest': series.displayName?.toLowerCase()?.includes('greatest'),
-            'least': series.displayName?.toLowerCase()?.includes('lowest')
+            'least': series.displayName?.toLowerCase()?.includes('least')
           }">
             <div class="details-grp">
               @if (!widgetRequestModel.kpiConf?.hideLabel) {

@@ -32,31 +32,12 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   aggregatedData: number = 0;
   aggregatedDataLabel: string = "";
   aggregatedDataImage: string = '';
-  aggregatedDataActualLabel: string = "";
-  // Cached aggregation states
-  private _isGreatest: boolean = false;
-  private _isLowest: boolean = false;
+  isGreatest: boolean = false;
+  isLowest: boolean = false;
 
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
 
-  // Public getters for aggregation states
-  get isGreatest(): boolean {
-    return this._isGreatest;
-  }
-
-  get isLowest(): boolean {
-    return this._isLowest;
-  }
-
-  // Private method to update aggregation states
-  private updateAggregationStates(): void {
-    this._isGreatest = this.widgetRequestModel?.kpiConf?.dataAggregationMethod === Enum_Method_Aggregation.Greatest 
-      && this.aggregatedDataLabel?.toLowerCase()?.includes('greatest');
-    
-    this._isLowest = this.widgetRequestModel?.kpiConf?.dataAggregationMethod === Enum_Method_Aggregation.Least 
-      && this.aggregatedDataLabel?.toLowerCase()?.includes('lowest');
-  }
 
   constructor(
     chartingDataService: ChartingDataService,
@@ -214,8 +195,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.aggregatedData = 0;
         this.aggregatedDataLabel = "";
         this.aggregatedDataImage = "";
-        this._isGreatest = false;
-        this._isLowest = false;
+        this.isGreatest = false;
+        this.isLowest = false;
         return;
       }
 
@@ -231,10 +212,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             if (item.value > greatest.value) greatest = item;
           });
           this.aggregatedData = greatest.value;
-          this.aggregatedDataActualLabel = greatest.label;
-          this.aggregatedDataLabel = "Greatest ( " + greatest.label + " )";
+          this.aggregatedDataLabel = greatest.label;
           this.aggregatedDataImage = greatest.image;
-          this.updateAggregationStates();
+          this.isGreatest = true;
           break;
 
         case Enum_Method_Aggregation.Least:
@@ -242,10 +222,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             if (item.value < lowest.value) lowest = item;
           });
           this.aggregatedData = lowest.value;
-          this.aggregatedDataActualLabel = lowest.label;
-          this.aggregatedDataLabel = "Lowest ( " + lowest.label + " )";
+          this.aggregatedDataLabel = lowest.label;
           this.aggregatedDataImage = lowest.image;
-          this.updateAggregationStates();
+          this.isLowest = true;          
           break;
 
         case Enum_Method_Aggregation.Total:
@@ -266,10 +245,18 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   }
 
   getFormattedLabel(displayName: string): string {
-    let label = displayName.toLowerCase();
-    label = label.includes('greatest') ? label.replace('greatest', '') :
-      label.includes('lowest') ? label.replace('lowest', '') : label;
-    return label.trim().toUpperCase();
+    return displayName
+      .toLowerCase()
+
+      // Remove the words "lowest", "least", "greatest"
+      .replace(/\b(greatest|lowest|least)\b/g, '')
+
+      // Remove parentheses but keep their content
+      .replace(/[()]/g, '')
+
+      // Clean up extra spaces and convert to uppercase
+      .trim()
+      .toUpperCase();
   }
 
 

@@ -622,10 +622,7 @@ export class WidgetFormComponent implements OnInit {
       labels.push('Widget Type');
     }
 
-    if (this.widgetForm.controls.widgetType.value && this.requiresWidgetSpecificConfig()) {
-      labels.push('Widget Configuration');
-    }
-
+    labels.push('Widget Configuration')
     labels.push('Review & Submit');
 
     // Add indicators for pre-defined mode

@@ -693,15 +693,15 @@
                 </div>
               </div>
 
-              <!-- Fields Aggregation Type -->
-              <div class="form-group">
+              <!-- Fields Aggregation Type (disabled as we do not need aggregation options for multiple entities) -->
+              <!-- <div class="form-group">
                 <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
                 <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
                   formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
                   (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown"
                   [attr.disabled]="'disabled'" [style]="{'pointer-events': 'none', 'opacity': '0.6'}">
                 </p-dropdown>
-              </div>
+              </div> -->
               }
             </div>
 
@@ -1223,7 +1223,7 @@
       <p-accordionTab [disabled]="!canProceedToReview()">
         <ng-template pTemplate="header">
           <div class="accordion-header-content">
-            <span class="step-number">{{ widgetForm.controls.configurationApproach.value === 'propertiesFirst' ? '6' : '5' }}</span>
+            <span class="step-number">{{ getStepLabels().length }}</span>
             <h2 class="step-title">Review & Preview</h2>
             @if(getValidationWarnings().length > 0) {
             <span class="step-error-indicator">⚠</span>

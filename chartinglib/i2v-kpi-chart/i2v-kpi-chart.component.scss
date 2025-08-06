@@ -126,6 +126,7 @@
   flex: 1;
   padding: 16px;
   gap: 10px;
+  overflow-x:auto;
   height: 100%;
 }
 
@@ -270,5 +271,5 @@
 }
 
 .overflow-data-box {
-  overflow: hidden;
+  overflow: auto;
 }

@@ -139,8 +139,7 @@
           }
 
           <!-- Entity Configuration Type (for properties-first approach) -->
-          @if(widgetForm.get('configurationApproach')?.value ===
-          'propertiesFirst'){
+
           <div class="form-group">
             <label class="form-label required">Entity Configuration</label>
             <p-dropdown [options]="[
@@ -156,7 +155,6 @@
             </div>
             }
           </div>
-          }
           }
 
           <div class="step-actions">
@@ -695,14 +693,15 @@
                 </div>
               </div>
 
-              <!-- Fields Aggregation Type -->
-              <div class="form-group">
+              <!-- Fields Aggregation Type (disabled as we do not need aggregation options for multiple entities) -->
+              <!-- <div class="form-group">
                 <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
                 <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
                   formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
-                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown"
+                  [attr.disabled]="'disabled'" [style]="{'pointer-events': 'none', 'opacity': '0.6'}">
                 </p-dropdown>
-              </div>
+              </div> -->
               }
             </div>
 

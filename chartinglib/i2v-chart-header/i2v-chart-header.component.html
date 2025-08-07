@@ -33,7 +33,7 @@
       [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
     }
-    @if (isEditModeOn && !applyToAllEnabled) {
+    @if (isEditModeOn) {
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement appSvg="assets/Outline/menu.svg"
       [size]="'20'" (click)="onContextMenuEvent($event)">
     </button>

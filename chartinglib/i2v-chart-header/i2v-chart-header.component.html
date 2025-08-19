@@ -33,7 +33,7 @@
       [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
     }
-    @if (isEditModeOn && !applyToAllEnabled) {
+    @if (isEditModeOn) {
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement appSvg="assets/Outline/menu.svg"
       [size]="'20'" (click)="onContextMenuEvent($event)">
     </button>
@@ -54,7 +54,7 @@
   }
 
   @if (this.widgetModel.canBeRemoved) {
-  <i2v-context-menu-item [icon]="removeWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+  <i2v-context-menu-item [icon]="removeWidget ? 'assets/fill/Analytics_Removed.svg' : 'assets/fill/Analytics_Removed.svg'"
     [label]="removeWidgetMsg" (click)="toggleRemoveWidget()"></i2v-context-menu-item>
   }
 </i2v-context-menu>

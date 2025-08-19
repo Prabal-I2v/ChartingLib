@@ -79,6 +79,7 @@ import { WidgetTileConf } from '../Models/types/types';
 import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from '@i2v-systems/common-components';
 import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
 import { AnalyticEventModel } from 'src/app/Models/analyticEvent.Model';
+import { ToastrService } from 'ngx-toastr';
 
 // Form value interfaces (what the form contains)
 interface WidgetFormValue {
@@ -331,6 +332,7 @@ export class WidgetFormComponent implements OnInit {
   attemptedSubmit = false;
 
   constructor(
+    private toastr: ToastrService,
     private fb: FormBuilder,
     private analyticService: AnalyticService,
     private eventService: EventService,
@@ -620,10 +622,7 @@ export class WidgetFormComponent implements OnInit {
       labels.push('Widget Type');
     }
 
-    if (this.widgetForm.controls.widgetType.value && this.requiresWidgetSpecificConfig()) {
-      labels.push('Widget Configuration');
-    }
-
+    labels.push('Widget Configuration')
     labels.push('Review & Submit');
 
     // Add indicators for pre-defined mode
@@ -875,23 +874,13 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onCommonPropertiesChange(event: any): void {
-    const selectedProperties = event.value as Property[];
-    const selectedFieldNames: IWidgetFieldNameConfig[] = selectedProperties.map((prop) => {
-      return {
-        name: prop.name,
-        columnName: prop.columnName,
-        applyAggregation: true,
-        type: prop.type,
-        isLabel: false
-      };
-    });
+    const selectedProperties = event.value as IWidgetFieldNameConfig[];
 
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedFieldNames
+        fieldNames: selectedProperties
       }
     });
-
 
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
@@ -998,7 +987,7 @@ export class WidgetFormComponent implements OnInit {
         existingField.applyAggregation = true;
       }
       else {
-        existingField.applyAggregation = true;
+        existingField.applyAggregation = false;
       }
     }
   }
@@ -1775,14 +1764,14 @@ export class WidgetFormComponent implements OnInit {
     try {
       const finalWidget = this.createWidget();
       this.finalWidget = finalWidget;
-      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
+      this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
       this.dialogRef.close({
         widgetData: this.finalWidget,
         operation: this.modalData.event?.data?.operation
       });
     } catch (error) {
       console.error('Error creating widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 
@@ -1831,7 +1820,7 @@ export class WidgetFormComponent implements OnInit {
       ref.afterClosed().subscribe((data) => { });
     } catch (error) {
       console.error('Error in preview widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 

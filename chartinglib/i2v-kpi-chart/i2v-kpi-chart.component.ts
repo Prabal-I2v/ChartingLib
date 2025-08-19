@@ -32,9 +32,12 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
   aggregatedData: number = 0;
   aggregatedDataLabel: string = "";
   aggregatedDataImage: string = '';
-  //  RiseLevel: RiseLevel;
+  isGreatest: boolean = false;
+  isLowest: boolean = false;
+
   @Input() disableTimeFilter: boolean = false;
   @Input() showChart: boolean = false;
+
 
   constructor(
     chartingDataService: ChartingDataService,
@@ -192,6 +195,8 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
         this.aggregatedData = 0;
         this.aggregatedDataLabel = "";
         this.aggregatedDataImage = "";
+        this.isGreatest = false;
+        this.isLowest = false;
         return;
       }
 
@@ -207,8 +212,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             if (item.value > greatest.value) greatest = item;
           });
           this.aggregatedData = greatest.value;
-          this.aggregatedDataLabel = "Greatest ( " + greatest.label + " )";
+          this.aggregatedDataLabel = greatest.label;
           this.aggregatedDataImage = greatest.image;
+          this.isGreatest = true;
           break;
 
         case Enum_Method_Aggregation.Least:
@@ -216,8 +222,9 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             if (item.value < lowest.value) lowest = item;
           });
           this.aggregatedData = lowest.value;
-          this.aggregatedDataLabel = "Lowest ( " + lowest.label + " )";
+          this.aggregatedDataLabel = lowest.label;
           this.aggregatedDataImage = lowest.image;
+          this.isLowest = true;          
           break;
 
         case Enum_Method_Aggregation.Total:
@@ -237,6 +244,20 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     return series?.data?.[index];
   }
 
+  getFormattedLabel(displayName: string): string {
+    return displayName
+      .toLowerCase()
+
+      // Remove the words "lowest", "least", "greatest"
+      .replace(/\b(greatest|lowest|least)\b/g, '')
+
+      // Remove parentheses but keep their content
+      .replace(/[()]/g, '')
+
+      // Clean up extra spaces and convert to uppercase
+      .trim()
+      .toUpperCase();
+  }
 
 
   showDetail() {

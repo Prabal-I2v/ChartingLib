@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, ElementRef, Input, ViewChild} from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ChartingDataService } from '../charting-data.service';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import moment from 'moment';
@@ -16,6 +16,9 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrl: './i2v-grid.component.scss'
 })
 export class I2vGridComponent extends I2vChartsComponent {
+
+
+  tableData: TableOutputModel;
 
   @Input() videoSources = []
   pageLimit = 300;
@@ -42,8 +45,8 @@ export class I2vGridComponent extends I2vChartsComponent {
     this.configuration.pageLimit = this.pageLimit;
     this.configuration.pagination = true;
     this.configuration.length = 0;
-    if(this.Grid){
-    this.Grid.skip = 0;
+    if (this.Grid) {
+      this.Grid.skip = 0;
     }
   }
 
@@ -81,22 +84,21 @@ export class I2vGridComponent extends I2vChartsComponent {
     { label: '50', value: 50 },
     { label: '100', value: 100 },
     { label: '200', value: 200 },
-    { label: '300', value: 300},
+    { label: '300', value: 300 },
     { label: '500', value: 500 }
   ];
-  
 
 
-  onPageLimitChange(event)
-  {
+
+  onPageLimitChange(event) {
     this.configuration.pageLimit = event.value
     this.configuration = JSON.parse(JSON.stringify(this.configuration));
-    if(this.Grid && this.Grid.kendoGrid){
+    if (this.Grid && this.Grid.kendoGrid) {
       this.Grid.kendoGrid.skip = 0;
       // Extract fixed number of events without modifying the original array
       var limitedEvents = this.tableData.rows.events.slice(0, this.configuration.pageLimit);
       this.Grid.gridView.data = limitedEvents
-      }
+    }
     this.cd.detectChanges();
   }
 
@@ -132,27 +134,32 @@ export class I2vGridComponent extends I2vChartsComponent {
       return {
         ...colDef,
         checked: isSelected,
+        translatedHeader: colDef.headerName // Set initial value
       };
     });
     this.addTranslatedFilterValue();
     this.SelectColumnFilteredList.next(this.columnToSelected);
   }
-  addTranslatedFilterValue(){
+
+  private addTranslatedFilterValue() {
     this.columnToSelected.forEach(column => {
       this.translate.get(column.headerName).subscribe(translatedData => {
         column.translatedHeader = translatedData || column.headerName; // Fallback to original
+        // Trigger an update of the ReplaySubject after translation
+        this.SelectColumnFilteredList.next(this.columnToSelected);
       });
     });
-  
   }
-  public transformTableData(data: TableOutputModel): TableOutputModel {
-    var data  = super.transformTableData(data);
-    this.columnDefs = data.columns
+  public transformChartData(data: TableOutputModel) {
+    const tableData = new TableOutputModel();
+    tableData.columns = [...data.columns];
+    tableData.rows = data.rows;
+    this.columnDefs = tableData.columns
     this.selectedColumnDefs = this.columnDefs;
     this.updateColumnSelection()
-    this.configuration.length = data.rows.events.length;
+    this.configuration.length = tableData.rows.events.length;
     this.updateColumns()
-    return data;
+    this.tableData = tableData;
   }
 
   updateKendoColumn() {

@@ -9,7 +9,7 @@ import { Sankey } from '@progress/kendo-charts/dist/npm/sankey'
 @Component({
   selector: 'i2v-sankey-chart',
   templateUrl: './i2v-sankey-chart.component.html',
-  styleUrl: './i2v-sankey-chart.component.css'
+  styleUrl: './i2v-sankey-chart.component.scss'
 })
 export class I2vSankeyChartComponent  extends I2vChartsComponent {
   public data = {
@@ -77,17 +77,17 @@ export class I2vSankeyChartComponent  extends I2vChartsComponent {
 
   transformChartData(data: ChartsOutputModel): ClientChartModel {
       const chartData = new ClientChartModel();
-      chartData.series = data.data.map((x) => {
-        return new ChartSeries({ name: x.label, data: x.data });
-      });
-      if (data.labels.length > 0) {
-        chartData.chartCategories = data.labels[0].value;
-        chartData.x_label = data.labels[0].key;
-      } else {
-        chartData.chartCategories = data.data.map((x) => {
-          return x.label;
-        });
-      }
+      // chartData.series = data.seriesData.map((x) => {
+      //   return new ChartSeries({ name: x.label, data: x.data });
+      // });
+      // if (data.labels.length > 0) {
+      //   chartData.chartCategories = data.labels[0].value;
+      //   chartData.x_label = data.labels[0].key;
+      // } else {
+      //   chartData.chartCategories = data.seriesData.map((x) => {
+      //     return x.label;
+      //   });
+      // }
 
       return chartData;
     }

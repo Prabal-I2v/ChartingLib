@@ -8,27 +8,18 @@ import {
   Output,
   SimpleChanges,
 } from "@angular/core";
-import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
-import {
-  ICustomFilter,
-  RuleSet,
-  Widget,
-  ICustomFilterOutputEmittorModel,
-  ITimeRange,
-  IDateTimeFilterOutputEmittorModel,
-  ISetIntervalFilterOutputEmittorModel as IRefreshIntervalFilterOutputEmittorModel,
-  ICommonFilterOutputEmittorModel,
-  Enum_TimePeriod,
-  CustomFilterValueModel,
-} from "../Models/Widget";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
 import { debounce } from "rxjs/operators";
-import { month } from "../Models/vehicle-icon-mapping";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { v4 as uuidv4 } from 'uuid';
 import { TableOutputModel } from "../Models/TableOutputModel";
+import { Widget } from "../Models/Widget";
+import { Enum_Method_Aggregation, Enum_Method_Aggregation_With_Labels, Enum_TimePeriod } from "../Models/enums/enums";
+import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
+import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
+import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 
 @Component({
   selector: "i2v-charts",
@@ -39,13 +30,18 @@ export abstract class I2vChartsComponent implements OnInit {
   isModel: boolean;
   isLoading: boolean;
   dataExists: boolean;
+  dataExistsForShowableProperties: boolean = true;
+
   isCustomFilterApplied: boolean = false;
+  isChartToBeRemoved: boolean = false;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
   @Input() showFilterValues: boolean = false;
   @Output() showFilterValuesChange = new EventEmitter<boolean>();
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
+  @Output() widgetRemoveCallbackEmittor = new EventEmitter<any>();
+  @Output() editWidgetOutput = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
@@ -55,8 +51,8 @@ export abstract class I2vChartsComponent implements OnInit {
   @Input() dashboardCustomFilterValue: ICustomFilter = {};
   @Input() isEditModeOn: boolean = false;
   @Output()
-  refreshIntervalFilterOutput: EventEmitter<IRefreshIntervalFilterOutputEmittorModel> =
-    new EventEmitter<IRefreshIntervalFilterOutputEmittorModel>();
+  refreshIntervalFilterOutput: EventEmitter<ISetIntervalFilterOutputEmittorModel> =
+    new EventEmitter<ISetIntervalFilterOutputEmittorModel>();
   @Output() daysFilterOutput: EventEmitter<IDateTimeFilterOutputEmittorModel> =
     new EventEmitter<IDateTimeFilterOutputEmittorModel>();
   @Output() customFilterOutput: EventEmitter<ICustomFilterOutputEmittorModel> =
@@ -70,24 +66,6 @@ export abstract class I2vChartsComponent implements OnInit {
   private debounceTime = 500; // milliseconds
   componentId: string;
   customFilterValues: Record<string, CustomFilterValueModel[]>;
-
-  private _chartData: ClientChartModel;
-  @Input()
-  set chartData(data: ChartsOutputModel) {
-    this._chartData = this.transformChartData(data);
-  }
-  get chartData(): ClientChartModel {
-    return this._chartData;
-  }
-
-  private _tableData: TableOutputModel;
-  @Input()
-  set tableData(data: TableOutputModel) {
-    this._tableData = this.transformTableData(data);
-  }
-  get tableData(): TableOutputModel {
-    return this._tableData;
-  }
 
   constructor(public cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
     // Generate and store a UUID when component is created
@@ -109,12 +87,10 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.widgetRequestModel) {
       this.isModel = true;
       if (this.widgetRequestModel.allowRefresh) {
-        this.interval = setInterval(() => {
-          this.getDataFromServer(this.widgetRequestModel);
-        }, this.widgetRequestModel.refreshInterval * 1000);
+        this.setRefreshInterval()
       }
-      if (this.widgetRequestModel.isDashboardFilterApplied) {
-        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
+      if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
+        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
       } else {
         this.isCustomFilterApplied = true;
       }
@@ -130,11 +106,11 @@ export abstract class I2vChartsComponent implements OnInit {
     }
     else if
       (!changes.isEditModeOn?.currentValue) {
-      this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+      this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
       this.showFilterValues = false;
       if (this.isCustomFilterApplied && this.applyToAllEnabled) {
         this.isCustomFilterApplied = false;
-        this.widgetRequestModel.isDashboardFilterApplied = true;
+        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
         this.widgetResizeCallback(this.showFilterValues);
       }
     }
@@ -143,6 +119,7 @@ export abstract class I2vChartsComponent implements OnInit {
   onShowFilterValuesChange() {
     this.widgetResizeCallback(this.showFilterValues);
   }
+
   private setValueAsPerWidgetCustomFiltersValue(dashboardCustomFilterValue: ICustomFilter): void {
     if (!dashboardCustomFilterValue || Object.keys(dashboardCustomFilterValue).length === 0) {
       return;
@@ -161,42 +138,42 @@ export abstract class I2vChartsComponent implements OnInit {
 
         switch (customFilter.key) {
           case "Video Sources": {
-            this.widgetRequestModel.customFilters[customFilter.key] = this.customFilters[
+            this.widgetRequestModel.filterConfig.customFilters[customFilter.key] = this.customFilters[
               customFilter.key
             ].filter((x) => customFilter.value.includes(String(x.returnValue)));
 
-            if (this.widgetRequestModel.propertyFilters == null) {
-              this.widgetRequestModel.propertyFilters = new RuleSet();
+            if (this.widgetRequestModel.filterConfig.propertyFilters == null) {
+              this.widgetRequestModel.filterConfig.propertyFilters = new RuleSet();
             }
 
-            if (this.widgetRequestModel.propertyFilters.ruleSet == null) {
-              this.widgetRequestModel.propertyFilters.ruleSet = [];
+            if (this.widgetRequestModel.filterConfig.propertyFilters.ruleSet == null) {
+              this.widgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
             } else {
-              this.widgetRequestModel.propertyFilters.condition = "and";
+              this.widgetRequestModel.filterConfig.propertyFilters.condition = "and";
             }
 
             const index = this.isRuleSetAlreadyPresent(
-              this.widgetRequestModel.propertyFilters,
+              this.widgetRequestModel.filterConfig.propertyFilters,
               "VideoSourceId",
             );
             if (index != -1) {
               if (customFilter.value && customFilter.value.length > 0) {
                 this.setAlreadyPresentRuleSetValue(
-                  this.widgetRequestModel.propertyFilters,
+                  this.widgetRequestModel.filterConfig.propertyFilters,
                   "VideoSourceId",
                   customFilter.value,
                   index,
                 );
               } else {
                 this.removeEmptyRuleSet(
-                  this.widgetRequestModel.propertyFilters,
+                  this.widgetRequestModel.filterConfig.propertyFilters,
                   "VideoSourceId",
                   index,
                 );
               }
             } else {
               if (customFilter.value && customFilter.value.length > 0) {
-                this.widgetRequestModel.propertyFilters.ruleSet.push(
+                this.widgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
                   this.createRule(customFilter, "VideoSourceId"),
                 );
               }
@@ -211,18 +188,18 @@ export abstract class I2vChartsComponent implements OnInit {
       const timeFilter = dashboardCustomFilterValue["Time"][0];
       const timeRange = timeFilter.returnValue as ITimeRange;
 
-      this.widgetRequestModel.customFilters["Time"] = [
+      this.widgetRequestModel.filterConfig.customFilters["Time"] = [
         { displayName: timeFilter.displayName, returnValue: timeRange },
       ];
-      this.widgetRequestModel.startTime = timeRange.startTime;
-      this.widgetRequestModel.endTime = timeRange.endTime;
+      this.widgetRequestModel.filterConfig.startTime = timeRange.startTime;
+      this.widgetRequestModel.filterConfig.endTime = timeRange.endTime;
     }
 
 
     if ("RefreshInterval" in dashboardCustomFilterValue) {
       var refreshIntervalValue = Number(dashboardCustomFilterValue["RefreshInterval"][0].returnValue);
 
-      this.widgetRequestModel.customFilters["RefreshInterval"] = [
+      this.widgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
         { displayName: "RefreshInterval", returnValue: refreshIntervalValue },
       ];
       this.widgetRequestModel.refreshInterval = refreshIntervalValue;
@@ -236,7 +213,7 @@ export abstract class I2vChartsComponent implements OnInit {
     Object.keys(changeEvents).forEach((key: string) => {
       switch (key) {
         case "RefreshIntervalEmitModel":
-          this.onRefreshIntervalChange(<IRefreshIntervalFilterOutputEmittorModel>changeEvents[key]);
+          this.onRefreshIntervalChange(<ISetIntervalFilterOutputEmittorModel>changeEvents[key]);
           break;
         case "DateFilterEmitModel":
           this.onTimeChange(<IDateTimeFilterOutputEmittorModel>changeEvents[key], true);
@@ -246,8 +223,12 @@ export abstract class I2vChartsComponent implements OnInit {
           break;
       }
     });
-    this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.getDataFromServer(this.widgetRequestModel);
+  }
+
+  onEditWidgetOutput() {
+    this.editWidgetOutput.next(this.widgetRequestModel);
   }
 
   onCustomFilterValuesChange(
@@ -255,43 +236,51 @@ export abstract class I2vChartsComponent implements OnInit {
     commonCall: boolean = false,
   ) {
     switch (event.key) {
+      // case null: {
+      //   // Check if Video Sources exists in the customFilters
+      //   if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
+      //     // Remove Video Sources from customFilters
+      //     delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
+      //     }
+      //   }
+
       case "Video Sources": {
-        this.widgetRequestModel.customFilters[event.key] = this.customFilters[
+        this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
           event.key
         ].filter((x) => event.value.includes(String(x.returnValue)));
 
-        if (this.widgetRequestModel.propertyFilters == null) {
-          this.widgetRequestModel.propertyFilters = new RuleSet();
+        if (this.widgetRequestModel.filterConfig.propertyFilters == null) {
+          this.widgetRequestModel.filterConfig.propertyFilters = new RuleSet();
         }
 
-        if (this.widgetRequestModel.propertyFilters.ruleSet == null) {
-          this.widgetRequestModel.propertyFilters.ruleSet = [];
+        if (this.widgetRequestModel.filterConfig.propertyFilters.ruleSet == null) {
+          this.widgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
         } else {
-          this.widgetRequestModel.propertyFilters.condition = "and";
+          this.widgetRequestModel.filterConfig.propertyFilters.condition = "and";
         }
 
         const index = this.isRuleSetAlreadyPresent(
-          this.widgetRequestModel.propertyFilters,
+          this.widgetRequestModel.filterConfig.propertyFilters,
           "VideoSourceId",
         );
         if (index != -1) {
           if (event.value && event.value.length > 0) {
             this.setAlreadyPresentRuleSetValue(
-              this.widgetRequestModel.propertyFilters,
+              this.widgetRequestModel.filterConfig.propertyFilters,
               "VideoSourceId",
               event.value,
               index,
             );
           } else {
             this.removeEmptyRuleSet(
-              this.widgetRequestModel.propertyFilters,
+              this.widgetRequestModel.filterConfig.propertyFilters,
               "VideoSourceId",
               index,
             );
           }
         } else {
           if (event.value && event.value.length > 0) {
-            this.widgetRequestModel.propertyFilters.ruleSet.push(
+            this.widgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
               this.createRule(event, "VideoSourceId"),
             );
           }
@@ -299,40 +288,31 @@ export abstract class I2vChartsComponent implements OnInit {
         break;
       }
     }
-    this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.isCustomFilterApplied = true;
     this.getDataFromServer(this.widgetRequestModel);
-    // if (!commonCall) {
-    //   this.getDataFromServer(this.widgetRequestModel);
-    // }
-
-    // this.customFilterOutput.emit(event);
   }
 
   onTimeChange(
     event: IDateTimeFilterOutputEmittorModel,
     commonCall: boolean = false,
   ) {
-    this.widgetRequestModel.customFilters["Time"] = [
+    this.widgetRequestModel.filterConfig.customFilters["Time"] = [
       { displayName: event.key, returnValue: event.value },
     ];
-    this.widgetRequestModel.startTime = event.value.startTime;
-    this.widgetRequestModel.endTime = event.value.endTime;
+    this.widgetRequestModel.filterConfig.startTime = event.value.startTime;
+    this.widgetRequestModel.filterConfig.endTime = event.value.endTime;
 
-    this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.getDataFromServer(this.widgetRequestModel);
-    // if (!commonCall) {
-    //   this.getDataFromServer(this.widgetRequestModel);
-    // }
-    // this.daysFilterOutput.emit(event);
   }
 
-  onRefreshIntervalChange(event: IRefreshIntervalFilterOutputEmittorModel) {
-    this.widgetRequestModel.customFilters["RefreshInterval"] = [
+  onRefreshIntervalChange(event: ISetIntervalFilterOutputEmittorModel) {
+    this.widgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
       { displayName: event.key, returnValue: event.value },
     ];
     this.widgetRequestModel.refreshInterval = event.value;
-    this.widgetRequestModel.isDashboardFilterApplied = false;
+    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
     this.setRefreshInterval();
     // this.refreshIntervalFilterOutput.emit(event);
   }
@@ -348,20 +328,67 @@ export abstract class I2vChartsComponent implements OnInit {
 
   // Type guard functions
   private isChartsOutputModel(data: any): data is ChartsOutputModel {
-    return data && 'labels' in data && 'data' in data;
+    return data && 'labels' in data && 'seriesData' in data;
   }
 
   private isTableOutputModel(data: any): data is TableOutputModel {
     return data && 'columns' in data && 'rows' in data;
   }
 
-
   // The actual API call is moved to this method
+  private setTimeAccordingToWidget(widgetRequestModel: Widget): void {
+    if (!widgetRequestModel?.filterConfig?.customFilters?.Time?.[0]) {
+      return;
+    }
+
+    const timeFilter = widgetRequestModel.filterConfig.customFilters.Time[0];
+    const today = new Date();
+    let startDate: Date;
+
+    switch (timeFilter.displayName) {
+      case 'Today':
+        // Set to start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 7 days':
+        // Set to 7 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 30 days':
+        // Set to 30 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Custom':
+        // For custom, use the timeRange values directly from the filter
+        const timeRange = timeFilter.returnValue as ITimeRange;
+        if (timeRange) {
+          widgetRequestModel.filterConfig.startTime = timeRange.startTime;
+          widgetRequestModel.filterConfig.endTime = timeRange.endTime;
+        }
+        break;
+    }
+
+    // Update the time range in customFilters as well
+    widgetRequestModel.filterConfig.customFilters.Time[0].returnValue = {
+      startTime: widgetRequestModel.filterConfig.startTime,
+      endTime: widgetRequestModel.filterConfig.endTime
+    };
+  }
+
   private fetchDataFromServer(widgetRequestModel: Widget) {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
     }
-
+    this.setTimeAccordingToWidget(widgetRequestModel);
     this.apiSubscription = this.chartingDataService
       .getChartingData(widgetRequestModel)
       .subscribe(
@@ -370,16 +397,19 @@ export abstract class I2vChartsComponent implements OnInit {
           this.dataExists = false;
 
           if (data) {
+            // this.transformChartData(data);
+            // this.dataExists = true;
             if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
-              this.chartData = data;
+              this.transformChartData(data);
               this.dataExists = true;
             }
             else if (this.isTableOutputModel(data)) {
-              this.tableData = data;
+              // this.tableData = data;
+              this.transformChartData(data);
               this.dataExists = true;
             }
           }
-
+          this.cd.detectChanges();
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -392,48 +422,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   // Chart transformation (your original logic)
-  public transformChartData(data: ChartsOutputModel): ClientChartModel {
-    let isMonthData = false;
-    if (data.labels[0]?.key.toLowerCase() === "month") isMonthData = true;
-
-    const chartData = new ClientChartModel();
-    chartData.series = data.data.map((x) => {
-      return new ChartSeries({ name: x.label, data: x.data });
-    });
-
-    if (data.labels.length > 0) {
-      if (isMonthData) {
-        const monthData: any[] = [];
-        data.labels[0].value.forEach((x) => {
-          monthData.push(month[parseInt(x) - 1]);
-        });
-
-        chartData.chartCategories = monthData;
-      } else {
-        chartData.chartCategories = data.labels[0].value;
-      }
-
-      chartData.x_label = data.labels[0].key;
-    } else {
-      chartData.chartCategories = data.data.map((x) => {
-        return x.label;
-      });
-    }
-    return chartData;
-  }
-
-  // Table transformation
-  public transformTableData(data: TableOutputModel): TableOutputModel {
-    const clientModel = new TableOutputModel();
-
-    // Set headers from columns
-    clientModel.columns = [...data.columns];
-
-    // Transform rows
-    clientModel.rows = data.rows;
-
-    return clientModel;
-  }
+  public abstract transformChartData(data: ChartsOutputModel | TableOutputModel): void;
 
   createRule(
     data: ICustomFilterOutputEmittorModel,
@@ -478,7 +467,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   checkIfAnySeriesExists(data: ChartsOutputModel): boolean {
-    const index = data.data.findIndex((x) => {
+    const index = data.seriesData.findIndex((x) => {
       return x.data.length > 0;
     });
 
@@ -541,6 +530,17 @@ export abstract class I2vChartsComponent implements OnInit {
     this.widgetResizeCallbackEmittor.emit({ "value": value, "height": height, "width": width });
   }
 
+  public onWidgetRemoveCallback(value: boolean) {
+    this.cd.detectChanges();
+    if (value) {
+      this.isChartToBeRemoved = true;
+    }
+    else {
+      this.isChartToBeRemoved = false
+    }
+    this.widgetRemoveCallbackEmittor.emit(value);
+  }
+
   onTimeDurationChanged(event: string) {
     const newTimePeriod = Enum_TimePeriod[event.toLowerCase() as keyof typeof Enum_TimePeriod];
     if (!newTimePeriod) {
@@ -598,36 +598,76 @@ export abstract class I2vChartsComponent implements OnInit {
 
   clearCustomFiltersValues(event) {
     if (event) {
-      this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+      this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
       this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-      this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
-      this.widgetRequestModel.isDashboardFilterApplied = true;
+      this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
+      this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
       this.cd.detectChanges();
     }
   }
 
   updateCustomFiltersValues() {
-    if (this.widgetRequestModel.isDashboardFilterApplied || this.applyToAllEnabled) {
+    if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied || this.applyToAllEnabled) {
+      //apply time without checking apply to all
+      this.setValueAsPerWidgetCustomFiltersValue({ 'Time': this.dashboardCustomFilterValue['Time'] });
+
       if (this.isCustomFilterApplied) {
-        this.widgetRequestModel.isDashboardFilterApplied = this.applyToAllEnabled;
+        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = this.applyToAllEnabled;
         const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
         if (isCustomFilterValuesEmpty) {
-          this.customFilterValues = { ...this.widgetRequestModel.customFilters };
+          this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
         }
       }
       if (!this.applyToAllEnabled) {
-        this.widgetRequestModel.customFilters = {
-          ...(this.customFilterValues ?? this.dashboardCustomFilterValue)
+        this.widgetRequestModel.filterConfig.customFilters = {
+          ...(this.customFilterValues)
         };
-        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.customFilters);
-        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
+        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.filterConfig.customFilters);
+        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
       } else {
-        this.widgetRequestModel.customFilters = { ...this.dashboardCustomFilterValue };
+        this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
         this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-        this.widgetRequestModel.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.customFilters));
-        this.widgetRequestModel.isDashboardFilterApplied = true;
+        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
+        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
       }
       this.cd.detectChanges();
     }
+  }
+
+  appendNameToAggregatedProperty(chartData: ClientChartModel): ChartSeries[] {
+    if (this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Greatest || this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Least) {
+      var aggregatedSeriesIndex = chartData.series.findIndex((x) => x.name.toLowerCase() == Enum_Method_Aggregation_With_Labels[this.widgetRequestModel.dataInputConfig.fieldsAggregationType].toLowerCase())
+      if (aggregatedSeriesIndex !== -1) {
+        const aggregatedSeriesValueArray = chartData.series[aggregatedSeriesIndex].data;
+
+        if (aggregatedSeriesValueArray.length == 1) {
+          const aggregatedValue = aggregatedSeriesValueArray[0];
+          const resArray = chartData.series.filter((x, index) => x.data[0] === aggregatedValue && index != aggregatedSeriesIndex).map(y => y.name);
+          if (resArray.length > 0) {
+            chartData.series[aggregatedSeriesIndex].displayName += ` (${resArray.join(' , ')})`;
+          }
+        }
+      }
+    }
+
+    return chartData.series;
+  }
+
+  isShowableSeries(chartSeries: ChartSeries): boolean {
+    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(
+      x =>
+        x.displayName.toLowerCase() === chartSeries.name.toLowerCase() ||
+        x.name.toLowerCase() === chartSeries.displayName.toLowerCase()
+    );
+    return isSeriesShowable ? true : false;
+  }
+
+  seriesTrackBy(index: number): string | number {
+    // Assuming each series has a unique 'id' or 'displayName'
+    return index;
+  }
+
+  xAxisTrackBy(index: number): string | number {
+    return index;
   }
 }

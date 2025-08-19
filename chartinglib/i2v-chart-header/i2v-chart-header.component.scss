@@ -12,6 +12,7 @@
     }
   }
 }
+
 :host {
   ::ng-deep .p-calendar {
     font-size: 13px;
@@ -58,6 +59,72 @@
   height: 34px;
   background-color: var(--secondary-default-light-color);
   border-radius: 24px;
-  // padding: 6px; // commented as handled by lib-svg tag
+  padding: 6px;
+  align-self: start;
 }
 
+/* New styles for refactored inline styles */
+.header-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-section {
+  display: flex;
+  width: 40%;
+  align-self: start;
+  gap: 5px;
+  align-items: center;
+  flex: 1;
+}
+
+.text-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.heading-text {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 18px;
+  width: 100%;
+}
+
+.subheading-text {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  width: 100%;
+}
+
+.filter-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.filter-toggle-btn {
+  position: relative;
+}
+
+.menu-container {
+  position: relative;
+}
+
+.status-indicator {
+  position: absolute;
+  right: 0px;
+  top: -10px;
+}

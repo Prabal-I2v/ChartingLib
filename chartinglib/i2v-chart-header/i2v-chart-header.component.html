@@ -1,75 +1,60 @@
-<div style="
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-  ">
-  <div style="
-      display: flex;
-      width: 40%;
-      align-self: start;
-      gap: 5px;
-      align-items: center;
-      flex: 1;
-    ">
-    <span *ngIf="svgIcon" class="icon-box" style="align-self: start;">
-      <lib-svg [path]="svgIcon" [size]="'20'" [color]="'rgb(95, 111, 148)'"></lib-svg>
-    </span>
-    <div style="
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 5px;
-        min-width: 0; /* This is crucial */
-        overflow: hidden; /* Ensures content doesn't overflow */
-      ">
-      <span style="
-          margin: 0;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          font-size: 18px;
-          line-height: 30px;
-          width: 100%; /* Makes it take full width of parent */
-        " [title]="heading" *ngIf="heading">
-        {{ heading | translate }}
+<div class="header-container">
+  <div class="content-section">
+    @if (svgIcon) {
+    <div class="icon-box">
+      <span libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></span>
+    </div>
+    }
+    <div class="text-container">
+      @if (heading) {
+      <span class="heading-text" [title]="heading">
+        {{ heading }}
       </span>
-      <span style="
-        margin: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        font-size: 14px;
-        width: 100%; /* Makes it take full width of parent */
-      " [title]="subHeading" *ngIf="subHeading">({{ subHeading | translate}})</span>
+      }
+      @if (subHeading) {
+      <span class="subheading-text" [title]="subHeading">({{ subHeading }})</span>
+      }
     </div>
   </div>
   <ng-content></ng-content>
 
-  <div *ngIf="!widgetModel.isDashboardFilterApplied && !isEditModeOn" style="
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" style="position: relative;" [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'" (click)="toggleShowFilterValues()">
-    <lib-svg [path]="'assets/Outline/filter.svg'" [size]="'20'"></lib-svg></button>
+  @if (!widgetModel.filterConfig.isDashboardFilterApplied && !isEditModeOn) {
+  <div class="filter-button-container">
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default filter-toggle-btn" libSvgElement
+      [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
+      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilterValues()">
+    </button>
   </div>
+  }
 
-  <div style="position: relative;">
-    <span *ngIf="isEditModeOn && !widgetModel.isDashboardFilterApplied" style="position: absolute; right: 0px; top: -10px;" class="filterSVG">
-    <lib-svg [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'rgba(0, 153, 237, 1)'"></lib-svg></span>
-    <button *ngIf="isEditModeOn && !applyToAllEnabled" class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
-    <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'"></lib-svg></button>
-
+  <div class="menu-container">
+    @if (isEditModeOn && !widgetModel.filterConfig.isDashboardFilterApplied) {
+    <span class="status-indicator" libSvgElement [appSvg]="'assets/Solid/status.svg'" [size]="'8'"
+      [fill-color]="'rgba(0, 153, 237, 1)'">
+    </span>
+    }
+    @if (isEditModeOn) {
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement appSvg="assets/Outline/menu.svg"
+      [size]="'20'" (click)="onContextMenuEvent($event)">
+    </button>
+    }
   </div>
- 
 </div>
 
 <i2v-context-menu [open]="isContexMenuOpen" (menuClosed)="onMenuClosed()" [position]="position">
+  <i2v-context-menu-item icon='assets/Outline/pencil.svg' label="Edit Widget"
+    (click)="onEditWidget()"></i2v-context-menu-item>
+
   <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
     (click)="onMenuClick()"></i2v-context-menu-item>
-    <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+
+  @if(!this.removeWidget){
+  <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
     [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+  }
+
+  @if (this.widgetModel.canBeRemoved) {
+  <i2v-context-menu-item [icon]="removeWidget ? 'assets/fill/Analytics_Removed.svg' : 'assets/fill/Analytics_Removed.svg'"
+    [label]="removeWidgetMsg" (click)="toggleRemoveWidget()"></i2v-context-menu-item>
+  }
 </i2v-context-menu>

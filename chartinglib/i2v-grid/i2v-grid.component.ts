@@ -7,7 +7,6 @@ import { GridInputFormat } from 'src/app/Models/GridInputFormat.model';
 import { KendoGridComponent } from 'src/app/kendo-grid/kendo-grid.component';
 import { ReplaySubject } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
-import { totalData } from 'src/app/modules/report/attendance-report/attendance-report.model';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -36,7 +35,7 @@ export class I2vGridComponent extends I2vChartsComponent {
     chartingDataService: ChartingDataService,
     public cd: ChangeDetectorRef,
     elementRef: ElementRef,
-    private translate: TranslateService 
+    private translate: TranslateService
   ) {
     super(cd, chartingDataService, elementRef);
     this.configuration.columnDefs = this.columnDefs;

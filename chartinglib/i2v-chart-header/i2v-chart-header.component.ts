@@ -11,7 +11,7 @@ import {
   ViewChild,
 } from "@angular/core";
 
-import * as moment from "moment";
+import moment from "moment";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";

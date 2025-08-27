@@ -20,7 +20,7 @@
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)" (widgetResizeEmittor)="widgetResizeCallback($event)"
-        (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
@@ -52,12 +52,13 @@
     </div>
     }
     @if (isModel && !isLoading && dataExists && dataExistsForShowableProperties) {
+
     <kendo-chart [chartArea]="{ background: 'transparent' }" class="chart-container"
       [ngStyle]="{'min-height': showFilterValues ? '400px' : '0px'}"
       [pannable]="widgetRequestModel.widgetInteractivityConfig.isPannable ? { lock: 'x' } : false"
       [zoomable]="widgetRequestModel.widgetInteractivityConfig.isZoomable ? { mousewheel: { lock: 'x' } } : false">
       <kendo-chart-category-axis>
-        <kendo-chart-category-axis-item [max]="widgetRequestModel.widgetInteractivityConfig.max"
+        <kendo-chart-category-axis-item [max]="this.widgetRequestModel?.widgetInteractivityConfig?.max ?? 20"
           [categories]="chartData.xAxisFields" [title]="{ text: chartData.xAxisLabel }">
           <kendo-chart-category-axis-item-labels [rotation]="'auto'">
           </kendo-chart-category-axis-item-labels>
@@ -73,7 +74,6 @@
       <kendo-chart-series>
         @for (series of chartData.series; track $index) {
         @if(isShowableSeries(series)){
-        {{series | json}}
         <kendo-chart-series-item type="bar" [gap]="2" [spacing]="0.25" [data]="series.data" [name]="series.name">
           <kendo-chart-series-item-labels [visible]="true" [font]="'bold 12px Arial, sans-serif'" />
         </kendo-chart-series-item>

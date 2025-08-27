@@ -1,7 +1,7 @@
 
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
 import { dashboard } from "../DashboardModel";
-import { Enum_Entity, Enum_Method, Enum_Method_Aggregation, Enum_Schema } from "../enums/enums";
+import { Enum_Method, Enum_Method_Aggregation, Enum_Schema } from "../enums/enums";
 import { ColumnClubInRange, CustomFilterValueModel, groupByConf, Rule, RuleSet, WidgetTileConf } from "../types/types";
 
 // Base Configuration Interfaces
@@ -14,7 +14,7 @@ export interface IWidgetDisplayConfig {
 
 // Join entities
 export interface IJoinableEntity {
-  entity: Enum_Entity;
+  entity: string;
   joinOn: string;
   joinWith: string;
   schema: Enum_Schema;
@@ -27,7 +27,7 @@ export interface IJoinableEntityProperty {
 }
 
 export interface IWidgetDataConfig {
-  entity: Enum_Entity;
+  entity: string;
   schemaName: Enum_Schema;
   joinableEntities?: IJoinableEntity[];
 }

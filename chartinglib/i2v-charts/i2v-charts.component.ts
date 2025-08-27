@@ -33,7 +33,7 @@ export abstract class I2vChartsComponent implements OnInit {
   dataExistsForShowableProperties: boolean = true;
 
   isCustomFilterApplied: boolean = false;
-  isChartToBeRemoved : boolean = false;
+  isChartToBeRemoved: boolean = false;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
@@ -87,9 +87,7 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.widgetRequestModel) {
       this.isModel = true;
       if (this.widgetRequestModel.allowRefresh) {
-        this.interval = setInterval(() => {
-          this.getDataFromServer(this.widgetRequestModel);
-        }, this.widgetRequestModel.refreshInterval * 1000);
+        this.setRefreshInterval()
       }
       if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
         this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
@@ -238,6 +236,14 @@ export abstract class I2vChartsComponent implements OnInit {
     commonCall: boolean = false,
   ) {
     switch (event.key) {
+      // case null: {
+      //   // Check if Video Sources exists in the customFilters
+      //   if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
+      //     // Remove Video Sources from customFilters
+      //     delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
+      //     }
+      //   }
+
       case "Video Sources": {
         this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
           event.key
@@ -330,11 +336,59 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   // The actual API call is moved to this method
+  private setTimeAccordingToWidget(widgetRequestModel: Widget): void {
+    if (!widgetRequestModel?.filterConfig?.customFilters?.Time?.[0]) {
+      return;
+    }
+
+    const timeFilter = widgetRequestModel.filterConfig.customFilters.Time[0];
+    const today = new Date();
+    let startDate: Date;
+
+    switch (timeFilter.displayName) {
+      case 'Today':
+        // Set to start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 7 days':
+        // Set to 7 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Last 30 days':
+        // Set to 30 days ago from start of today
+        startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
+        widgetRequestModel.filterConfig.startTime = startDate.getTime();
+        widgetRequestModel.filterConfig.endTime = today.getTime();
+        break;
+
+      case 'Custom':
+        // For custom, use the timeRange values directly from the filter
+        const timeRange = timeFilter.returnValue as ITimeRange;
+        if (timeRange) {
+          widgetRequestModel.filterConfig.startTime = timeRange.startTime;
+          widgetRequestModel.filterConfig.endTime = timeRange.endTime;
+        }
+        break;
+    }
+
+    // Update the time range in customFilters as well
+    widgetRequestModel.filterConfig.customFilters.Time[0].returnValue = {
+      startTime: widgetRequestModel.filterConfig.startTime,
+      endTime: widgetRequestModel.filterConfig.endTime
+    };
+  }
+
   private fetchDataFromServer(widgetRequestModel: Widget) {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
     }
-
+    this.setTimeAccordingToWidget(widgetRequestModel);
     this.apiSubscription = this.chartingDataService
       .getChartingData(widgetRequestModel)
       .subscribe(
@@ -351,6 +405,7 @@ export abstract class I2vChartsComponent implements OnInit {
             }
             else if (this.isTableOutputModel(data)) {
               // this.tableData = data;
+              this.transformChartData(data);
               this.dataExists = true;
             }
           }
@@ -475,13 +530,12 @@ export abstract class I2vChartsComponent implements OnInit {
     this.widgetResizeCallbackEmittor.emit({ "value": value, "height": height, "width": width });
   }
 
-  public widgetRemoveCallback(value: boolean) {
+  public onWidgetRemoveCallback(value: boolean) {
     this.cd.detectChanges();
-    if(value)
-    {
+    if (value) {
       this.isChartToBeRemoved = true;
     }
-    else{
+    else {
       this.isChartToBeRemoved = false
     }
     this.widgetRemoveCallbackEmittor.emit(value);
@@ -554,6 +608,9 @@ export abstract class I2vChartsComponent implements OnInit {
 
   updateCustomFiltersValues() {
     if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied || this.applyToAllEnabled) {
+      //apply time without checking apply to all
+      this.setValueAsPerWidgetCustomFiltersValue({ 'Time': this.dashboardCustomFilterValue['Time'] });
+
       if (this.isCustomFilterApplied) {
         this.widgetRequestModel.filterConfig.isDashboardFilterApplied = this.applyToAllEnabled;
         const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
@@ -563,7 +620,7 @@ export abstract class I2vChartsComponent implements OnInit {
       }
       if (!this.applyToAllEnabled) {
         this.widgetRequestModel.filterConfig.customFilters = {
-          ...(this.customFilterValues ?? this.dashboardCustomFilterValue)
+          ...(this.customFilterValues)
         };
         this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.filterConfig.customFilters);
         this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
@@ -597,8 +654,12 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   isShowableSeries(chartSeries: ChartSeries): boolean {
-    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(x => x.name.toLowerCase() == chartSeries.name.toLowerCase());
-    return isSeriesShowable ? true : false
+    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(
+      x =>
+        x.displayName.toLowerCase() === chartSeries.name.toLowerCase() ||
+        x.name.toLowerCase() === chartSeries.displayName.toLowerCase()
+    );
+    return isSeriesShowable ? true : false;
   }
 
   seriesTrackBy(index: number): string | number {

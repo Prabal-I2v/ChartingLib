@@ -11,7 +11,7 @@ import {
   ViewChild,
 } from "@angular/core";
 
-import * as moment from "moment";
+import moment from "moment";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
@@ -227,6 +227,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   clearCustomFilters(): void {
     if (this.showFilterValues)
       this.toggleShowFilterValues();
+     this.selectedCustomFilterkey = "";
+      this.selectedCustomFilterValue = [];
+      this.timeFilterValue = "";
+      this.enableCustomTime = false;
+      this.updateUIFilterModelValues();
     this.clearCustomFiltersValues.emit(true);
   }
 

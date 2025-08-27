@@ -10,16 +10,16 @@
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" >
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
             <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
-        </div>
+          </div>
           <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
       </div>
       } @if (isModel) {
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
@@ -70,15 +70,11 @@
       </kendo-chart-tooltip> -->
 
       <kendo-chart-series>
-        @for (series of chartData.series; track seriesTrackBy) {
-        @if(isShowableSeries(series)){
-        <kendo-chart-series-item type="donut" [data]="series.data" categoryField="series.name" [autoFit]="true"
-          [labels]="{ visible: true, content: labelContent }">
+        <kendo-chart-series-item type="donut" [data]="chartData.series" categoryField="name" field="data[0]"
+          [autoFit]="true" [labels]="{ visible: true, content: labelContent }">
           <kendo-chart-series-item-labels [visible]="true" [font]="'12px Arial, sans-serif'">
           </kendo-chart-series-item-labels>
         </kendo-chart-series-item>
-        }
-        }
       </kendo-chart-series>
       <kendo-chart-legend position="right"></kendo-chart-legend>
     </kendo-chart>

@@ -39,6 +39,21 @@
     border-radius: 12px;
     padding: 10px 20px 10px 20px;
     width: 100%;
+    
+    &.greatest {
+      background-color: rgba(0, 128, 0, 0.1);
+      border-color: #008000;
+    }
+    
+    &.least {
+      background-color: rgba(255, 0, 0, 0.1);
+      border-color: #ff0000;
+    }
+    
+    @media (min-width: 768px) {
+      width: 100%;
+      flex: 1 1 0;
+    }
 
     .minorheader {
       font-weight: 500;
@@ -111,7 +126,7 @@
   flex: 1;
   padding: 16px;
   gap: 10px;
-  overflow-x: auto;
+  overflow-x:auto;
   height: 100%;
 }
 
@@ -167,12 +182,34 @@
 
 .content-section {
   display: flex;
-  flex-direction: column;
   gap: 14px;
-  justify-content: center;
-  align-items: flex-start;
-  overflow: auto;
   width: 100%;
+
+  &.show-aggregation {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: auto;
+    // background-color: rgba(135, 206, 235, 0.3); // Light blue background
+  }
+
+  &:not(.show-aggregation) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    // background-color: rgba(238, 236, 144, 0.3); // Light green background
+    
+    .number-grp {
+      flex: 1 1 calc(50% - 14px);  // Take up roughly half the space minus gap
+      
+      @media (max-width: 768px) {
+        flex: 1 1 100%;  // Take full width on mobile
+      }
+    }
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
 }
 
 .details-grp {
@@ -234,5 +271,5 @@
 }
 
 .overflow-data-box {
-  overflow-y: auto;
+  overflow: auto;
 }

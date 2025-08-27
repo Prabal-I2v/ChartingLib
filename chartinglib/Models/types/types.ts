@@ -1,7 +1,6 @@
 // types.ts - Contains common interfaces and type definitions
 import { GridStackWidget } from "gridstack";
 import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
-import { Enum_Entity, Enum_Schema } from "../enums/enums";
 import { OneDimensionWidgetConstructorProps, TwoDimensionWidgetConstructorProps, ThreeDimensionWidgetConstructorProps, NoDimensionWidgetConstructorProps } from "../Widget";
 import { ITimeRange } from "../interfaces/interfaces";
 

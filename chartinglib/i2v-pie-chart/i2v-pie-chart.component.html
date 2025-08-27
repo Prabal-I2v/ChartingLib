@@ -20,7 +20,7 @@
       @if (isModel) {
       <i2v-chart-header class="chart-header" [(showFilterValues)]="showFilterValues" [widgetModel]="widgetRequestModel"
         [customFilters]="customFilters" [isEditModeOn]="isEditModeOn" (daysFilterOutput)="onTimeChange($event)"
-        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="widgetRemoveCallback($event)"
+        (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (customFilterOutput)="onCustomFilterValuesChange($event)"
         (refreshIntervalFilterOutput)="onRefreshIntervalChange($event)"
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
@@ -66,15 +66,11 @@
         </ng-template>
       </kendo-chart-tooltip> -->
       <kendo-chart-series>
-        @for (series of chartData.series; track seriesTrackBy) {
-        @if(isShowableSeries(series)){
-        <kendo-chart-series-item type="pie" [data]="series.data" categoryField="series.name" [autoFit]="true"
+        <kendo-chart-series-item type="pie" [data]="chartData.series" categoryField="name" field="data[0]" [autoFit]="true"
           [labels]="{ visible: true, content: labelContent }">
           <kendo-chart-series-item-labels [visible]="true" [font]="'12px Arial, sans-serif'">
           </kendo-chart-series-item-labels>
         </kendo-chart-series-item>
-        }
-        }
       </kendo-chart-series>
     </kendo-chart>
     }

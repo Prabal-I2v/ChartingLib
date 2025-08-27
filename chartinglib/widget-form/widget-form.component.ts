@@ -2,16 +2,12 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormControl, AbstractControl } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import * as moment from 'moment';
-
 // Enums and Models
 import {
   Enum_WidgetType,
   Enum_Method,
-  Enum_Entity,
   Enum_Schema,
   WidgetDimension,
-  Enum_Entity_With_Labels,
   getWidgetDropdownItemsByDimension,
   allWidgetTypes,
   Enum_Method_Aggregation,
@@ -53,14 +49,13 @@ import {
   IWidgetFieldNameConfig,
   IWidgetDisplayConfig,
   IWidgetFilterConfig,
-  IWidgetInteractivityConfig
+  IWidgetInteractivityConfig,
+  ITimeRange
 } from '../Models/interfaces/interfaces';
 
 // Utils and Constants
 import {
-  entities,
   entityTypes,
-  EVENT_ENTITIES,
   fieldsAggregationMethods,
   groupByTypes,
   multipleEntitiesAggregationMethods,
@@ -72,7 +67,9 @@ import {
   WIDGET_FORM_CONSTANTS,
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
-  validateWidgetCompatibility
+  validateWidgetCompatibility,
+  EntityOption,
+  PUBLIC_ENTITIES
 } from './widget-form-utils';
 
 // Query Builder
@@ -81,6 +78,8 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { WidgetTileConf } from '../Models/types/types';
 import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from '@i2v-systems/common-components';
 import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
+import { AnalyticEventModel } from 'src/app/Models/analyticEvent.Model';
+import { ToastrService } from 'ngx-toastr';
 
 // Form value interfaces (what the form contains)
 interface WidgetFormValue {
@@ -98,9 +97,9 @@ interface WidgetFormValue {
     method: Enum_Method;
     isDistinct: boolean;
     entityTypeSelect: Enum_Schema;
-    entitySelect: Enum_Entity | null;
+    entitySelect: string | null;
     fieldNames: IWidgetFieldNameConfig[];
-    entities: Enum_Entity[];
+    entities: string[];
     dataConfig: IWidgetDataConfig[];
     groupBy1: groupByConf | null;
     groupBy2: groupByConf | null;
@@ -159,11 +158,11 @@ interface WidgetFormControls {
     method: FormControl<Enum_Method>;
     isDistinct: FormControl<boolean>;
     entityTypeSelect: FormControl<Enum_Schema>;
-    entitySelect: FormControl<Enum_Entity | null>;
+    entitySelect: FormControl<string | null>;
     fieldNames: FormControl<IWidgetFieldNameConfig[]>;
-    entities: FormControl<Enum_Entity[]>;
+    entities: FormControl<string[]>;
     dataConfig: FormArray<FormGroup<{
-      entity: FormControl<Enum_Entity>;
+      entity: FormControl<string>;
       schemaName: FormControl<Enum_Schema>;
     }>>;
     groupBy1: FormControl<groupByConf | null>;
@@ -237,6 +236,7 @@ export interface IWidgetFormDataRequestModel {
   dashboardId: string;
   operation: Enum_WidgetFormOperation;
   mode?: Enum_WidgetFormMode;
+  timeObj: ITimeRange
 }
 
 export enum Enum_WidgetFormOperation {
@@ -292,12 +292,15 @@ export class WidgetFormComponent implements OnInit {
   readonly fieldsAggregationMethods = fieldsAggregationMethods;
   readonly groupByTypes = groupByTypes;
   readonly seriesAggregationOptions = seriesAggregationOptions;
-  readonly EVENT_ENTITIES = EVENT_ENTITIES;
   readonly timeGroupingOptions = timeGroupingOptions;
+  readonly PUBLIC_ENTITIES = PUBLIC_ENTITIES;
+
+  EVENT_ENTITIES: EntityOption[] = []
 
   // Configuration Mode
   isAdvancedMode: boolean = true;
   formMode: Enum_WidgetFormMode = Enum_WidgetFormMode.normal;
+  timeObj: ITimeRange;
   selectedEntities: any[] = []; // For dropdown options
   isWidgetTypeSelectedInitially: boolean = false;
 
@@ -329,6 +332,7 @@ export class WidgetFormComponent implements OnInit {
   attemptedSubmit = false;
 
   constructor(
+    private toastr: ToastrService,
     private fb: FormBuilder,
     private analyticService: AnalyticService,
     private eventService: EventService,
@@ -346,6 +350,9 @@ export class WidgetFormComponent implements OnInit {
     if (modalData.event?.data?.mode) {
       this.formMode = modalData.event.data.mode;
     }
+    if (modalData.event.data.timeObj) {
+      this.timeObj = modalData.event.data.timeObj
+    }
   }
 
   ngOnInit() {
@@ -358,15 +365,6 @@ export class WidgetFormComponent implements OnInit {
     }
 
     this.setupFormValidation();
-  }
-
-  // Computed Properties
-  get eventSchemaEntities() {
-    return entities.filter(entity => entity.schema === Enum_Schema.Events);
-  }
-
-  get publicSchemaEntities() {
-    return entities.filter(entity => entity.schema === Enum_Schema.Public);
   }
 
   get dataConfigArray(): FormArray {
@@ -418,8 +416,15 @@ export class WidgetFormComponent implements OnInit {
       forkJoin({
         commonProperties: this.eventService.getAllCommonProperties(),
         analytics: this.analyticService.getAllAnalytics()
-      }).subscribe(({ commonProperties, analytics }) => {
+      }).subscribe((result) => {
+        const commonProperties = result.commonProperties;
+        const analytics: AnalyticEventModel[] = result.analytics;
+
         if (commonProperties?.length && analytics?.length) {
+          //create EVENT_ENTITIES from analytics
+
+          this.EVENT_ENTITIES = WidgetFormUtils.createEventEntities(analytics);
+
           this.commonProperties = commonProperties || [];
           this.commonFieldNames = this.commonProperties.map<IWidgetFieldNameConfig>(prop => ({
             name: prop.name,
@@ -532,11 +537,11 @@ export class WidgetFormComponent implements OnInit {
         method: this.fb.control(Enum_Method.Count, { nonNullable: true }),
         isDistinct: this.fb.control(false, { nonNullable: true }),
         entityTypeSelect: this.fb.control(Enum_Schema.Events, { nonNullable: true }),
-        entitySelect: this.fb.control<Enum_Entity | null>(null),
+        entitySelect: this.fb.control<string | null>(null),
         fieldNames: this.fb.control<IWidgetFieldNameConfig[]>([], { nonNullable: true }),
-        entities: this.fb.control<Enum_Entity[]>([], { nonNullable: true }),
+        entities: this.fb.control<string[]>([], { nonNullable: true }),
         dataConfig: this.fb.array<FormGroup<{
-          entity: FormControl<Enum_Entity>;
+          entity: FormControl<string>;
           schemaName: FormControl<Enum_Schema>;
         }>>([]),
         groupBy1: this.fb.control<groupByConf | null>(null),
@@ -617,10 +622,7 @@ export class WidgetFormComponent implements OnInit {
       labels.push('Widget Type');
     }
 
-    if (this.widgetForm.controls.widgetType.value && this.requiresWidgetSpecificConfig()) {
-      labels.push('Widget Configuration');
-    }
-
+    labels.push('Widget Configuration')
     labels.push('Review & Submit');
 
     // Add indicators for pre-defined mode
@@ -779,8 +781,8 @@ export class WidgetFormComponent implements OnInit {
     });
 
     this.selectedEntities = entityType === Enum_Schema.Events
-      ? this.eventSchemaEntities
-      : this.publicSchemaEntities;
+      ? this.EVENT_ENTITIES
+      : PUBLIC_ENTITIES;
   }
 
   onEntityConfigTypeChange(): void {
@@ -816,11 +818,10 @@ export class WidgetFormComponent implements OnInit {
 
   onEntitySelectChange(): void {
     // const selectedEntity = event.value as Enum_Entity;
-    const selectedEntity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value as Enum_Entity;
-    const entityName = Enum_Entity_With_Labels[selectedEntity];
+    const selectedEntity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
     if (selectedEntity) {
       // Update entity properties for dropdown
-      this.entityProperties = this.entityPropertiesMap[entityName] || [];
+      this.entityProperties = this.entityPropertiesMap[selectedEntity] || [];
       this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(
         (prop) => ({
           name: prop.name,
@@ -873,23 +874,13 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onCommonPropertiesChange(event: any): void {
-    const selectedProperties = event.value as Property[];
-    const selectedFieldNames: IWidgetFieldNameConfig[] = selectedProperties.map((prop) => {
-      return {
-        name: prop.name,
-        columnName: prop.columnName,
-        applyAggregation: true,
-        type: prop.type,
-        isLabel: false
-      };
-    });
+    const selectedProperties = event.value as IWidgetFieldNameConfig[];
 
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedFieldNames
+        fieldNames: selectedProperties
       }
     });
-
 
     this.updateRecommendedWidgets();
     this.updateStepCompletion(3);
@@ -908,7 +899,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onEntitiesChange(event: any): void {
-    const selectedEntities = event.value as Enum_Entity[];
+    const selectedEntities = event.value as string[];
 
     if (selectedEntities?.length) {
       this.setupEntityConfigs(selectedEntities);
@@ -935,10 +926,9 @@ export class WidgetFormComponent implements OnInit {
       }
     });
 
-    const entityName = Enum_Entity_With_Labels[entityValue];
-    if (entityValue && this.entityPropertiesMap[entityName]) {
+    if (entityValue && this.entityPropertiesMap[entityValue]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
-        this.entityPropertiesMap[entityName],
+        this.entityPropertiesMap[entityValue],
         method
       );
       this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(prop => ({
@@ -959,15 +949,16 @@ export class WidgetFormComponent implements OnInit {
         fieldNames: []
       }
     });
+
+    this.updateAllShowablePropertiesName();
   }
 
   onEntityChange(): void {
     const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
     const aggregationMethod = this.widgetForm.controls.dataInputConfig.controls.method.value;
-    const entityName = Enum_Entity_With_Labels[entityValue];
-    if (entityValue && this.entityPropertiesMap[entityName]) {
+    if (entityValue && this.entityPropertiesMap[entityValue]) {
       this.entityProperties = WidgetFormUtils.getCompatibleProperties(
-        this.entityPropertiesMap[entityName],
+        this.entityPropertiesMap[entityValue],
         aggregationMethod
       );
       this.allFieldNames = this.entityProperties.map<IWidgetFieldNameConfig>(
@@ -984,6 +975,7 @@ export class WidgetFormComponent implements OnInit {
       this.allFieldNames = [];
     }
 
+    this.updateAllShowablePropertiesName();
     this.createRuleGroupQueryBuilder(this.entityProperties);
   }
 
@@ -995,7 +987,7 @@ export class WidgetFormComponent implements OnInit {
         existingField.applyAggregation = true;
       }
       else {
-        existingField.applyAggregation = true;
+        existingField.applyAggregation = false;
       }
     }
   }
@@ -1329,15 +1321,13 @@ export class WidgetFormComponent implements OnInit {
 
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
       const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
-      const entityName = Enum_Entity_With_Labels[entityValue];
-      if (entityName && this.entityPropertiesMap[entityName]) {
-        properties.push(...this.entityPropertiesMap[entityName]);
+      if (entityValue && this.entityPropertiesMap[entityValue]) {
+        properties.push(...this.entityPropertiesMap[entityValue]);
       }
     } else {
       const selectedEntities = this.widgetForm.controls.dataInputConfig.controls.entities.value || [];
       for (const entityValue of selectedEntities) {
-        const entityName = Enum_Entity_With_Labels[entityValue];
-        const entityProps = this.entityPropertiesMap[entityName] || [];
+        const entityProps = this.entityPropertiesMap[entityValue] || [];
         properties.push(...entityProps);
       }
       properties.push(...this.commonProperties);
@@ -1362,14 +1352,29 @@ export class WidgetFormComponent implements OnInit {
     return [...new Set(columns)];
   }
 
+  shouldShowGroupBy1(): boolean {
+    const widgetType = this.widgetForm.controls.widgetType.value;
+    if (this.isWidgetTypeSelectedInitially) {
+      var TwoDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
+      var ThreeDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      var requiredTypes = [...TwoDimensionalWidgetTypes, ...ThreeDimensionalWidgetTypes];
+      if (requiredTypes.some((type) => type.value == widgetType)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   shouldShowGroupBy2(): boolean {
     if (!this.enableGroupBy1) return false;
 
     const widgetType = this.widgetForm.controls.widgetType.value;
     if (this.isWidgetTypeSelectedInitially) {
-      if (widgetType === Enum_WidgetType.StackedBarChart ||
-        widgetType === Enum_WidgetType.StackedColumnChart ||
-        widgetType === Enum_WidgetType.HeatMapChart3D) {
+      var requiredTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      if (requiredTypes.some((type) => type.value == widgetType)) {
         return true;
       } else {
         return false;
@@ -1401,13 +1406,13 @@ export class WidgetFormComponent implements OnInit {
     this.updateAllShowablePropertiesName();
   }
 
-  setupEntityConfigs(entityValues: Enum_Entity[]): void {
+  setupEntityConfigs(entityValues: string[]): void {
     this.clearDataConfigArray();
 
     for (const entityValue of entityValues) {
-      const event_entity = EVENT_ENTITIES.find(entity => entity.value == entityValue)
+      const event_entity = this.EVENT_ENTITIES.find(entity => entity.value == entityValue)
       const entityFormGroup = this.fb.group({
-        entity: this.fb.control<Enum_Entity>(entityValue, {
+        entity: this.fb.control<string>(entityValue, {
           validators: [Validators.required],
           nonNullable: true
         }),
@@ -1451,7 +1456,7 @@ export class WidgetFormComponent implements OnInit {
       fieldNames.forEach((fieldName: IWidgetFieldNameConfig) => {
 
         this.allShowablePropertiesName.push({
-          name: fieldName.columnName,
+          name: fieldName.name,
           displayName: fieldName.columnName,
           isMultiValued: false,
           isLabel: fieldName.type === EventPropertyType.String,
@@ -1463,12 +1468,16 @@ export class WidgetFormComponent implements OnInit {
     const fieldAggregationType = this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value;
     if (fieldAggregationType && (fieldAggregationType == Enum_Method_Aggregation.Total || fieldAggregationType == Enum_Method_Aggregation.Least || fieldAggregationType == Enum_Method_Aggregation.Greatest)) {
       this.allShowablePropertiesName.push({
-        name: Enum_Method_Aggregation_With_Labels[fieldAggregationType].toLowerCase(),
+        name: Enum_Method_Aggregation_With_Labels[fieldAggregationType],
         displayName: Enum_Method_Aggregation_With_Labels[fieldAggregationType],
         isMultiValued: false,
         isLabel: false
       });
     }
+
+    const showablePropertiesArray = this.widgetForm.controls.showableProperties;
+    showablePropertiesArray.clear();
+    this.widgetForm.controls.showablePropertiesSelection.reset();
   }
 
   updateRecommendedWidgets(): void {
@@ -1505,7 +1514,12 @@ export class WidgetFormComponent implements OnInit {
       const isEntityProp = this.entityProperties.find(entityProp => entityProp.name.toLowerCase() == prop.toLowerCase());
 
       if (isEntityProp) {
-        showablePropertiesArray.push(this.createShowablePropertyFormGroup(isEntityProp));
+        showablePropertiesArray.push(this.createShowablePropertyFormGroup({
+          name: isEntityProp.name,
+          displayName: isEntityProp.columnName,
+          isLabel: false,
+          isMultiValued: false
+        }));
       }
       else {
         const isAggregationProp =
@@ -1514,7 +1528,7 @@ export class WidgetFormComponent implements OnInit {
         if (isAggregationProp) {
           showablePropertiesArray.push(this.createShowablePropertyFormGroup(
             {
-              name: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value].toLowerCase(),
+              name: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value],
               displayName: Enum_Method_Aggregation_With_Labels[this.widgetForm.controls.dataInputConfig.controls.fieldsAggregationType.value],
               isLabel: false,
               isMultiValued: false
@@ -1613,8 +1627,8 @@ export class WidgetFormComponent implements OnInit {
       this.widgetForm.patchValue({
         widgetSpecificConfig: {
           kpiConf: {
-            countValueColumnName: 'count',
-            displayValueColumnName: 'displayValue',
+            countValueColumnName: null,
+            displayValueColumnName: null,
             hideLabel: false,
             showChart: false
           }
@@ -1651,13 +1665,14 @@ export class WidgetFormComponent implements OnInit {
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
       if (property.type !== EventPropertyType.Guid) {
-        if (property.name.toLowerCase() === "videoSourceid") {
+        if (property.name.toLowerCase() === "videosourceid") {
           const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
           let videoSourcesName = "";
           for (let i = 0; i < videoSources.length; i++) {
             videoSourcesName += videoSources[i].name + ",";
           }
           property.defaultValues = videoSourcesName.slice(0, -1);
+          property.type = EventPropertyType.MultiSelect
         }
 
         this.createFilterPropertyObject(
@@ -1749,14 +1764,14 @@ export class WidgetFormComponent implements OnInit {
     try {
       const finalWidget = this.createWidget();
       this.finalWidget = finalWidget;
-      alert(SUCCESS_MESSAGES.WIDGET_CREATED);
+      this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
       this.dialogRef.close({
         widgetData: this.finalWidget,
         operation: this.modalData.event?.data?.operation
       });
     } catch (error) {
       console.error('Error creating widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 
@@ -1805,7 +1820,7 @@ export class WidgetFormComponent implements OnInit {
       ref.afterClosed().subscribe((data) => { });
     } catch (error) {
       console.error('Error in preview widget:', error);
-      alert(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
+      this.toastr.error(`${ERROR_MESSAGES.WIDGET_CREATION_FAILED}: ${(error as Error).message}`);
     }
   }
 
@@ -1895,10 +1910,11 @@ export class WidgetFormComponent implements OnInit {
       }));
     }
     else {
+      var entityName = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
       if (this.widgetForm.controls.entityConfigType.value === 'single') {
         showablePropertiesArray.push({
-          name: Enum_Entity_With_Labels[this.widgetForm.controls.dataInputConfig.controls.entitySelect.value],
-          displayName: Enum_Entity_With_Labels[this.widgetForm.controls.dataInputConfig.controls.entitySelect.value],
+          name: entityName,
+          displayName: entityName,
           isMultiValued: false,
           isLabel: false,
           multiValuedConfig: null
@@ -1906,8 +1922,8 @@ export class WidgetFormComponent implements OnInit {
       } else {
         this.widgetForm.controls.dataInputConfig.controls.entities.value.forEach((entity) => {
           showablePropertiesArray.push({
-            name: Enum_Entity_With_Labels[entity],
-            displayName: Enum_Entity_With_Labels[entity],
+            name: entity,
+            displayName: entity,
             isMultiValued: false,
             isLabel: false,
             multiValuedConfig: null
@@ -1930,7 +1946,8 @@ export class WidgetFormComponent implements OnInit {
 
     const finalWidget = WidgetFactory.createWidget(constructorProps, widgetType);
     finalWidget.dimension = dimension;
-
+    finalWidget.isPredefinedWidget = false;
+    finalWidget.canBeRemoved = true;
     return finalWidget;
   }
 
@@ -1949,8 +1966,7 @@ export class WidgetFormComponent implements OnInit {
     const entityValue = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
 
     props.forEach((propValue: IWidgetFieldNameConfig) => {
-      const entityName = Enum_Entity_With_Labels[entityValue];
-      const propInfo = this.entityPropertiesMap[entityName]?.find(p => p.name.toLowerCase() === propValue.name.toLowerCase());
+      const propInfo = this.entityPropertiesMap[entityValue]?.find(p => p.name.toLowerCase() === propValue.name.toLowerCase());
       if (propInfo) {
         showableProperties.push({
           name: propValue.name,
@@ -1984,7 +2000,7 @@ export class WidgetFormComponent implements OnInit {
   private createDataConfig(): IWidgetDataConfig[] {
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
       return [{
-        entity: this.widgetForm.controls.dataInputConfig.controls.entitySelect.value as Enum_Entity,
+        entity: this.widgetForm.controls.dataInputConfig.controls.entitySelect.value,
         schemaName: this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema
       }];
     } else {
@@ -1992,7 +2008,7 @@ export class WidgetFormComponent implements OnInit {
       return dataConfigs
         .filter(config => config.get('schemaName')?.value)
         .map(config => ({
-          entity: config.get('entity')?.value as Enum_Entity,
+          entity: config.get('entity')?.value,
           schemaName: config.get('schemaName')?.value as Enum_Schema
         }));
     }
@@ -2039,14 +2055,15 @@ export class WidgetFormComponent implements OnInit {
       showableProperties: showableProperties,
       widgetTileConf: this.widgetForm.controls.widgetTileConf.value,
       widgetInteractivityConfig: {
-        isWidgetHidden: false
+        isWidgetHidden: false,
+        max: 20
       },
       filterConfig: {
         customFilters: {},
         propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
         disableTimeFilter: false,
-        startTime: WidgetFormUtils.getCurrentDayStart(),
-        endTime: moment(new Date()).valueOf(),
+        startTime: this.timeObj.startTime,
+        endTime: this.timeObj.endTime,
         isDashboardFilterApplied: true
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
@@ -2317,10 +2334,6 @@ export class WidgetFormComponent implements OnInit {
     return 'No specific configuration required';
   }
 
-  getEntityLabel(entity: Enum_Entity): string {
-    return Enum_Entity_With_Labels[entity]
-  }
-
   getValidationWarnings(): string[] {
     const warnings: string[] = [];
     const widgetType = this.widgetForm?.controls.widgetType.value;
@@ -2473,7 +2486,7 @@ export class WidgetFormComponent implements OnInit {
       },
       dataInputConfig: {
         entityTypeSelect: Enum_Schema.Events,
-        entitySelect: Enum_Entity.Highway_ATCC,
+        entitySelect: "Highway_ATCC",
         method: Enum_Method.Sum,
         isDistinct: false
       },
@@ -2481,7 +2494,7 @@ export class WidgetFormComponent implements OnInit {
       refreshInterval: 300,
     });
 
-    this.selectedEntities = this.eventSchemaEntities;
+    this.selectedEntities = this.EVENT_ENTITIES;
     this.onEntityChange();
 
     if (this.entityProperties?.length > 0) {
@@ -2641,9 +2654,13 @@ export class WidgetFormComponent implements OnInit {
   }
 
   private initializeShowableProperties(widget: Widget) {
+
     this.widgetForm.patchValue({
-      showablePropertiesSelection: widget.showableProperties.map(prop => prop.name),
+      showablePropertiesSelection: this.allShowablePropertiesName
+        .filter(x => widget.showableProperties.some(y => y.name.toLowerCase() === x.name.toLowerCase()))
+        .map(x => x.name),
     });
+
 
     const showablePropertiesArray = this.widgetForm.controls.showableProperties;
     showablePropertiesArray.clear();
@@ -2670,8 +2687,8 @@ export class WidgetFormComponent implements OnInit {
 
       // Update selected entities dropdown
       this.selectedEntities = entityConfig.schemaName === Enum_Schema.Events
-        ? this.eventSchemaEntities
-        : this.publicSchemaEntities;
+        ? this.EVENT_ENTITIES
+        : PUBLIC_ENTITIES;
 
       // Trigger entity change to load properties
       this.onEntityChange();
@@ -2689,8 +2706,8 @@ export class WidgetFormComponent implements OnInit {
 
       // Update selected entities dropdown
       this.selectedEntities = dataConfig[0].schemaName === Enum_Schema.Events
-        ? this.eventSchemaEntities
-        : this.publicSchemaEntities;
+        ? this.EVENT_ENTITIES
+        : PUBLIC_ENTITIES;
 
       // Setup entity configs
       this.setupEntityConfigs(entityValues);
@@ -2865,7 +2882,7 @@ export class WidgetFormComponent implements OnInit {
           kpiConf: {
             countValueColumnName: kpiConf.countValueColumnName,
             displayValueColumnName: kpiConf.displayValueColumnName,
-            imageColumnName: kpiConf.imageColumnName || '',
+            imageColumnName: kpiConf.imageColumnName || null,
             showChart: kpiConf.showChart || false,
             hideLabel: kpiConf.hideLabel || false,
             showAggregation: kpiConf.showAggregation || false,

@@ -33,7 +33,7 @@
       [fill-color]="'rgba(0, 153, 237, 1)'">
     </span>
     }
-    @if (isEditModeOn && !applyToAllEnabled) {
+    @if (isEditModeOn) {
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement appSvg="assets/Outline/menu.svg"
       [size]="'20'" (click)="onContextMenuEvent($event)">
     </button>
@@ -48,11 +48,13 @@
   <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
     (click)="onMenuClick()"></i2v-context-menu-item>
 
+  @if(!this.removeWidget){
   <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
     [label]="hideWidgetMsg" (click)="toggleHideWidget()"></i2v-context-menu-item>
+  }
 
-  @if (!this.widgetModel.isPredefinedWidget;) {
-  <i2v-context-menu-item [icon]="removeWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"
+  @if (this.widgetModel.canBeRemoved) {
+  <i2v-context-menu-item [icon]="removeWidget ? 'assets/fill/Analytics_Removed.svg' : 'assets/fill/Analytics_Removed.svg'"
     [label]="removeWidgetMsg" (click)="toggleRemoveWidget()"></i2v-context-menu-item>
   }
 </i2v-context-menu>

@@ -270,7 +270,7 @@ export class WidgetFactory {
     showablePropertiesArray: string[]
   ): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-    if (dataConfig.fieldNames.length > 0 && showablePropertiesArray.length == 0) {
+    if (dataConfig.fieldNames?.length > 0 && (!showablePropertiesArray || showablePropertiesArray?.length == 0)) {
       errors.push("Please select atleast one showable property")
     }
     const targetDimension = widgetTypeDimensionMap[widgetType];

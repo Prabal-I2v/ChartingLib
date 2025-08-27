@@ -139,8 +139,7 @@
           }
 
           <!-- Entity Configuration Type (for properties-first approach) -->
-          @if(widgetForm.get('configurationApproach')?.value ===
-          'propertiesFirst'){
+
           <div class="form-group">
             <label class="form-label required">Entity Configuration</label>
             <p-dropdown [options]="[
@@ -156,7 +155,6 @@
             </div>
             }
           </div>
-          }
           }
 
           <div class="step-actions">
@@ -259,8 +257,7 @@
               <ul>
                 <li>Entity Type: {{ widgetForm.controls.entityConfigType.value | titlecase }}</li>
                 @if(widgetForm.controls.entityConfigType.value === 'single') {
-                <li>Selected Entity: {{ getEntityLabel(widgetForm.controls.dataInputConfig.controls.entitySelect.value)
-                  }}</li>
+                <li>Selected Entity: {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}</li>
                 } @else {
                 <li>Number of Entities: {{ widgetForm.controls.dataInputConfig.controls.entities.value?.length || 0 }}
                 </li>
@@ -475,6 +472,26 @@
                       </div>
                     </ng-container>
 
+                    <!-- Query Builder Input - SingleSelect -->
+                    <ng-container *queryInput="
+                        let rule;
+                        let field = field;
+                        let options = options;
+                        type: 'MultiSelect';
+                        let onChange = onChange
+                      ">
+                      <div class="field-rule-container">
+                        <div class="field-select-container">
+                          <label class="form-label medium">Property value</label>
+                          <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
+                            [(ngModel)]="rule.value"
+                            placeholder="Select VideoSources" [showClear]="true"
+                            (ngModelChange)="onChange()" [appendTo]="'body'">
+                          </p-multiSelect>
+                        </div>
+                      </div>
+                    </ng-container>
+
                     <!-- Query Builder Input - Integer -->
                     <ng-container *queryInput="
                         let rule;
@@ -676,19 +693,20 @@
                 </div>
               </div>
 
-              <!-- Fields Aggregation Type -->
-              <div class="form-group">
+              <!-- Fields Aggregation Type (disabled as we do not need aggregation options for multiple entities) -->
+              <!-- <div class="form-group">
                 <label for="fieldsAggregationType" class="form-label">Fields Aggregation Method</label>
                 <p-dropdown id="fieldsAggregationType" [options]="fieldsAggregationMethods"
                   formControlName="fieldsAggregationType" optionLabel="label" optionValue="value" appendTo="body"
-                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown">
+                  (onChange)="onFieldsAggregationMethodChange()" styleClass="form-dropdown"
+                  [attr.disabled]="'disabled'" [style]="{'pointer-events': 'none', 'opacity': '0.6'}">
                 </p-dropdown>
-              </div>
+              </div> -->
               }
             </div>
 
             <!-- Advanced Configuration Section -->
-            @if (isAdvancedMode) {
+            @if (isAdvancedMode && shouldShowGroupBy1() ) {
             <div class="advanced-config">
               <h4>Advanced Configuration</h4>
 
@@ -1260,12 +1278,7 @@
               </p>
               <div class="summary-item" *ngIf="widgetForm.controls.entityConfigType.value === 'single'">
                 <strong>Selected Entity:</strong>
-                {{
-                getEntityLabel(
-                widgetForm.controls.dataInputConfig.controls.entitySelect
-                .value
-                )
-                }}
+                {{ widgetForm.controls.dataInputConfig.controls.entitySelect.value }}
               </div>
               <div class="summary-item" *ngIf="
                   widgetForm.controls.entityConfigType.value === 'multiple'

@@ -134,19 +134,22 @@ export class I2vGridComponent extends I2vChartsComponent {
       return {
         ...colDef,
         checked: isSelected,
+        translatedHeader: colDef.headerName // Set initial value
       };
     });
-    // this.addTranslatedFilterValue();
+    this.addTranslatedFilterValue();
     this.SelectColumnFilteredList.next(this.columnToSelected);
   }
-  // addTranslatedFilterValue(){
-  //   this.columnToSelected.forEach(column => {
-  //     this.translate.get(column.headerName).subscribe(translatedData => {
-  //       column.translatedHeader = translatedData || column.headerName; // Fallback to original
-  //     });
-  //   });
-  
-  // }
+
+  private addTranslatedFilterValue() {
+    this.columnToSelected.forEach(column => {
+      this.translate.get(column.headerName).subscribe(translatedData => {
+        column.translatedHeader = translatedData || column.headerName; // Fallback to original
+        // Trigger an update of the ReplaySubject after translation
+        this.SelectColumnFilteredList.next(this.columnToSelected);
+      });
+    });
+  }
   public transformChartData(data: TableOutputModel) {
     const tableData = new TableOutputModel();
     tableData.columns = [...data.columns];

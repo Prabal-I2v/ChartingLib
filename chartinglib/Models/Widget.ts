@@ -1,5 +1,5 @@
 // widget-base.ts - Contains the base Widget class
-import * as moment from "moment";
+import moment from "moment";
 import { dashboard } from "./DashboardModel";
 import { Enum_Method, Enum_Method_Aggregation, Enum_WidgetType, WidgetDimension } from "./enums/enums";
 import { IWidgetDisplayConfig, IWidgetFilterConfig, IShowableProperty, IOneDimensionDataInputConfig, ITwoDimensionDataInputConfig, IThreeDimensionDataInputConfig, IWidgetInteractivityConfig, IBaseWidgetConstructorProps, IWidgetDataOutputConfig, INoDimensionDataInputConfig } from "./interfaces/interfaces";
@@ -24,6 +24,7 @@ export abstract class Widget {
   query?: string;
   widgetSpecificConfig?: string;
   isPredefinedWidget: boolean = false;
+  canBeRemoved : boolean = false;
   abstract dimension: WidgetDimension;
   abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
@@ -163,6 +164,7 @@ export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -182,6 +184,7 @@ export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -201,6 +204,7 @@ export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstruc
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;
@@ -219,6 +223,7 @@ export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructor
   dashboard?: dashboard;
   isPreview?: boolean;
   isPredefinedWidget: boolean;
+  canBeRemoved: boolean;
   allowRefresh: boolean;
   refreshInterval: number;
   query?: string;

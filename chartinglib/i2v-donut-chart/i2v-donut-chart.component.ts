@@ -81,6 +81,7 @@ export class I2vDonutChartComponent extends I2vChartsComponent {
 
     this.chartData = chartData;
     this.chartData.series = this.appendNameToAggregatedProperty(this.chartData);
+    this.chartData.series = this.chartData.series.filter(x => this.widgetRequestModel.showableProperties.some(prop => prop.name.toLowerCase() == x.name.toLowerCase()))
     if (this.widgetRequestModel.showableProperties.length == 0) {
       this.dataExistsForShowableProperties = false;
     }

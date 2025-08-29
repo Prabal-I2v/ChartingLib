@@ -321,7 +321,7 @@ export class WidgetFormUtils {
     if (this.isNumericAggregationMethod(method)) {
       return properties.filter(
         (prop) =>
-          (prop.type === EventPropertyType.Float ||
+          (prop.type === EventPropertyType.Float || 
             prop.type === EventPropertyType.Integer) &&
           prop.filterable
       );
@@ -330,7 +330,7 @@ export class WidgetFormUtils {
     // For Count or other methods, return string properties
     return properties.filter(
       (prop) =>
-        (prop.type === EventPropertyType.String ||
+        (prop.type === EventPropertyType.String || prop.type === EventPropertyType.Boolean ||
           prop.type === EventPropertyType.Guid) &&
         prop.filterable
     );

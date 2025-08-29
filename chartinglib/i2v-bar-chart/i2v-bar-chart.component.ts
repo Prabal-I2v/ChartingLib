@@ -36,7 +36,7 @@ export class I2vBarChartComponent extends I2vChartsComponent {
       return new ChartSeries({ name: x.name, displayName: x.displayName, data: x.data });
     });
 
-    if (data.labels.xAxisFields.length > 0) {
+    if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
       if (isMonthData) {
         const monthData: any[] = [];
         data.labels.xAxisFields.forEach((x) => {
@@ -46,6 +46,9 @@ export class I2vBarChartComponent extends I2vChartsComponent {
       } else {
         chartData.xAxisFields = data.labels.xAxisFields;
       }
+    }
+    else {
+      chartData.xAxisFields = [];
     }
 
     if (data.labels.xAxisLabel) {

@@ -21,12 +21,12 @@ import {
   Widget,
 } from "../Models/Widget";
 import * as moment from "moment";
-import { EditAnalyticServerComponent } from "src/app/modules/settings/analytic-server-form/editAnalyticServer/edit-analytic-server.component";
+import { EditAnalyticServerComponent } from "Analytic/ClientApp/src/app/modules/settings/analytic-server-form/editAnalyticServer/edit-analytic-server.component";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
-import { MyContextMenuComponent } from "src/app/shared/context-menu/context-menu.component";
-import { ContextMenuItem } from "src/app/Models/ContextMenuItem.model";
+import { MyContextMenuComponent } from "Analytic/ClientApp/src/app/shared/context-menu/context-menu.component";
+import { ContextMenuItem } from "Analytic/ClientApp/src/app/Models/ContextMenuItem.model";
 import { SvgComponent } from "@i2v-systems/i2v-utility";
 
 declare let $: any;

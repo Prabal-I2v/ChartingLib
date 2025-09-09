@@ -50,7 +50,7 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
 import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
-import { GetImagePipe } from "src/app/pipes/getImage.pipe";
+import { GetImagePipe } from "Analytic/ClientApp/src/app/pipes/getImage.pipe";
 import { SharedModule } from "../../shared.module";
 import { TranslateModule } from "@ngx-translate/core";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";

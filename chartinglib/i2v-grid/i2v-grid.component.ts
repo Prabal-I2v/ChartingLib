@@ -2,12 +2,12 @@ import {ChangeDetectorRef, Component, ElementRef, Input, ViewChild} from '@angul
 import { ChartingDataService } from '../charting-data.service';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import moment from 'moment';
-import { ColumnModel } from 'src/app/Models/columns.model';
-import { GridInputFormat } from 'src/app/Models/GridInputFormat.model';
-import { KendoGridComponent } from 'src/app/kendo-grid/kendo-grid.component';
+import { ColumnModel } from 'Analytic/ClientApp/src/app/Models/columns.model';
+import { GridInputFormat } from 'Analytic/ClientApp/src/app/Models/GridInputFormat.model';
+import { KendoGridComponent } from 'Analytic/ClientApp/src/app/kendo-grid/kendo-grid.component';
 import { ReplaySubject } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
-import { totalData } from 'src/app/modules/report/attendance-report/attendance-report.model';
+import { totalData } from 'Analytic/ClientApp/src/app/modules/report/attendance-report/attendance-report.model';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({

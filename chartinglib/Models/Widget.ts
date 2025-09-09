@@ -1,4 +1,5 @@
-import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
+
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import { dashboard } from "./DashboardModel";
 import { GridStackOptions, GridStackWidget } from "gridstack";
 import * as moment from "moment";

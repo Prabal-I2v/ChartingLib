@@ -1664,7 +1664,7 @@ export class WidgetFormComponent implements OnInit {
 
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
-      if (property.type !== EventPropertyType.Guid) {
+     
         if (property.name.toLowerCase() === "videosourceid") {
           const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
           let videoSourcesName = "";
@@ -1672,7 +1672,7 @@ export class WidgetFormComponent implements OnInit {
             videoSourcesName += videoSources[i].name + ",";
           }
           property.defaultValues = videoSourcesName.slice(0, -1);
-          property.type = EventPropertyType.MultiSelect
+          property.type = EventPropertyType.String;
         }
 
         this.createFilterPropertyObject(
@@ -1681,7 +1681,7 @@ export class WidgetFormComponent implements OnInit {
           property.type,
           property.defaultValues,
         );
-      }
+      
     });
   }
 

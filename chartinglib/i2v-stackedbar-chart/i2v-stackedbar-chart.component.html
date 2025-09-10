@@ -10,8 +10,7 @@
       @if (!isModel) {
       <div class="data-container no-data-background">
         <div class="noConfExist">
-          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-            [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+          <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Golbal-text-text-2-light)'"></lib-svg></div>
           <span class="major-heading">No Configurations found</span>
         </div>
       </div>
@@ -38,8 +37,7 @@
     @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Golbal-text-text-2-light)'"></lib-svg></div>
         <span class="major-heading">No Data found</span>
       </div>
     </div>
@@ -48,8 +46,7 @@
     @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Golbal-text-text-2-light)'"></lib-svg></div>
         <span class="major-heading">No Data found for showable properties</span>
       </div>
     </div>

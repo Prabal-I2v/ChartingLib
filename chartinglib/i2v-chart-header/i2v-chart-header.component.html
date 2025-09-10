@@ -20,10 +20,8 @@
 
   @if (!widgetModel.filterConfig.isDashboardFilterApplied && !isEditModeOn) {
   <div class="filter-button-container">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default filter-toggle-btn" libSvgElement
-      [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'"
-      [appSvg]="'assets/Outline/filter.svg'" [size]="'20'" (click)="toggleShowFilterValues()">
-    </button>
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default filter-toggle-btn" [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'" (click)="toggleShowFilterValues()">
+    <lib-svg [path]="'assets/Outline/filter.svg'" [size]="'20'"></lib-svg></button>
   </div>
   }
 

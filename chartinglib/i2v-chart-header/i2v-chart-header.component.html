@@ -2,7 +2,7 @@
   <div class="content-section">
     @if (svgIcon) {
     <div class="icon-box">
-      <span libSvgElement [appSvg]="svgIcon" [size]="'20'" [fill-color]="'#5F6F94'"></span>
+      <lib-svg [path]="svgIcon" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
     </div>
     }
     <div class="text-container">
@@ -29,13 +29,11 @@
 
   <div class="menu-container">
     @if (isEditModeOn && !widgetModel.filterConfig.isDashboardFilterApplied) {
-    <span class="status-indicator" libSvgElement [appSvg]="'assets/Solid/status.svg'" [size]="'8'"
-      [fill-color]="'rgba(0, 153, 237, 1)'">
-    </span>
+      <lib-svg class="status-indicator" [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
     }
     @if (isEditModeOn) {
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement appSvg="assets/Outline/menu.svg"
-      [size]="'20'" (click)="onContextMenuEvent($event)">
+    <button class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
+      <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
     </button>
     }
   </div>

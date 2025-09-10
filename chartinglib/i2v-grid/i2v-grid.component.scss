@@ -21,7 +21,7 @@
       align-items: center;
       gap: 10px;
       border-radius: 56px;
-      background-color: #f2f5fa;
+      background-color: var(--Golbal-backgrounds-secondary-bg-3) !important;
     }
 
     .major-heading {
@@ -34,6 +34,7 @@
       font-style: normal;
       font-weight: 500;
       line-height: 32px;
+      color: var(--Golbal-text-text-1);
     }
   }
 }

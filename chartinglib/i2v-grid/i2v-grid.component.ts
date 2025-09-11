@@ -7,7 +7,6 @@ import { GridInputFormat } from 'Analytic/ClientApp/src/app/Models/GridInputForm
 import { KendoGridComponent } from 'Analytic/ClientApp/src/app/kendo-grid/kendo-grid.component';
 import { ReplaySubject } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
-import { totalData } from 'Analytic/ClientApp/src/app/modules/report/attendance-report/attendance-report.model';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({

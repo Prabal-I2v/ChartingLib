@@ -14,14 +14,7 @@ import {
   Enum_Method_Aggregation_With_Labels
 } from '../Models/enums/enums';
 
-import { EventPropertyType, RuleOperators } from 'src/app/Models/eventPropertyType.model';
 import { groupByConf, Rule, RuleSet } from '../Models/types/types';
-import { Property } from 'src/app/Models/property.model';
-
-// Services
-import { AnalyticService } from 'src/app/services/analytic.service';
-import { EventService } from 'src/app/services/event.service';
-import { VideoSourceClientManager } from 'src/app/Managers/VideoSourceClientManager';
 
 // Widget Models
 import { WidgetFactory } from '../Models/widget-factory';
@@ -69,7 +62,8 @@ import {
   SUCCESS_MESSAGES,
   validateWidgetCompatibility,
   EntityOption,
-  PUBLIC_ENTITIES
+  PUBLIC_ENTITIES,
+  RuleOperators
 } from './widget-form-utils';
 
 // Query Builder
@@ -78,8 +72,13 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { WidgetTileConf } from '../Models/types/types';
 import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from '@i2v-systems/common-components';
 import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
-import { AnalyticEventModel } from 'src/app/Models/analyticEvent.Model';
 import { ToastrService } from 'ngx-toastr';
+import { Property } from 'Analytic/ClientApp/src/app/Models/property.model';
+import { EventPropertyType } from 'Analytic/ClientApp/src/app/Models/eventPropertyType.model';
+import { VideoSourceClientManager } from 'Analytic/ClientApp/src/app/Managers/VideoSourceClientManager';
+import { AnalyticEventModel } from 'Analytic/ClientApp/src/app/Models/analyticEvent.Model';
+import { AnalyticService } from 'Analytic/ClientApp/src/app/services/analytic.service';
+import { EventService } from 'Analytic/ClientApp/src/app/services/event.service';
 
 // Form value interfaces (what the form contains)
 interface WidgetFormValue {

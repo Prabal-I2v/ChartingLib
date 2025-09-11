@@ -225,16 +225,16 @@
       <p-accordionTab [disabled]="!isStepComplete(2)">
         <ng-template pTemplate="header">
           <div class="accordion-header-content">
-            <span class="step-number" [class.locked]="isPredefinedMode()">
-              @if(isPredefinedMode()) {
+            <span class="step-number" [class.locked]="isPredefinedMode() && !isPredefinedModeAndConfigurable()">
+              @if(isPredefinedMode() && !isPredefinedModeAndConfigurable()) {
               <i class="pi pi-lock"></i>
               } @else {
               3
               }
             </span>
-            <h2 class="step-title" [class.locked-title]="isPredefinedMode()">
+            <h2 class="step-title" [class.locked-title]="isPredefinedMode() && !isPredefinedModeAndConfigurable()">
               Data Configuration
-              @if(isPredefinedMode()) {
+              @if(isPredefinedMode() && !isPredefinedModeAndConfigurable()) {
               <span class="locked-indicator">(Pre-configured)</span>
               }
             </h2>
@@ -247,7 +247,7 @@
         </ng-template>
 
         <div class="step-content">
-          @if(isPredefinedMode()) {
+          @if(isPredefinedMode() && !isPredefinedModeAndConfigurable()) {
           <div class="locked-step-message">
             <i class="pi pi-lock locked-icon"></i>
             <h4>Data Configuration: Pre-defined</h4>
@@ -301,7 +301,6 @@
                 </div>
                 }
               </div>
-
               @if (isAdvancedMode) {
               <!-- Property Filters -->
               <div class="property-filters">
@@ -312,7 +311,6 @@
                     <span class="checkbox-text">Enable Property Filters</span>
                   </div>
                 </div>
-
                 @if (enablePropertyFilters) {
                 <div class="property-filters-content">
                   <lib-query-builder class="query-builder" [config]="config" [ngModel]="ruleData"
@@ -621,7 +619,12 @@
                       @if (field.type === EventPropertyType.String) {
                       <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
                         (input)="onFieldRuleValueChange($index, $event)" />
-                      } @if (field.type === EventPropertyType.Boolean) {
+                      }
+                       @if (field.type === EventPropertyType.Guid) {
+                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
+                        (input)="onFieldRuleValueChange($index, $event)" />
+                       }
+                       @if (field.type === EventPropertyType.Boolean) {
                       <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
                         <option value="true">True</option>
                         <option value="false">False</option>

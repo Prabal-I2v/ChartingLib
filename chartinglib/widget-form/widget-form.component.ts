@@ -411,7 +411,6 @@ export class WidgetFormComponent implements OnInit {
   // Form Initialization
   private initializeForm(widgetData: Widget = null) {
     this.isFormInitialized = false;
-
     try {
       forkJoin({
         commonProperties: this.eventService.getAllCommonProperties(),
@@ -1864,6 +1863,19 @@ export class WidgetFormComponent implements OnInit {
         svgIcon: this.finalWidget.displayConfig?.svgIcon
       };
 
+      if(this.finalWidget.isWidgetPredefinedAndConfigurable){
+        const filterConfig = {
+          customFilters: {},
+          propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
+          disableTimeFilter: false,
+          startTime: this.timeObj.startTime,
+          endTime: this.timeObj.endTime,
+          isDashboardFilterApplied: true
+        };
+
+        updatedWidget.filterConfig = filterConfig;
+      }
+
       // Step 4 - Widget Type (if changed)
       if (this.widgetForm.controls.configurationApproach.value === 'propertiesFirst') {
         updatedWidget.widgetType = formValue.widgetType!;
@@ -3214,7 +3226,7 @@ export class WidgetFormComponent implements OnInit {
   private updateUIStateAfterLoad(): void {
     // Set advanced mode if complex configurations are present
     const hasAdvancedConfig = this.enableGroupBy1 || this.enableGroupBy2 || this.enablePropertyFilters;
-    this.isAdvancedMode = hasAdvancedConfig;
+    // this.isAdvancedMode = hasAdvancedConfig;
 
     // Update recommendations
     this.updateRecommendedWidgets();
@@ -3246,6 +3258,9 @@ export class WidgetFormComponent implements OnInit {
     return this.formMode === Enum_WidgetFormMode.predefined;
   }
 
+  isPredefinedModeAndConfigurable(): boolean {
+    return this.formMode === Enum_WidgetFormMode.predefined && this.finalWidget.isWidgetPredefinedAndConfigurable;
+  }
   // Update submit button text based on mode
   getSubmitButtonText(): string {
     return this.isEditMode() ? 'Update Widget' : 'Create Widget';

@@ -33,10 +33,9 @@ import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.com
 import { GridstackModule } from 'gridstack/dist/angular';
 import { MatTooltip } from "@angular/material/tooltip";
 import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
-import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
-import { SharedModule } from "../../shared.module";
 import { TranslateModule } from "@ngx-translate/core";
+import { AnalyticClientSharedModule } from "../../AnalyticClientShare.module";
 import { WidgetFormComponent } from './widget-form/widget-form.component';
 import { AccordionModule } from 'primeng/accordion';
 import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-preview.component';
@@ -87,10 +86,7 @@ import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-pr
     MatBadgeModule,
     GridstackModule,
     MatTooltip,
-    
-    // NgxDaterangepickerMd,
-    i2vContextMenuModule,
-    SharedModule,
+    AnalyticClientSharedModule,
     AccordionModule,
     TranslateModule
   ],

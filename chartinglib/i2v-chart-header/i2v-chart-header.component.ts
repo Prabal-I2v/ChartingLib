@@ -10,8 +10,17 @@ import {
   SimpleChanges,
   ViewChild,
 } from "@angular/core";
-
-import moment from "moment";
+import {
+  ICustomFilter,
+  ITimeRange,
+  ICustomFilterOutputEmittorModel,
+  CustomFilterValueModel,
+  IDateTimeFilterOutputEmittorModel,
+  ISetIntervalFilterOutputEmittorModel,
+  ICommonFilterOutputEmittorModel,
+  Widget,
+} from "../Models/Widget";
+import * as moment from "moment";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";

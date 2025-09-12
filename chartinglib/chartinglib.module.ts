@@ -7,20 +7,7 @@ import {
   ExcelModule,
   PDFModule,
 } from "@progress/kendo-angular-grid";
-
-// Import FusionCharts library and chart modules
-// import * as FusionCharts from "fusioncharts";
-// import * as charts from "fusioncharts/fusioncharts.charts";
-// import * as PowerCharts from "fusioncharts/fusioncharts.powercharts"
-// import * as FusionTheme from "fusioncharts/themes/fusioncharts.theme.fusion";
-// import * as GammelTheme from "fusioncharts/themes/fusioncharts.theme.gammel";
-// import * as CandyTheme from "fusioncharts/themes/fusioncharts.theme.candy";
-// import * as OceanTheme from "fusioncharts/themes/fusioncharts.theme.ocean";
-
-// import { FusionChartComponent } from './fusion-chart/fusion-chart.component';
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { PDFExportModule } from "@progress/kendo-angular-pdf-export";
-import { BrowserModule } from "@angular/platform-browser";
 import { ChartsModule } from "@progress/kendo-angular-charts";
 import { LayoutModule } from "@progress/kendo-angular-layout";
 import { MultiSelectModule } from "primeng/multiselect";
@@ -28,7 +15,6 @@ import { DropdownModule } from "primeng/dropdown";
 import { CalendarModule } from "primeng/calendar";
 import { I2vBarChartComponent } from "./i2v-bar-chart/i2v-bar-chart.component";
 import { I2vChartHeaderComponent } from "./i2v-chart-header/i2v-chart-header.component";
-import { FormsModule } from "@angular/forms";
 import { I2vPieChartComponent } from "./i2v-pie-chart/i2v-pie-chart.component";
 import { I2vColumnChartComponent } from "./i2v-column-chart/i2v-column-chart.component";
 import { I2vStackedcolumnChartComponent } from "./i2v-stackedcolumn-chart/i2v-stackedcolumn-chart.component";
@@ -45,12 +31,10 @@ import { DetailsWidgetComponent } from "./details-widget/details-widget.componen
 import { MatBadgeModule } from "@angular/material/badge";
 import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.component";
 import { GridstackModule } from 'gridstack/dist/angular';
-import { i2vUtilityModule } from "@i2v-systems/i2v-utility";
 import { MatTooltip } from "@angular/material/tooltip";
 import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
 import { i2vContextMenuModule } from "@i2v-systems/context-menu";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
-import { GetImagePipe } from "src/app/pipes/getImage.pipe";
 import { SharedModule } from "../../shared.module";
 import { TranslateModule } from "@ngx-translate/core";
 import { WidgetFormComponent } from './widget-form/widget-form.component';

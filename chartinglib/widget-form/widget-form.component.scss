@@ -568,7 +568,7 @@ $transition: all 0.15s ease-in-out;
           text-align: center;
           cursor: pointer;
           transition: $transition;
-          background-color: white;
+          background-color: var(--Golbal-backgrounds-secondary-bg-2);
 
           &:hover {
             transform: translateY(-2px);
@@ -1375,7 +1375,7 @@ $transition: all 0.15s ease-in-out;
   }
 
   .current-config-summary {
-    background-color: white;
+    background-color: var(--Golbal-backgrounds-secondary-bg-2);
     padding: 16px;
     border-radius: $border-radius;
     border: 1px solid $border-color;
@@ -1524,4 +1524,8 @@ $transition: all 0.15s ease-in-out;
       padding: 12px;
     }
   }
+}
+
+.q-rule{
+  background-color: var(--Golbal-backgrounds-secondary-bg-2);
 }

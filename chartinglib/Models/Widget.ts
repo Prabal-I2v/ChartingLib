@@ -25,6 +25,8 @@ export abstract class Widget {
   widgetSpecificConfig?: string;
   isPredefinedWidget: boolean = false;
   canBeRemoved : boolean = false;
+  isWidgetPredefinedAndConfigurable?: boolean;
+  isCopied : boolean = false;
   abstract dimension: WidgetDimension;
   abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
@@ -170,6 +172,8 @@ export class OneDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   query?: string;
   dataInputConfig: IOneDimensionDataInputConfig;
   widgetSpecificConfig?: string;
+  isWidgetPredefinedAndConfigurable?: boolean;
+  isCopied?: boolean = false;
 }
 
 export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
@@ -190,6 +194,8 @@ export class TwoDimensionWidgetConstructorProps implements IBaseWidgetConstructo
   query?: string;
   dataInputConfig: ITwoDimensionDataInputConfig;
   widgetSpecificConfig?: string;
+  isWidgetPredefinedAndConfigurable?: boolean;
+  isCopied?: boolean = false;
 }
 
 export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
@@ -210,6 +216,8 @@ export class ThreeDimensionWidgetConstructorProps implements IBaseWidgetConstruc
   query?: string;
   dataInputConfig: IThreeDimensionDataInputConfig;
   widgetSpecificConfig?: string;
+  isWidgetPredefinedAndConfigurable?: boolean;
+  isCopied?: boolean = false;
 }
 export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructorProps {
   displayConfig: IWidgetDisplayConfig;
@@ -229,4 +237,6 @@ export class NoDimensionWidgetConstructorProps implements IBaseWidgetConstructor
   query?: string;
   dataInputConfig: INoDimensionDataInputConfig;
   widgetSpecificConfig?: string;
+  isWidgetPredefinedAndConfigurable?: boolean;
+  isCopied?: boolean = false;
 }

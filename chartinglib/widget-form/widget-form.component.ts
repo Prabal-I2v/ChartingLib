@@ -1672,7 +1672,7 @@ export class WidgetFormComponent implements OnInit {
             videoSourcesName += videoSources[i].name + ",";
           }
           property.defaultValues = videoSourcesName.slice(0, -1);
-          property.type = EventPropertyType.String;
+          property.type = EventPropertyType.MultiSelect;
         }
 
         this.createFilterPropertyObject(
@@ -1948,6 +1948,9 @@ export class WidgetFormComponent implements OnInit {
     finalWidget.dimension = dimension;
     finalWidget.isPredefinedWidget = false;
     finalWidget.canBeRemoved = true;
+    if(this.finalWidget){
+      finalWidget.isCopied = this.finalWidget.isCopied;
+    }
     return finalWidget;
   }
 

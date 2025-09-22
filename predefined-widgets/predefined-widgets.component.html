@@ -1,0 +1,35 @@
+<div class="predefined-widgets-container">
+  <ng-container>
+    <div class="predefined-widgets-left-container">
+      <div class="widgets-list">
+        <lib-selectableCard
+          *ngFor="let widget of widgetTypes"
+          [entity]="widget"
+          (entitySelectedEmitter)="selectWidgetType($event)">
+        </lib-selectableCard>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container>
+    <div class="predefined-widgets-right-container sticky-header-grid">
+        <kendo-grid
+        [kendoGridBinding]="predefinedWidgetGridData"
+        [selectable]="{enabled: true, checkboxOnly: true}"
+        [kendoGridSelectBy]="'id'"
+        [selectedKeys]="selectedWidgets"
+        (selectionChange)="onGridSelectionChange($event)"
+        [rowClass]="rowCallback"
+        [pageable]="true"
+        [pageSize]="20"
+        [resizable]="true"
+        [sortable]="true"
+        [filterable]="true"
+      >
+        <!-- <kendo-grid-checkbox-column width="50"></kendo-grid-checkbox-column> -->
+        <!-- <kendo-grid-column *ngFor="let column of predefinedWidgetTableColumns" [field]="column.field" [title]="column.headerName" [hidden]="column.hide">
+        </kendo-grid-column> -->
+      </kendo-grid>
+    </div>
+  </ng-container>
+</div>

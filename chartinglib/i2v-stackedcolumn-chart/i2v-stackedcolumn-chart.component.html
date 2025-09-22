@@ -26,7 +26,7 @@
         (widgetResizeEmittor)="widgetResizeCallback($event)" (widgetRemoveEmittor)="onWidgetRemoveCallback($event)"
         (editWidgetOutput)="onEditWidgetOutput()" (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
-        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
+        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval" (copyWidgetOutput)="onCopyWidget($event)">
       </i2v-chart-header>
       }
     </div>

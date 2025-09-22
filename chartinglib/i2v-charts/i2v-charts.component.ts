@@ -42,6 +42,7 @@ export abstract class I2vChartsComponent implements OnInit {
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
   @Output() widgetRemoveCallbackEmittor = new EventEmitter<any>();
   @Output() editWidgetOutput = new EventEmitter<any>();
+  @Output() copiedWidgetOutput = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
@@ -669,5 +670,9 @@ export abstract class I2vChartsComponent implements OnInit {
 
   xAxisTrackBy(index: number): string | number {
     return index;
+  }
+
+  onCopyWidget(event: Widget) {
+    this.copiedWidgetOutput.emit(event);
   }
 }

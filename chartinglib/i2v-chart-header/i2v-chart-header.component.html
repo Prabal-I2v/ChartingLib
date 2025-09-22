@@ -57,4 +57,9 @@
   <i2v-context-menu-item [icon]="removeWidget ? 'assets/fill/Analytics_Removed.svg' : 'assets/fill/Analytics_Removed.svg'"
     [label]="removeWidgetMsg" (click)="toggleRemoveWidget()"></i2v-context-menu-item>
   }
+
+  @if(!this.widgetModel.isCopied){
+  <i2v-context-menu-item icon='assets/Outline/copy.svg' label="Copy Widget"
+    (click)="onCopyWidget()"></i2v-context-menu-item>
+  }
 </i2v-context-menu>

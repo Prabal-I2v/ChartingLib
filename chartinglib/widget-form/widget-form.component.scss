@@ -467,7 +467,7 @@ $transition: all 0.15s ease-in-out;
               flex-shrink: 0;
               border-radius: 32px;
               border: 1px solid var(--primary-outline-border-color);
-              background: #fff;
+              background: var(--Golbal-backgrounds-secondary-bg-1);
 
               .ruleSetId {
                 font-family: Proxima Nova;
@@ -514,7 +514,7 @@ $transition: all 0.15s ease-in-out;
                 flex-shrink: 0;
                 border-radius: 32px;
                 border: 1px solid var(--primary-outline-border-color);
-                background: #fff;
+                background: var(--Golbal-backgrounds-secondary-bg-1);
 
                 .ruleSetId {
                   font-family: Proxima Nova;
@@ -931,7 +931,7 @@ $transition: all 0.15s ease-in-out;
 
       .p-accordion-content {
         padding: 20px 20px;
-        background-color: #ffffff;
+        background: var(--Golbal-backgrounds-secondary-bg-1);
         border-top: none;
         border-bottom: 1px solid $border-color;
       }
@@ -1028,7 +1028,7 @@ $transition: all 0.15s ease-in-out;
         background-color: $secondary-color;
 
         &:before {
-          background-color: #fff;
+          background: var(--Golbal-backgrounds-secondary-bg-1);
         }
       }
 
@@ -1049,6 +1049,7 @@ $transition: all 0.15s ease-in-out;
       display: flex;
       gap: 12px;
       align-items: flex-end;
+      background-color: transparent !important;
     }
   }
 }
@@ -1526,6 +1527,13 @@ $transition: all 0.15s ease-in-out;
   }
 }
 
-.q-rule{
-  background-color: var(--Golbal-backgrounds-secondary-bg-2);
+.q-rule {
+  background-color: transparent !important;
+}
+
+::ng-deep .mdc-label{
+  color: var(--Golbal-text-text-2-light) !important;
+}
+.custom-select option {
+  color: var(--Golbal-text-text-1) !important;
 }

@@ -59,7 +59,7 @@
       font-weight: 500;
       font-size: 18px;
       line-height: 25px;
-      color: var(--Golbal-text-text-1);
+      color: var(--global-text-text-1);
       font-style: italic;
     }
 
@@ -67,7 +67,7 @@
       font-size: 38px;
       font-weight: 600;
       line-height: 32px;
-      color: var(--Golbal-text-text-2-light);
+      color: var(--global-text-text-2-light);
     }
   }
 
@@ -80,7 +80,7 @@
 
 .bottom {
   height: 30%;
-  border-top: 1px solid var(--Golbal-others-border);
+  border-top: 1px solid var(--global-others-border);
   padding-left: 20px;
   padding-top: 16px;
   padding-bottom: 16px;
@@ -88,7 +88,7 @@
   font-size: 14px;
   font-weight: 400;
   display: flex;
-  color: var(--Golbal-text-text-2-light);
+  color: var(--global-text-text-2-light);
   flex-direction: row;
 }
 
@@ -105,7 +105,7 @@
   height: 32px;
   width: 32px;
   border-radius: 50%;
-  background-color: var(--Golbal-backgrounds-global-bg-2) !important;
+  background-color: var(--global-backgrounds-global-bg-2) !important;
 }
 
 /* New styles for refactored inline styles */
@@ -243,7 +243,7 @@
       align-items: center;
       gap: 10px;
       border-radius: 56px;
-      background-color: var(--Golbal-backgrounds-global-bg-2) !important;
+      background-color: var(--global-backgrounds-global-bg-2) !important;
     }
 
     .major-heading {
@@ -256,7 +256,7 @@
       font-style: normal;
       font-weight: 500;
       line-height: 32px;
-      color: var(--Golbal-text-text-1);
+      color: var(--global-text-text-1);
     }
   }
 }

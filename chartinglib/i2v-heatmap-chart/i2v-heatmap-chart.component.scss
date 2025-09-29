@@ -21,7 +21,7 @@
       align-items: center;
       gap: 10px;
       border-radius: 56px;
-      background-color: var(--global-backgrounds-global-bg-2) !important;
+      background-color: var(--Global-backgrounds-global-bg-2) !important;
     }
 
     .major-heading {
@@ -34,7 +34,7 @@
       font-style: normal;
       font-weight: 500;
       line-height: 32px;
-      color: var(--global-text-text-1);
+      color: var(--Global-text-text-1);
     }
   }
 }
@@ -45,7 +45,7 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: var(--global-backgrounds-secondary-bg-2);
+  background: var(--Global-backgrounds-secondary-bg-2);
 }
 
 .widget-content {

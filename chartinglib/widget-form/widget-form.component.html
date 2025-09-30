@@ -325,14 +325,9 @@
                         let removeRuleSet = removeRuleSet
                       ">
                       <div class="query-builder-actions">
-                        <button class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRule()"
-                          libSvgElement [appSvg]="'assets/Outline/plus.svg'" matTooltip="Add rule"></button>
-                        <button *ngIf="addRuleSet" class="flex-row-center-center i2v-btn-icon medium primary-outline"
-                          (click)="addRuleSet()" libSvgElement [appSvg]="'assets/Outline/plus-multiple.svg'"
-                          matTooltip="Add rule set"></button>
-                        <button *ngIf="removeRuleSet" class="flex-row-center-center i2v-btn-icon medium tertiary-danger"
-                          (click)="removeRuleSet()" libSvgElement [appSvg]="'assets/Outline/trash.svg'"
-                          matTooltip="Remove rule set"></button>
+                        <button class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRule()" matTooltip="Add rule"><lib-svg [path]="'assets/Outline/plus.svg'"></lib-svg></button>
+                        <button *ngIf="addRuleSet" class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRuleSet()" matTooltip="Add rule set"><lib-svg [path]="'assets/Outline/plus-multiple.svg'"></lib-svg></button>
+                        <button *ngIf="removeRuleSet" class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRuleSet()" matTooltip="Remove rule set"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
                       </div>
                     </ng-container>
 
@@ -529,9 +524,7 @@
 
                     <!-- Query Builder Remove Button -->
                     <ng-container *queryRemoveButton="let rule; let removeRule = removeRule">
-                      <button class="flex-row-center-center i2v-btn-icon medium tertiary-danger" libSvgElement
-                        [appSvg]="'assets/Outline/trash.svg'" (click)="removeRule(rule)"
-                        matTooltip="Remove rule"></button>
+                      <button class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRule(rule)" matTooltip="Remove rule"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
                     </ng-container>
                   </lib-query-builder>
                 </div>

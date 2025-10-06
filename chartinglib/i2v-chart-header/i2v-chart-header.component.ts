@@ -477,7 +477,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
           Callback: 'cancel',
           title: 'Cancel',
           basedOnChildTemplate: true,
-          style: 'i2v-button tertiary-outline medium',
+          style: 'i2v-btn tertiary-outline medium',
         },
       ],
       showPreviousButton: false,

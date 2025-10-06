@@ -1803,7 +1803,7 @@ export class WidgetFormComponent implements OnInit {
             Callback: "Close",
             title: "Close",
             basedOnChildTemplate: true,
-            style: "i2v-button tertiary-outline medium",
+            style: "i2v-btn tertiary-outline medium",
           },
         ],
         showPreviousButton: false,

@@ -1,6 +1,5 @@
 // widget-form-utils.ts - Refactored and optimized
-
-import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import {
   Enum_Method,
   Enum_Method_Aggregation,
@@ -17,7 +16,7 @@ import {
   IWidgetFieldNameConfig,
 } from "../Models/interfaces/interfaces";
 import { WidgetTileConf } from "../Models/types/types";
-import { AnalyticEventModel } from "src/app/Models/analyticEvent.Model";
+import { AnalyticEventModel } from "Analytic/ClientApp/src/app/Models/analyticEvent.Model";
 
 // ===== TYPE DEFINITIONS =====
 export interface EntityOption {

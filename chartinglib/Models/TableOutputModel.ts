@@ -1,4 +1,4 @@
-import { ColumnModel } from "src/app/Models/columns.model";
+import { ColumnModel } from "Analytic/ClientApp/src/app/Models/columns.model";
 
 export class TableOutputModel {
     columns: ColumnModel[];

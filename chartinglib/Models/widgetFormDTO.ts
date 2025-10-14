@@ -1,4 +1,4 @@
-import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import { Enum_WidgetType, WidgetDimension, Enum_Method, Enum_Schema, Enum_Entity } from "./enums/enums";
 import { IWidgetDisplayConfig, IWidgetInteractivityConfig, IWidgetFilterConfig, IWidgetDataConfig, IShowableProperty } from "./interfaces/interfaces";
 import { groupByConf } from "./types/types";

@@ -4,6 +4,7 @@ export interface IChartDataModel {
   seriesLabels: string[];
 }
 
+
 export enum ChartType {
   None = "none",
   Line = "line",

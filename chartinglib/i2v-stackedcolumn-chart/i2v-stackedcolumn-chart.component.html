@@ -3,7 +3,7 @@
       ? '#ffcccc'                               
       : widgetRequestModel?.widgetInteractivityConfig?.isWidgetHidden
         ? 'rgba(0, 0, 0, 0.1)'                    
-        : '#fff'                                  
+        : 'var(--Global-backgrounds-secondary-bg-2)'                                  
   }" class="widget-wrapper">
   <div class="widget-content">
     <div class="header-section">
@@ -11,7 +11,7 @@
       <div class="data-container no-data-background">
         <div class="noConfExist">
           <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
-            <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+            <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Global-text-text-2-light)'"></lib-svg>
           </div>
           <span class="major-heading">{{'No Configurations found' | translate}}</span>
         </div>
@@ -32,14 +32,14 @@
     </div>
     @if (isModel && isLoading) {
     <div class="loading-container">
-      <span class="loading-spinner"></span>
+       <img height="25px" width="25px" src="assets/gifs/horizontal-loader.gif" alt="loading">
     </div>
     }
     @if (isModel && !isLoading && !dataExists) {
     <div class="data-container">
       <div class="noConfExist">
         <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default">
-          <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'black'"></lib-svg>
+          <lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Global-text-text-2-light)'"></lib-svg>
         </div>
         <span class="major-heading">{{'No Data found' | translate}}</span>
       </div>
@@ -48,8 +48,7 @@
     @if (isModel && !isLoading && dataExists && !dataExistsForShowableProperties) {
     <div class="data-container">
       <div class="noConfExist">
-        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default" libSvgElement
-          [appSvg]="'assets/Outline/table.svg'" [size]="'48'" [fill-color]="'white'"></div>
+        <div class="logo-container large flex-row-center-center i2v-btn-icon tertiary-default"><lib-svg [path]="'assets/Outline/table.svg'" [size]="'48'" [color]="'var(--Global-text-text-2-light)'"></lib-svg></div>
         <span class="major-heading">No Data found for showable properties</span>
       </div>
     </div>

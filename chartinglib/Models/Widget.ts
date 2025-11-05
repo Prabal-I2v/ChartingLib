@@ -1,4 +1,4 @@
-// widget-base.ts - Contains the base Widget class
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import moment from "moment";
 import { dashboard } from "./DashboardModel";
 import { Enum_Method, Enum_Method_Aggregation, Enum_WidgetType, WidgetDimension } from "./enums/enums";

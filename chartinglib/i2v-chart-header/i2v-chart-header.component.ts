@@ -10,14 +10,13 @@ import {
   SimpleChanges,
   ViewChild,
 } from "@angular/core";
-
-import moment from "moment";
+import * as moment from "moment";
 import { CommonModalComponent, CommonModalData } from "@i2v-systems/common-components";
 import { MatDialog } from "@angular/material/dialog";
 import { CustomFilterDialogComponent } from "../custom-filter-dialog/custom-filter-dialog.component";
-import { CustomFilterValueModel } from "../Models/types/types";
-import { ThreeDimensionWidget, Widget } from "../Models/Widget";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ICommonFilterOutputEmittorModel, ITimeRange } from "../Models/interfaces/interfaces";
+import { CustomFilterValueModel } from "../Models/types/types";
+import { Widget, ThreeDimensionWidget } from "../Models/Widget";
 
 declare let $: any;
 
@@ -479,7 +478,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
           Callback: 'cancel',
           title: 'Cancel',
           basedOnChildTemplate: true,
-          style: 'i2v-button tertiary-outline medium',
+          style: 'i2v-btn tertiary-outline medium',
         },
       ],
       showPreviousButton: false,

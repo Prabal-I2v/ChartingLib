@@ -1,5 +1,5 @@
 
-import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import { dashboard } from "../DashboardModel";
 import { Enum_Method, Enum_Method_Aggregation, Enum_Schema } from "../enums/enums";
 import { ColumnClubInRange, CustomFilterValueModel, groupByConf, Rule, RuleSet, WidgetTileConf } from "../types/types";

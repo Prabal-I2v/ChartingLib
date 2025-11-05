@@ -12,7 +12,7 @@ import { ChartsOutputModel } from "../Models/ChartsOutputModel";
 import { ChartingDataService } from "../charting-data.service";
 import { Subject, Subscription, timer } from "rxjs";
 import { debounce } from "rxjs/operators";
-import { EventPropertyType } from "src/app/Models/eventPropertyType.model";
+import { EventPropertyType } from "Analytic/ClientApp/src/app/Models/eventPropertyType.model";
 import { v4 as uuidv4 } from 'uuid';
 import { TableOutputModel } from "../Models/TableOutputModel";
 import { Widget } from "../Models/Widget";

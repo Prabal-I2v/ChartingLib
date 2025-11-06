@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Entity } from '@i2v-systems/i2v-utility';
-import { DashboardService } from 'src/app/modules/dashboard/dashboardService.service';
+import { DashboardService } from 'Analytic/ClientApp/src/app/modules/dashboard/dashboardService.service';
 import { Enum_WidgetType } from '../chartinglib/Models/enums/enums';
 import { Widget } from '../chartinglib/Models/Widget';
 import { GridDataResult, PageChangeEvent, RowClassArgs } from '@progress/kendo-angular-grid';

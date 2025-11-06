@@ -1,4 +1,4 @@
-import { DashboardType } from "src/app/modules/dashboard/Models/dashboard.model";
+import { DashboardType } from "Analytic/ClientApp/src/app/modules/dashboard/Models/dashboard.model";
 import { Widget } from "./Widget";
 
 export class dashboard {

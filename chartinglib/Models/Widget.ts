@@ -15,6 +15,8 @@ export abstract class Widget {
   widgetTileConf: WidgetTileConf;
   displayConfig: IWidgetDisplayConfig;
   filterConfig: IWidgetFilterConfig;
+  /** Local temporary key for client-side tracking (not from DB) */
+  uniqueKey?: string;
 
   showableProperties: IShowableProperty[];
   isPreview?: boolean;

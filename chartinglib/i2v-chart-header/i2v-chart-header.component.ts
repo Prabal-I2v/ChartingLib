@@ -145,7 +145,17 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
       this.enableCustomTime = false;
       this.updateUIFilterModelValues();
     }
-
+    if (changes['widgetModel']?.currentValue) {
+      if (
+        !changes['widgetModel']?.previousValue ||
+        this.heading !== changes['widgetModel']?.previousValue?.displayConfig?.heading ||
+        this.subHeading !== changes['widgetModel']?.previousValue?.displayConfig?.subHeading
+      ) {
+        this.heading = changes['widgetModel']?.previousValue?.displayConfig?.heading || "";
+        this.subHeading = changes['widgetModel']?.previousValue?.displayConfig?.subHeading || "";
+        this.cdr.markForCheck();
+      }
+    }
     if (changes.isEditModeOn?.previousValue != undefined && changes.isEditModeOn?.currentValue != changes.isEditModeOn?.previousValue) {
       this.cdr.detectChanges();
       setTimeout(() => {

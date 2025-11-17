@@ -35,6 +35,7 @@
           <p-dropdown [options]="pageLimitOptions" [(ngModel)]="pageLimit" placeholder="Page Limit"
             (onChange)="onPageLimitChange($event)" styleClass="i2v-dropdown primary-outline medium">
           </p-dropdown>
+          <button class="i2v-btn-icon secondary-outline medium flex-row-center-center" (click)="exportKendo()"><lib-svg [path]="'assets/Outline/download.svg'" [size]="'14'"></lib-svg></button>
         </div>
         }
       </i2v-chart-header>
@@ -84,3 +85,7 @@
   </div>
   }
 </div>
+<lib-progress-notifier *ngIf="isExporting" [progressDone]="progressNotifier.exportDoneCount"
+  [totalCount]="progressNotifier.totalExportCount" [showMaximise]="true" [headerText]="'Export in progress'"
+  [callback]="cancelCallback" [innerText]="'Exporting Resources status'" style="z-index: 9990; position: absolute">
+</lib-progress-notifier>

@@ -37,23 +37,20 @@ export class PredefinedWidgetsComponent implements OnInit {
     this.dashboardService.getAllPredefineWidgets().subscribe({
       next: (res) => {
         this.predefinedWidgets = res;
-        this.createWidgetTypeEntities();
+        this.createWidgetTypeEntities();  
         this.setTableColumns();
-      },
-      error: (err) => {
-        console.error("Error loading widgets:", err);
-      }
+        // default = all widgets
+        this.predefinedWidgetGridData = this.mapWidgets(this.predefinedWidgets);
+      }      
     });
-
-    this.predefinedWidgetGridData = this.predefinedWidgets.map(widget => ({
-      name: widget.displayConfig.heading,
-      description: " ",
-      widgetType: Enum_WidgetType[widget.widgetType]
-    }));
   }
 
   onSubmit(): void {
-    this.dialogRef?.close(this.selectedWidgets);
+    // Return the actual widget objects, not just the table models
+    const selectedWidgetObjects = this.predefinedWidgets.filter(widget => 
+      this.selectedWidgets.some(selected => selected.id === widget.id)
+    );
+    this.dialogRef?.close(selectedWidgetObjects);
   }
 
   onCancel(): void {
@@ -63,11 +60,28 @@ export class PredefinedWidgetsComponent implements OnInit {
   // Handle selection from child lib-entityselector
   selectWidgetType(selectedEntity: Entity) {
     this.isAllSelected = selectedEntity.title === 'All';
-    this.widgetTypes.forEach(widget => {
-      widget.isSelected = (widget === selectedEntity);
-    });
-    this.setTableColumns();
-    console.log('Selected widget type:', selectedEntity);
+    this.widgetTypes.forEach(widget => widget.isSelected = (widget === selectedEntity));
+    if (this.isAllSelected) {
+      // Show ALL widgets
+      this.predefinedWidgetGridData = this.mapWidgets(this.predefinedWidgets);
+    } else {
+      // FILTER widgets based on selected category
+      this.predefinedWidgetGridData = this.mapWidgets(
+        this.predefinedWidgets.filter(
+          w => Enum_WidgetType[w.widgetType] === selectedEntity.title
+        )
+      );
+    }
+  }
+  
+
+  private mapWidgets(widgets: Widget[]): IPredefinedWidgetTableModel[] {
+    return widgets.map(widget => ({
+      id: widget.id,
+      name: widget.displayConfig.heading,
+      description: "",
+      widgetType: Enum_WidgetType[widget.widgetType]
+    }));
   }
 
   setTableColumns() {
@@ -77,11 +91,11 @@ export class PredefinedWidgetsComponent implements OnInit {
         field: 'name',
         type: 'text',
       },
-      {
-        headerName: 'Widget description',
-        field: 'description',
-        type: 'text',
-      },
+      // {
+      //   headerName: 'Widget description',
+      //   field: 'description',
+      //   type: 'text',
+      // },
       {
         headerName: 'Widget type',
         field: 'widgetType',
@@ -116,7 +130,10 @@ export class PredefinedWidgetsComponent implements OnInit {
   }
 
   public onGridSelectionChange(selection: any): void {
-    this.selectedWidgets = selection.selectedRows.map((item) => item.dataItem);
+    // Store the actual widget objects
+    this.selectedWidgets = selection.selectedRows.map((item) => 
+      this.predefinedWidgets.find(w => w.id === item.dataItem.id)
+    ).filter(Boolean);
   }
 
   public rowCallback(context: RowClassArgs) {

@@ -67,7 +67,7 @@ export abstract class I2vChartsComponent implements OnInit {
   componentId: string;
   customFilterValues: Record<string, CustomFilterValueModel[]>;
 
-  constructor(public cd: ChangeDetectorRef, private chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
+  constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
     // Generate and store a UUID when component is created
     this.componentId = uuidv4();
   }

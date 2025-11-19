@@ -5,9 +5,15 @@ import moment from 'moment';
 import { ColumnModel } from 'Analytic/ClientApp/src/app/Models/columns.model';
 import { GridInputFormat } from 'Analytic/ClientApp/src/app/Models/GridInputFormat.model';
 import { KendoGridComponent } from 'Analytic/ClientApp/src/app/kendo-grid/kendo-grid.component';
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, Subscription } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
 import { TranslateService } from '@ngx-translate/core';
+import { exportReportModel, SignalRService } from 'Analytic/ClientApp/src/app/services/signalR.service';
+import { CommonService } from 'Analytic/ClientApp/src/app/services/common.service';
+import { MatDialog } from '@angular/material/dialog';
+import { LogServices } from 'Shared.Client/ClientApp/src/Services/log.service';
+import { PopUpComponent } from '@i2v-systems/i2v-utility';
+import { ReportType } from 'Analytic/ClientApp/src/app/modules/report/reportType.enum';
 
 @Component({
   selector: 'i2v-table-grid',
@@ -29,13 +35,19 @@ export class I2vGridComponent extends I2vChartsComponent {
   >(1);
   selectedColumnDefs: ColumnModel[] = [];
   columnDefs: ColumnModel[] = [];
-
+  isExporting = false;
+  exportSubjectSubscription: Subscription;
+  progressNotifier: exportReportModel;
 
   constructor(
-    chartingDataService: ChartingDataService,
     public cd: ChangeDetectorRef,
+    chartingDataService: ChartingDataService,
     elementRef: ElementRef,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private signalRService: SignalRService, 
+    private commonService: CommonService, 
+    private logService: LogServices,
+    private dialog: MatDialog
   ) {
     super(cd, chartingDataService, elementRef);
     this.configuration.columnDefs = this.columnDefs;
@@ -51,6 +63,10 @@ export class I2vGridComponent extends I2vChartsComponent {
 
   ngOnInit(): void {
     super.ngOnInit();
+    this.signalRService.$CancelExportSubject.subscribe(() => {
+      this.isExporting = false;
+      localStorage.setItem('isExportInProgress', 'false');
+    });
   }
 
   UnixToDateConverter(unix) {
@@ -192,5 +208,104 @@ export class I2vGridComponent extends I2vChartsComponent {
       value = row[field];
     }
     return value;
+  }
+
+  async exportKendo() {
+    const result = await this.IsExportInProgress();
+    if (result) {
+      return;
+    }
+    this.subscribeForNotifier();
+    console.log(this.widgetRequestModel);
+    this.chartingDataService.exportTableWidget(this.widgetRequestModel).subscribe(() => {
+      this.progressNotifier = new exportReportModel();
+    });
+  }
+
+  private async IsExportInProgress() {
+    const data = await this.commonService.isReportInProgress("widgetExport");
+    if (data) {
+      this.isExporting = true;
+      localStorage.setItem('isExportInProgress', 'true');
+      this.subscribeForNotifier();
+      return true;
+    } else {
+      this.isExporting = false;
+      localStorage.setItem('isExportInProgress', 'false');
+      this.unsubscribeForNotifier();
+      return false;
+    }
+  }
+
+  async subscribeForNotifier() {
+    this.isExporting = true;
+    this.exportSubjectSubscription = this.signalRService.$WidgetExportSubject.subscribe((data: exportReportModel) => {
+      if (data) {
+        if (data.isCancelled || data.isCompleted) {
+          if (data.isCompleted) {
+            window.open(data.filePath, '_blank');
+            this.commonService.showSuccessToastr('Export file present in User logs.');
+          } else {
+            if (data.errorMessage) {
+              this.commonService.showErrorToastr(data.errorMessage);
+            } else {
+              this.commonService.showWarningToastr('Export cancelled by the user.');
+            }
+          }
+          this.isExporting = false;
+          this.logService.removeExportsFromDirectory().subscribe();
+          this.unsubscribeForNotifier();
+        }
+        this.progressNotifier = data;
+      }
+    }, () => {
+      this.isExporting = false;
+    });
+  }
+
+  private unsubscribeForNotifier() {
+    if (this.exportSubjectSubscription) {
+      this.isExporting = false;
+      this.exportSubjectSubscription.unsubscribe();
+    }
+  }
+
+  cancelCallback = (): void => {
+    this.showPopUp();
+  };
+
+  showPopUp() {
+    this.dialog.closeAll();
+    const modelData = {
+      headerLeftSvg: 'assets/Outline/alert.svg',
+      heading: 'Are you sure you want to stop exporting?',
+      headerRightSvg: 'assets/Outline/x.svg',
+      footerLeftButton: {
+        name: 'Yes',
+        class: 'i2v-btn medium primary-danger',
+        Callback: () => {
+          this.cancelExport();
+        }
+      },
+      footerRightButton: {
+        name: 'No',
+        Callback: () => {
+          this.dialog.closeAll();
+        },
+      }
+    };
+    const popComponentDialog = this.dialog.open(PopUpComponent, {
+      data: modelData,
+      panelClass: 'custom-dialog-container',
+    });
+  }
+
+  cancelExport() {
+    this.commonService.cancelExport(ReportType.Tabular, "widgetExport").subscribe(() => {
+      this.isExporting = false;
+      localStorage.setItem('isExportInProgress', 'false');
+      this.unsubscribeForNotifier();
+    });
+    this.dialog.closeAll();
   }
 }

@@ -342,7 +342,7 @@
                   <div class="field-select-container">
                     <label class="form-label medium">Is</label>
                     <select class="custom-select" name="operator" [ngModelOptions]="{ standalone: true }"
-                    [(ngModel)]="rule.operator" (ngModelChange)="stringToOperator($event.value); ">
+                    [ngModel]="operatorToString(rule.operator)" (ngModelChange)="stringToOperator($event.value); ">
                             <option *ngFor="let value of operators" [value]="value">
                               {{ value }}
                             </option>

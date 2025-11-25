@@ -672,7 +672,4 @@ export abstract class I2vChartsComponent implements OnInit {
     return index;
   }
 
-  onCopyWidget(event: Widget) {
-    this.copiedWidgetOutput.emit(event);
-  }
 }

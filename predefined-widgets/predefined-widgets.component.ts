@@ -25,6 +25,9 @@ export class PredefinedWidgetsComponent implements OnInit {
   predefinedWidgetTableColumns: any[] = [];
   isAllSelected: boolean = true;
   predefinedWidgetGridData: IPredefinedWidgetTableModel[] = [];
+  selectedIds = new Set<string>();
+  skip = 0;
+
 
   constructor(
     private dashboardService: DashboardService,
@@ -36,20 +39,28 @@ export class PredefinedWidgetsComponent implements OnInit {
   ngOnInit(): void {
     this.dashboardService.getAllPredefineWidgets().subscribe({
       next: (res) => {
-        this.predefinedWidgets = res;
+        this.predefinedWidgets = res.filter(w => w.isCopied === false);
         this.createWidgetTypeEntities();  
         this.setTableColumns();
-        // default = all widgets
         this.predefinedWidgetGridData = this.mapWidgets(this.predefinedWidgets);
       }      
     });
   }
 
   onSubmit(): void {
-    // Return the actual widget objects, not just the table models
-    const selectedWidgetObjects = this.predefinedWidgets.filter(widget => 
+    // Take the actual selected widget objects
+    const selectedWidgetObjects = this.predefinedWidgets.filter(widget =>
       this.selectedWidgets.some(selected => selected.id === widget.id)
     );
+  
+    // Mutate properties before returning
+    selectedWidgetObjects.forEach(w => {
+      w.isCopied = true;
+      w.isPredefinedWidget = false;
+      w.canBeRemoved = true;
+    });
+  
+    // Return updated widgets
     this.dialogRef?.close(selectedWidgetObjects);
   }
 
@@ -59,6 +70,7 @@ export class PredefinedWidgetsComponent implements OnInit {
 
   // Handle selection from child lib-entityselector
   selectWidgetType(selectedEntity: Entity) {
+    this.skip = 0; 
     this.isAllSelected = selectedEntity.title === 'All';
     this.widgetTypes.forEach(widget => widget.isSelected = (widget === selectedEntity));
     if (this.isAllSelected) {
@@ -129,11 +141,21 @@ export class PredefinedWidgetsComponent implements OnInit {
     }))];
   }
 
-  public onGridSelectionChange(selection: any): void {
-    // Store the actual widget objects
-    this.selectedWidgets = selection.selectedRows.map((item) => 
-      this.predefinedWidgets.find(w => w.id === item.dataItem.id)
-    ).filter(Boolean);
+  public onGridSelectionChange(e: any): void {
+    // Add newly selected rows
+    e.selectedRows.forEach((r: any) => {
+      this.selectedIds.add(r.dataItem.id);
+    });
+  
+    // Remove unselected rows
+    e.deselectedRows.forEach((r: any) => {
+      this.selectedIds.delete(r.dataItem.id);
+    });
+  
+    // Map selected IDs → actual widget objects
+    this.selectedWidgets = this.predefinedWidgets.filter(w =>
+      this.selectedIds.has(w.id)
+    );
   }
 
   public rowCallback(context: RowClassArgs) {

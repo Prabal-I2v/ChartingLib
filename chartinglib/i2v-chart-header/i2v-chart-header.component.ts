@@ -62,7 +62,6 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
   @Output() widgetRemoveEmittor = new EventEmitter<boolean>();
   @Output() clearCustomFiltersValues = new EventEmitter<boolean>();
   @Output() editWidgetOutput = new EventEmitter();
-  @Output() copyWidgetOutput = new EventEmitter<Widget>();
 
   @ViewChild("multiselectRef") multiselectRef: any;
   @ViewChild("keySelectRef") keySelectRef: any;
@@ -546,9 +545,5 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
         }
       }
     }
-  }
-
-  onCopyWidget() {
-    this.copyWidgetOutput.emit(this.widgetModel);
   }
 }

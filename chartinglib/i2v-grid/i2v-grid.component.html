@@ -24,7 +24,7 @@
         (clearCustomFiltersValues)="clearCustomFiltersValues($event)"
         (combineFilterOutputEmittor)="onCombineFilterOutputEmittor($event)" (editWidgetOutput)="onEditWidgetOutput()"
         (timePeriodOutput)="onTimeDurationChanged($event)" [applyToAllEnabled]="applyToAllEnabled"
-        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval" (copyWidgetOutput)="onCopyWidget($event)">
+        [showEntity]="showEntity" [showTimeFilter]="showTimeFilter" [showRefreshInterval]="showRefreshInterval">
         @if (columnDefs.length > 0) {
         <div class="table-controls">
           <p-multiSelect class="column-multiselect" [(ngModel)]="selectedColumnDefs"

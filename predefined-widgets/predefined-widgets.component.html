@@ -23,7 +23,7 @@
       [kendoGridSelectBy]="'id'"
       (selectionChange)="onGridSelectionChange($event)"
     >
-      <kendo-grid-checkbox-column width="50"></kendo-grid-checkbox-column>
+    <kendo-grid-checkbox-column [showSelectAll]="true" width="50"></kendo-grid-checkbox-column>
     
       <kendo-grid-column *ngFor="let column of predefinedWidgetTableColumns" [field]="column.field" [title]="column.headerName" [hidden]="column.hide">
         </kendo-grid-column>

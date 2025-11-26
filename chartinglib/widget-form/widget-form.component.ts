@@ -3248,6 +3248,9 @@ export class WidgetFormComponent implements OnInit {
     return this.formMode === Enum_WidgetFormMode.predefined;
   }
 
+  isPredefinedAndConfigurable(): boolean {
+  return this.finalWidget.isWidgetPredefinedAndConfigurable === true;
+  }
   // Update submit button text based on mode
   getSubmitButtonText(): string {
     return this.isEditMode() ? 'Update Widget' : 'Create Widget';

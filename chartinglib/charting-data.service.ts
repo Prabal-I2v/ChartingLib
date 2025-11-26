@@ -41,6 +41,13 @@ export class ChartingDataService {
       );
   }
 
+  exportTableWidget(widgetRequest: Widget): Observable<Blob> {
+    return this.http.post(
+      `/api/Dashboard/ExportWidget`,
+      widgetRequest,
+      { responseType: "blob" }
+    );
+  }
 
   /**
    * Enhanced error handler

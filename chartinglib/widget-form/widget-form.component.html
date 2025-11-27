@@ -245,9 +245,237 @@
             }
           </div>
         </ng-template>
+        <ng-template #propertyFiltersTemplate>
+          <div class="property-filters">
+            <div class="property-filters-header">
+              <div class="checkbox-label">
+                <input type="checkbox" id="enablePropertyFilters" [checked]="enablePropertyFilters"
+                  (change)="togglePropertyFilters($event)" class="form-checkbox" />
+                <span class="checkbox-text">Enable Property Filters</span>
+              </div>
+            </div>
+  
+            @if (enablePropertyFilters) {
+            <div class="property-filters-content">
+              <lib-query-builder class="query-builder" [config]="config" [(ngModel)]="ruleData"
+                [ngModelOptions]="{ standalone: true }" [allowRuleset]="true" name="name">
+                <!-- Query Builder Button Group -->
+                <ng-container *queryButtonGroup="
+                    let ruleset;
+                    let addRule = addRule;
+                    let addRuleSet = addRuleSet;
+                    let removeRuleSet = removeRuleSet
+                  ">
+                  <div class="query-builder-actions">
+                    <button class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRule()" matTooltip="Add rule"><lib-svg [path]="'assets/Outline/plus.svg'"></lib-svg></button>
+                    <button *ngIf="addRuleSet" class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRuleSet()" matTooltip="Add rule set"><lib-svg [path]="'assets/Outline/plus-multiple.svg'"></lib-svg></button>
+                    <button *ngIf="removeRuleSet" class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRuleSet()" matTooltip="Remove rule set"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Switch Group -->
+                <ng-container *querySwitchGroup="
+                    let ruleset;
+                    let onChange = onChange;
+                    let index = i
+                  ">
+                  <div class="rulesetGroupIndex">
+                    <div class="rule-index-badge">
+                      <span class="ruleSetId">{{ ruleset.id }}</span>
+                    </div>
+                    <mat-radio-group *ngIf="ruleset" [(ngModel)]="ruleset.condition"
+                      [ngModelOptions]="{ standalone: true }" (ngModelChange)="onChange($event)"
+                      class="condition-radio-group">
+                      <mat-radio-button value="and">AND</mat-radio-button>
+                      <mat-radio-button value="or">OR</mat-radio-button>
+                    </mat-radio-group>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Entity -->
+                <ng-container *queryEntity="
+                    let rule;
+                    let entities = entities;
+                    let onChange = onChange
+                  ">
+                  <mat-form-field class="entity-select-field">
+                    <mat-select [(ngModel)]="rule.entity" (ngModelChange)="onChange($event, rule)">
+                      <mat-option *ngFor="let entity of entities" [value]="entity.value">
+                        {{ entity.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </ng-container>
+  
+                <!-- Query Builder Field -->
+                <ng-container *queryField="
+                    let rule;
+                    let fields = fields;
+                    let onChange = onChange;
+                    let getFields = getFields
+                  ">
+                  <div class="field-rule-container">
+                    <div class="rulesetIndex">
+                      <div class="rule-index-badge">
+                        <span class="ruleSetId">{{ rule.id }}</span>
+                      </div>
+                    </div>
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property</label>
+                      <select class="custom-select" name="field" [ngModelOptions]="{ standalone: true }"
+                        [(ngModel)]="rule.field" (ngModelChange)="onChange($event, rule)">
+                        <option *ngFor="let field of getFields(rule.entity)" [value]="field.value">
+                          {{ field.name }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Operator -->
+                <ng-container *queryOperator="
+                    let rule;
+                    let operators = operators;
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Is</label>
+                      <select class="custom-select" name="operator" [ngModelOptions]="{ standalone: true }"
+                      [ngModel]="operatorToString(rule.operator)" (ngModelChange)="stringToOperator($event.value); ">
+                              <option *ngFor="let value of operators" [value]="value">
+                                {{ value }}
+                              </option>
+                            </select>
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - String -->
+                <ng-container *queryInput="
+                    let rule;
+                    let field = field;
+                    type: 'String';
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                        [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange($event)" [pattern]="'^\\S.*'" required />
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - Boolean -->
+                <ng-container *queryInput="
+                    let rule;
+                    type: 'Boolean';
+                    let onChange = onChange;
+                    let options = options
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                      (ngModelChange)="onChange($event)">
+                        <option *ngFor="let opt of options" [value]="opt">
+                          {{ opt }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - SingleSelect -->
+                <ng-container *queryInput="
+                    let rule;
+                    let field = field;
+                    let options = options;
+                    type: 'SingleSelect';
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                      (ngModelChange)="onChange($event)">
+                        <option *ngFor="let opt of options" [value]="opt">
+                          {{ opt }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - SingleSelect -->
+                <ng-container *queryInput="
+                    let rule;
+                    let field = field;
+                    let options = options;
+                    type: 'MultiSelect';
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
+                        [(ngModel)]="rule.value"
+                        placeholder="Select VideoSources" [showClear]="true"
+                        (ngModelChange)="onChange($event)" [appendTo]="'body'">
+                      </p-multiSelect>
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - Integer -->
+                <ng-container *queryInput="
+                    let rule;
+                    let field = field;
+                    type: 'Integer';
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                        [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
+                        (ngModelChange)="onChange($event)" type="number" min="0" step="1"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Input - Float -->
+                <ng-container *queryInput="
+                    let rule;
+                    let field = field;
+                    type: 'Float';
+                    let onChange = onChange
+                  ">
+                  <div class="field-rule-container">
+                    <div class="field-select-container">
+                      <label class="form-label medium">Property value</label>
+                      <input class="i2v-input primary-default medium" autocomplete="off" matInput
+                        [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value" type="number"
+                        (ngModelChange)="onChange($event)" />
+                    </div>
+                  </div>
+                </ng-container>
+  
+                <!-- Query Builder Remove Button -->
+                <ng-container *queryRemoveButton="let rule; let removeRule = removeRule">
+                  <button class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRule(rule)" matTooltip="Remove rule"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
+                </ng-container>
+              </lib-query-builder>
+            </div>
+            }
+          </div>
+        </ng-template>
 
         <div class="step-content">
-          @if(isPredefinedMode()) {
+          @if(isPredefinedMode() || (isCopied() && isConfigurable()) ) {
           <div class="locked-step-message">
             <i class="pi pi-lock locked-icon"></i>
             <h4>Data Configuration: Pre-defined</h4>
@@ -269,8 +497,13 @@
                 }
               </ul>
             </div>
+            @if(isConfigurable()){
+              <ng-container *ngTemplateOutlet="propertyFiltersTemplate"></ng-container>
+            }
+            
           </div>
-          } @else {
+          }
+          @else {
           <div formGroupName="dataInputConfig" class="data-input-config">
             <!-- Entity Type Selection -->
             <div class="form-group">
@@ -304,232 +537,8 @@
 
               @if (isAdvancedMode) {
               <!-- Property Filters -->
-              <div class="property-filters">
-                <div class="property-filters-header">
-                  <div class="checkbox-label">
-                    <input type="checkbox" id="enablePropertyFilters" [checked]="enablePropertyFilters"
-                      (change)="togglePropertyFilters($event)" class="form-checkbox" />
-                    <span class="checkbox-text">Enable Property Filters</span>
-                  </div>
-                </div>
-
-                @if (enablePropertyFilters) {
-                <div class="property-filters-content">
-                  <lib-query-builder class="query-builder" [config]="config" [ngModel]="ruleData"
-                    [ngModelOptions]="{ standalone: true }" [allowRuleset]="true" name="name">
-                    <!-- Query Builder Button Group -->
-                    <ng-container *queryButtonGroup="
-                        let ruleset;
-                        let addRule = addRule;
-                        let addRuleSet = addRuleSet;
-                        let removeRuleSet = removeRuleSet
-                      ">
-                      <div class="query-builder-actions">
-                        <button class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRule()" matTooltip="Add rule"><lib-svg [path]="'assets/Outline/plus.svg'"></lib-svg></button>
-                        <button *ngIf="addRuleSet" class="flex-row-center-center i2v-btn-icon medium primary-outline" (click)="addRuleSet()" matTooltip="Add rule set"><lib-svg [path]="'assets/Outline/plus-multiple.svg'"></lib-svg></button>
-                        <button *ngIf="removeRuleSet" class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRuleSet()" matTooltip="Remove rule set"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Switch Group -->
-                    <ng-container *querySwitchGroup="
-                        let ruleset;
-                        let onChange = onChange;
-                        let index = i
-                      ">
-                      <div class="rulesetGroupIndex">
-                        <div class="rule-index-badge">
-                          <span class="ruleSetId">{{ ruleset.id }}</span>
-                        </div>
-                        <mat-radio-group *ngIf="ruleset" [(ngModel)]="ruleset.condition"
-                          [ngModelOptions]="{ standalone: true }" (ngModelChange)="onChange($event)"
-                          class="condition-radio-group">
-                          <mat-radio-button value="and">AND</mat-radio-button>
-                          <mat-radio-button value="or">OR</mat-radio-button>
-                        </mat-radio-group>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Entity -->
-                    <ng-container *queryEntity="
-                        let rule;
-                        let entities = entities;
-                        let onChange = onChange
-                      ">
-                      <mat-form-field class="entity-select-field">
-                        <mat-select [(ngModel)]="rule.entity" (ngModelChange)="onChange($event, rule)">
-                          <mat-option *ngFor="let entity of entities" [value]="entity.value">
-                            {{ entity.name }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </ng-container>
-
-                    <!-- Query Builder Field -->
-                    <ng-container *queryField="
-                        let rule;
-                        let fields = fields;
-                        let onChange = onChange;
-                        let getFields = getFields
-                      ">
-                      <div class="field-rule-container">
-                        <div class="rulesetIndex">
-                          <div class="rule-index-badge">
-                            <span class="ruleSetId">{{ rule.id }}</span>
-                          </div>
-                        </div>
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property</label>
-                          <select class="custom-select" name="field" [ngModelOptions]="{ standalone: true }"
-                            [(ngModel)]="rule.field" (ngModelChange)="onChange($event, rule)">
-                            <option *ngFor="let field of getFields(rule.entity)" [value]="field.value">
-                              {{ field.name }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Operator -->
-                    <ng-container *queryOperator="
-                        let rule;
-                        let operators = operators;
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Is</label>
-                          <select class="custom-select" name="operator" [ngModelOptions]="{ standalone: true }"
-                            [(ngModel)]="rule.operator" (ngModelChange)="onChange()">
-                            <option *ngFor="let value of operators" [value]="value">
-                              {{ value }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - String -->
-                    <ng-container *queryInput="
-                        let rule;
-                        let field = field;
-                        type: 'String';
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
-                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
-                            (ngModelChange)="onChange()" [pattern]="'^\\S.*'" required />
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - Boolean -->
-                    <ng-container *queryInput="
-                        let rule;
-                        type: 'Boolean';
-                        let onChange = onChange;
-                        let options = options
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
-                            (ngModelChange)="onChange()">
-                            <option *ngFor="let opt of options" [value]="opt">
-                              {{ opt }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - SingleSelect -->
-                    <ng-container *queryInput="
-                        let rule;
-                        let field = field;
-                        let options = options;
-                        type: 'SingleSelect';
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <select class="custom-select" [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
-                            (ngModelChange)="onChange()">
-                            <option *ngFor="let opt of options" [value]="opt">
-                              {{ opt }}
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - SingleSelect -->
-                    <ng-container *queryInput="
-                        let rule;
-                        let field = field;
-                        let options = options;
-                        type: 'MultiSelect';
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
-                            [(ngModel)]="rule.value"
-                            placeholder="Select VideoSources" [showClear]="true"
-                            (ngModelChange)="onChange()" [appendTo]="'body'">
-                          </p-multiSelect>
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - Integer -->
-                    <ng-container *queryInput="
-                        let rule;
-                        let field = field;
-                        type: 'Integer';
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
-                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value"
-                            (ngModelChange)="onChange()" type="number" min="0" step="1"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Input - Float -->
-                    <ng-container *queryInput="
-                        let rule;
-                        let field = field;
-                        type: 'Float';
-                        let onChange = onChange
-                      ">
-                      <div class="field-rule-container">
-                        <div class="field-select-container">
-                          <label class="form-label medium">Property value</label>
-                          <input class="i2v-input primary-default medium" autocomplete="off" matInput
-                            [ngModelOptions]="{ standalone: true }" [(ngModel)]="rule.value" type="number"
-                            (ngModelChange)="onChange()" />
-                        </div>
-                      </div>
-                    </ng-container>
-
-                    <!-- Query Builder Remove Button -->
-                    <ng-container *queryRemoveButton="let rule; let removeRule = removeRule">
-                      <button class="flex-row-center-center i2v-btn-icon medium tertiary-danger" (click)="removeRule(rule)" matTooltip="Remove rule"><lib-svg [path]="'assets/Outline/trash.svg'"></lib-svg></button>
-                    </ng-container>
-                  </lib-query-builder>
-                </div>
-                }
-              </div>
+                <ng-container *ngTemplateOutlet="propertyFiltersTemplate"></ng-container>
+              
               }
 
               <!-- Aggregation Method -->

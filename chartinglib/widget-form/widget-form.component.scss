@@ -231,6 +231,7 @@ $transition: all 0.15s ease-in-out;
 
         .checkbox-text {
           font-size: 14px;
+          color: var(--Global-text-text-2-light);
         }
       }
     }
@@ -286,6 +287,7 @@ $transition: all 0.15s ease-in-out;
 
                 .checkbox-text {
                   font-size: 14px;
+                  color: var(--Global-text-text-2-light);
                 }
               }
             }
@@ -428,6 +430,7 @@ $transition: all 0.15s ease-in-out;
 
           .checkbox-text {
             font-size: 14px;
+            color: var(--Global-text-text-2-light);
           }
         }
       }
@@ -546,7 +549,11 @@ $transition: all 0.15s ease-in-out;
         }
       }
     }
-
+    .property-filters.enable-edit {
+      pointer-events: auto !important;
+      opacity: 1 !important;
+      filter: none !important;
+    }
     // ===== WIDGET TYPE SELECTION =====
     .widget-type-selection {
       .recommendation-text {

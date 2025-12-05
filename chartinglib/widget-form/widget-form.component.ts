@@ -3270,14 +3270,14 @@ stringToOperator(value: string): number {
   }
 
   isConfigurable(): boolean {
-    if(this.finalWidget?.isWidgetPredefinedAndConfigurable){
+    if(this.finalWidget){
       return this.finalWidget.isWidgetPredefinedAndConfigurable === true;
     }else{
       return true;
     }
   }
   isCopied(): boolean {
-    if(this.finalWidget?.isCopied){
+    if(this.finalWidget){
       return this.finalWidget.isCopied === true;
     }
   }

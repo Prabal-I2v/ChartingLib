@@ -475,7 +475,7 @@
         </ng-template>
 
         <div class="step-content">
-          @if(isPredefinedMode() || (isCopied() && isConfigurable()) ) {
+          @if(isPredefinedMode() || (isCopied()) ) {
           <div class="locked-step-message">
             <i class="pi pi-lock locked-icon"></i>
             <h4>Data Configuration: Pre-defined</h4>
@@ -535,7 +535,7 @@
                 }
               </div>
 
-              @if (isAdvancedMode) {
+              @if (isAdvancedMode && isConfigurable()) {
               <!-- Property Filters -->
                 <ng-container *ngTemplateOutlet="propertyFiltersTemplate"></ng-container>
               

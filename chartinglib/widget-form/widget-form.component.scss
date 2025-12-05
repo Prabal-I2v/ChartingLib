@@ -611,7 +611,7 @@ $transition: all 0.15s ease-in-out;
     .widget-specific-config {
       .config-section {
         padding: 20px;
-        background-color: var(--Global-backgrounds-secondary-bg-3);
+        background-color: var(--Global-backgrounds-secondary-bg-1);
         border-radius: $border-radius;
         border: 1px solid var(--Global-others-border);
 
@@ -638,7 +638,7 @@ $transition: all 0.15s ease-in-out;
       .summary-section {
         margin-bottom: 20px;
         padding: 16px;
-        background-color: var(--Global-backgrounds-secondary-bg-3);
+        background-color: var(--Global-backgrounds-secondary-bg-1);
         border-radius: $border-radius;
         border-left: 4px solid $primary-color;
 

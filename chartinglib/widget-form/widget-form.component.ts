@@ -1970,6 +1970,7 @@ stringToOperator(value: string): number {
     finalWidget.canBeRemoved = true;
     if(this.finalWidget){
       finalWidget.isCopied = this.finalWidget.isCopied;
+      finalWidget.query = this.finalWidget.query;
     }
     return finalWidget;
   }
@@ -3271,14 +3272,16 @@ stringToOperator(value: string): number {
 
   isConfigurable(): boolean {
     if(this.finalWidget){
-      return this.finalWidget.isWidgetPredefinedAndConfigurable === true;
+      return this.finalWidget.isWidgetPredefinedAndConfigurable;
     }else{
       return true;
     }
   }
   isCopied(): boolean {
     if(this.finalWidget){
-      return this.finalWidget.isCopied === true;
+      return this.finalWidget.isCopied;
+    }else{
+      return false;
     }
   }
   // Update submit button text based on mode

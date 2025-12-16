@@ -1,4 +1,4 @@
-import { DashboardType } from "Analytic/ClientApp/src/app/modules/dashboard/Models/dashboard.model";
+import { DashboardType } from "Analytic/ClientApp/src/app/modules/dashboard/Enums/dashboard-enums"; 
 import { Widget } from "./Widget";
 
 export class dashboard {

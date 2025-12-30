@@ -20,6 +20,7 @@ import { Enum_Method_Aggregation, Enum_Method_Aggregation_With_Labels, Enum_Time
 import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
+import { ToastrService } from "ngx-toastr";
 
 @Component({
   selector: "i2v-charts",
@@ -68,7 +69,7 @@ export abstract class I2vChartsComponent implements OnInit {
   componentId: string;
   customFilterValues: Record<string, CustomFilterValueModel[]>;
 
-  constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
+  constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef,private toastr?: ToastrService,) {
     // Generate and store a UUID when component is created
     this.componentId = uuidv4();
   }
@@ -401,7 +402,7 @@ export abstract class I2vChartsComponent implements OnInit {
   
     // defensive guard
     if (!widgetRequestModel || !widgetRequestModel.filterConfig) {
-      console.warn('fetchDataFromServer: missing widgetRequestModel or filterConfig');
+      this.toastr.warning('fetchDataFromServer: missing widgetRequestModel or filterConfig');
       this.isLoading = false;
       this.cd.detectChanges();
       return;
@@ -413,7 +414,7 @@ export abstract class I2vChartsComponent implements OnInit {
         (data: ChartsOutputModel | TableOutputModel) => {
           if (data === null || data === undefined) {
             // do NOT set dataExists=false here — keep loading so UI doesn't show "No Data" immediately
-            console.debug('fetchDataFromServer: api returned null/undefined, keeping loader');
+            this.toastr.info('fetchDataFromServer: api returned null/undefined, keeping loader');
             return;
           }
           if (this.isChartsOutputModel(data)) {

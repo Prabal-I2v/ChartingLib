@@ -31,9 +31,7 @@ export class PredefinedWidgetsComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    public dialogRef?: MatDialogRef<PredefinedWidgetsComponent>,
-    @Inject(MAT_DIALOG_DATA) public dialogData?: any,
-   
+    public dialogRef: MatDialogRef<PredefinedWidgetsComponent>
   ) {}
 
   ngOnInit(): void {
@@ -61,11 +59,11 @@ export class PredefinedWidgetsComponent implements OnInit {
     });
   
     // Return updated widgets
-    this.dialogRef?.close(selectedWidgetObjects);
+    this.dialogRef.close(selectedWidgetObjects);
   }
 
   onCancel(): void {
-    this.dialogRef?.close();
+    this.dialogRef.close();
   }
 
   // Handle selection from child lib-entityselector

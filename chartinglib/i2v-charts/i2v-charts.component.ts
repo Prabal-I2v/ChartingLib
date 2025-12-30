@@ -550,6 +550,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   widgetResizeCallback(value: boolean) {
+    if (!this.elementRef) return;
     this.cd.detectChanges();
     const height = this.elementRef.nativeElement.offsetHeight;
     const width = this.elementRef.nativeElement.offsetWidth;

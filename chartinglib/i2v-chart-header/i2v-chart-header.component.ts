@@ -147,11 +147,11 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
     if (changes['widgetModel']?.currentValue) {
       if (
         !changes['widgetModel']?.previousValue ||
-        this.heading !== changes['widgetModel']?.previousValue?.displayConfig?.heading ||
-        this.subHeading !== changes['widgetModel']?.previousValue?.displayConfig?.subHeading
+        this.heading !== changes['widgetModel']?.currentValue?.displayConfig?.heading ||
+        this.subHeading !== changes['widgetModel']?.currentValue?.displayConfig?.subHeading
       ) {
-        this.heading = changes['widgetModel']?.previousValue?.displayConfig?.heading || "";
-        this.subHeading = changes['widgetModel']?.previousValue?.displayConfig?.subHeading || "";
+        this.heading = changes['widgetModel']?.currentValue?.displayConfig?.heading || "";
+        this.subHeading = changes['widgetModel']?.currentValue?.displayConfig?.subHeading || "";
         this.cdr.markForCheck();
       }
     }

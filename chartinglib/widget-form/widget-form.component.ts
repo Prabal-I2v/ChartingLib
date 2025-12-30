@@ -1897,7 +1897,6 @@ stringToOperator(value: string): number {
       // Update refresh settings
       updatedWidget.allowRefresh = formValue.allowRefresh;
       updatedWidget.refreshInterval = formValue.refreshInterval;
-
       // Update showable properties
       updatedWidget.showableProperties = this.showableProperties;
 
@@ -1970,6 +1969,7 @@ stringToOperator(value: string): number {
     finalWidget.canBeRemoved = true;
     if(this.finalWidget){
       finalWidget.isCopied = this.finalWidget.isCopied;
+      finalWidget.isWidgetPredefinedAndConfigurable = this.finalWidget.isWidgetPredefinedAndConfigurable;
       finalWidget.query = this.finalWidget.query;
     }
     return finalWidget;

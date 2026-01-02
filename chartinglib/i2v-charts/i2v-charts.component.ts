@@ -20,6 +20,7 @@ import { Enum_Method_Aggregation, Enum_Method_Aggregation_With_Labels, Enum_Time
 import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
+import { ToastrService } from "ngx-toastr";
 
 @Component({
   selector: "i2v-charts",
@@ -42,6 +43,7 @@ export abstract class I2vChartsComponent implements OnInit {
   @Output() widgetResizeCallbackEmittor = new EventEmitter<any>();
   @Output() widgetRemoveCallbackEmittor = new EventEmitter<any>();
   @Output() editWidgetOutput = new EventEmitter<any>();
+  @Output() copiedWidgetOutput = new EventEmitter<any>();
 
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
@@ -67,14 +69,14 @@ export abstract class I2vChartsComponent implements OnInit {
   componentId: string;
   customFilterValues: Record<string, CustomFilterValueModel[]>;
 
-  constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef) {
+  constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef,private toastr?: ToastrService,) {
     // Generate and store a UUID when component is created
     this.componentId = uuidv4();
   }
 
   ngOnInit() {
     this.refreshCallSubjectSubscription = this.refreshCallSubject.subscribe(() => {
-      this.getDataFromServer(this.widgetRequestModel);
+      if (this.widgetRequestModel) this.getDataFromServer(this.widgetRequestModel);
     });
 
     // Set up the debounced data fetching
@@ -89,29 +91,37 @@ export abstract class I2vChartsComponent implements OnInit {
       if (this.widgetRequestModel.allowRefresh) {
         this.setRefreshInterval()
       }
+      this.widgetRequestModel.filterConfig = this.widgetRequestModel.filterConfig || { customFilters: {}, isDashboardFilterApplied: false };
+      this.widgetRequestModel.filterConfig.customFilters = this.widgetRequestModel.filterConfig.customFilters || {};
       if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue));
+        // apply dashboard filters snapshot safely
+        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue || {}));
       } else {
         this.isCustomFilterApplied = true;
       }
+      this.getDataFromServer(this.widgetRequestModel);
     } else {
       this.isModel = false;
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.dashboardCustomFilterValue?.currentValue !== changes.dashboardCustomFilterValue?.previousValue) {
+    // dashboard filter value changed
+    if (changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue) {
       this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
       this.updateCustomFiltersValues();
+      return;
     }
-    else if
-      (!changes.isEditModeOn?.currentValue) {
-      this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
-      this.showFilterValues = false;
-      if (this.isCustomFilterApplied && this.applyToAllEnabled) {
-        this.isCustomFilterApplied = false;
-        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
-        this.widgetResizeCallback(this.showFilterValues);
+    if (changes.isEditModeOn && changes.isEditModeOn.currentValue !== changes.isEditModeOn.previousValue) {
+      // when edit mode turns off -> refresh size/filters as before
+      if (!changes.isEditModeOn.currentValue) {
+        this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
+        this.showFilterValues = false;
+        if (this.isCustomFilterApplied && this.applyToAllEnabled) {
+          this.isCustomFilterApplied = false;
+          this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
+          this.widgetResizeCallback(this.showFilterValues);
+        }
       }
     }
   }
@@ -318,12 +328,13 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   getDataFromServer(widgetRequestModel: Widget) {
-    if (widgetRequestModel != null) {
-      this.isLoading = true;
-      this.cd.detectChanges();
-      // Trigger the debounced subject instead of directly calling the API
-      this.debouncedRefreshSubject.next(widgetRequestModel);
+    if (!widgetRequestModel) {
+      return;
     }
+    this.isLoading = true;
+    this.cd.detectChanges();
+    // Trigger the debounced subject instead of directly calling the API
+    this.debouncedRefreshSubject.next(widgetRequestModel);
   }
 
   // Type guard functions
@@ -388,28 +399,44 @@ export abstract class I2vChartsComponent implements OnInit {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
     }
+  
+    // defensive guard
+    if (!widgetRequestModel || !widgetRequestModel.filterConfig) {
+      this.toastr.warning('fetchDataFromServer: missing widgetRequestModel or filterConfig');
+      this.isLoading = false;
+      this.cd.detectChanges();
+      return;
+    }
     this.setTimeAccordingToWidget(widgetRequestModel);
     this.apiSubscription = this.chartingDataService
       .getChartingData(widgetRequestModel)
       .subscribe(
-        // In your subscription handler
         (data: ChartsOutputModel | TableOutputModel) => {
-          this.dataExists = false;
-
-          if (data) {
-            // this.transformChartData(data);
-            // this.dataExists = true;
-            if (this.isChartsOutputModel(data) && this.checkIfAnySeriesExists(data)) {
-              this.transformChartData(data);
-              this.dataExists = true;
-            }
-            else if (this.isTableOutputModel(data)) {
-              // this.tableData = data;
-              this.transformChartData(data);
-              this.dataExists = true;
-            }
+          if (data === null || data === undefined) {
+            // do NOT set dataExists=false here — keep loading so UI doesn't show "No Data" immediately
+            this.toastr.info('fetchDataFromServer: api returned null/undefined, keeping loader');
+            return;
           }
-          this.cd.detectChanges();
+          if (this.isChartsOutputModel(data)) {
+            const hasSeries = this.checkIfAnySeriesExists(data);
+            this.dataExists = hasSeries;
+            this.dataExistsForShowableProperties = true;
+            if (hasSeries) {
+              this.transformChartData(data);
+            } else {
+              // no series -> set flag so UI shows "No Data"
+              this.dataExistsForShowableProperties = false;
+            }
+          } else if (this.isTableOutputModel(data)) {
+            // tables considered valid
+            this.dataExists = true;
+            this.dataExistsForShowableProperties = true;
+            this.transformChartData(data);
+          } else {
+            // unknown shape => no data
+            this.dataExists = false;
+            this.dataExistsForShowableProperties = true;
+          }
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -524,6 +551,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   widgetResizeCallback(value: boolean) {
+    if (!this.elementRef) return;
     this.cd.detectChanges();
     const height = this.elementRef.nativeElement.offsetHeight;
     const width = this.elementRef.nativeElement.offsetWidth;
@@ -670,4 +698,5 @@ export abstract class I2vChartsComponent implements OnInit {
   xAxisTrackBy(index: number): string | number {
     return index;
   }
+
 }

@@ -74,7 +74,7 @@ import { CommonComponentsComponent, CommonModalComponent, CommonModalData } from
 import { WidgetFormPreviewComponent } from '../widget-form-preview/widget-form-preview.component';
 import { ToastrService } from 'ngx-toastr';
 import { Property } from 'Analytic/ClientApp/src/app/Models/property.model';
-import { EventPropertyType } from 'Analytic/ClientApp/src/app/Models/eventPropertyType.model';
+import { EventPropertyType, Operators } from 'Analytic/ClientApp/src/app/Models/eventPropertyType.model';
 import { VideoSourceClientManager } from 'Analytic/ClientApp/src/app/Managers/VideoSourceClientManager';
 import { AnalyticEventModel } from 'Analytic/ClientApp/src/app/Models/analyticEvent.Model';
 import { AnalyticService } from 'Analytic/ClientApp/src/app/services/analytic.service';
@@ -1452,13 +1452,16 @@ export class WidgetFormComponent implements OnInit {
     this.allShowablePropertiesName = [];
 
     if (fieldNames && fieldNames.length > 0) {
-      fieldNames.forEach((fieldName: IWidgetFieldNameConfig) => {
+      fieldNames.forEach((field: IWidgetFieldNameConfig) => {
 
+        const finalName = field.applyAggregation
+          ? field.columnName    
+          : field.name;
         this.allShowablePropertiesName.push({
-          name: fieldName.name,
-          displayName: fieldName.columnName,
+          name: finalName,
+          displayName: finalName,
           isMultiValued: false,
-          isLabel: fieldName.type === EventPropertyType.String,
+          isLabel: field.type === EventPropertyType.String,
         });
       });
     }
@@ -1502,6 +1505,16 @@ export class WidgetFormComponent implements OnInit {
     this.recommendedWidgets = availableWidgets;
   }
 
+  operatorToString(operator: string | number): string {
+    if (typeof operator === 'string') {
+      return operator;
+    }
+    return Operators[operator];
+  }
+
+stringToOperator(value: string): number {
+  return Operators[value as keyof typeof Operators];
+}
   onShowablePropertiesChange(event: any): void {
     const selectedProps = event.value;
 
@@ -1510,12 +1523,14 @@ export class WidgetFormComponent implements OnInit {
     showablePropertiesArray.clear();
 
     selectedProps.forEach((prop) => {
-      const isEntityProp = this.entityProperties.find(entityProp => entityProp.name.toLowerCase() == prop.toLowerCase());
+      const possibleBase = this.entityProperties.find(p =>
+        prop.toLowerCase().startsWith(p.name.toLowerCase())
+      );
 
-      if (isEntityProp) {
+      if (possibleBase) {
         showablePropertiesArray.push(this.createShowablePropertyFormGroup({
-          name: isEntityProp.name,
-          displayName: isEntityProp.columnName,
+          name: prop,
+          displayName: prop,
           isLabel: false,
           isMultiValued: false
         }));
@@ -1663,7 +1678,7 @@ export class WidgetFormComponent implements OnInit {
 
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
-      if (property.type !== EventPropertyType.Guid) {
+     
         if (property.name.toLowerCase() === "videosourceid") {
           const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
           let videoSourcesName = "";
@@ -1671,7 +1686,7 @@ export class WidgetFormComponent implements OnInit {
             videoSourcesName += videoSources[i].name + ",";
           }
           property.defaultValues = videoSourcesName.slice(0, -1);
-          property.type = EventPropertyType.MultiSelect
+          property.type = EventPropertyType.MultiSelect;
         }
 
         this.createFilterPropertyObject(
@@ -1680,19 +1695,25 @@ export class WidgetFormComponent implements OnInit {
           property.type,
           property.defaultValues,
         );
-      }
+      
     });
   }
 
   createFilterPropertyObject(propertyName: string, name: string, type: EventPropertyType, options: any): void {
     const operators = this.getOpertorsByType(type);
     const processedOptions = this.setDefaultValuesByType(options, type);
-
-    const object: any = {
+    let object: any = {};
+    if(type !== EventPropertyType.Guid) {
+    object = {
       name: name,
       type: EventPropertyType[type],
       operators: operators
-    };
+    };} else {
+      object = {
+        name: name,
+        type: "String",
+        operators: operators}
+    }
 
     if (processedOptions !== null) {
       object.options = processedOptions;
@@ -1876,7 +1897,6 @@ export class WidgetFormComponent implements OnInit {
       // Update refresh settings
       updatedWidget.allowRefresh = formValue.allowRefresh;
       updatedWidget.refreshInterval = formValue.refreshInterval;
-
       // Update showable properties
       updatedWidget.showableProperties = this.showableProperties;
 
@@ -1947,6 +1967,11 @@ export class WidgetFormComponent implements OnInit {
     finalWidget.dimension = dimension;
     finalWidget.isPredefinedWidget = false;
     finalWidget.canBeRemoved = true;
+    if(this.finalWidget){
+      finalWidget.isCopied = this.finalWidget.isCopied;
+      finalWidget.isWidgetPredefinedAndConfigurable = this.finalWidget.isWidgetPredefinedAndConfigurable;
+      finalWidget.query = this.finalWidget.query;
+    }
     return finalWidget;
   }
 
@@ -3245,6 +3270,20 @@ export class WidgetFormComponent implements OnInit {
     return this.formMode === Enum_WidgetFormMode.predefined;
   }
 
+  isConfigurable(): boolean {
+    if(this.finalWidget){
+      return this.finalWidget.isWidgetPredefinedAndConfigurable;
+    }else{
+      return true;
+    }
+  }
+  isCopied(): boolean {
+    if(this.finalWidget){
+      return this.finalWidget.isCopied;
+    }else{
+      return false;
+    }
+  }
   // Update submit button text based on mode
   getSubmitButtonText(): string {
     return this.isEditMode() ? 'Update Widget' : 'Create Widget';

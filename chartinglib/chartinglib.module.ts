@@ -39,6 +39,7 @@ import { AnalyticClientSharedModule } from "../../AnalyticClientShare.module";
 import { WidgetFormComponent } from './widget-form/widget-form.component';
 import { AccordionModule } from 'primeng/accordion';
 import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-preview.component';
+import { PredefinedWidgetsComponent } from "../predefined-widgets/predefined-widgets.component";
 // import {NgxDaterangepickerMd} from "ngx-daterangepicker-material";
 // FusionChartsModule.fcRoot(FusionCharts, charts, PowerCharts, FusionTheme, GammelTheme, CandyTheme, OceanTheme);
 
@@ -65,7 +66,8 @@ import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-pr
     CustomFilterDialogComponent,
     I2vGridComponent,
     WidgetFormComponent,
-    WidgetFormPreviewComponent
+    WidgetFormPreviewComponent,
+    PredefinedWidgetsComponent
   ],
   imports: [
     CommonModule,
@@ -118,6 +120,7 @@ import { WidgetFormPreviewComponent } from './widget-form-preview/widget-form-pr
     DetailsWidgetComponent,
     GridstackModule,
     WidgetFormComponent,
+    PredefinedWidgetsComponent
     
 
   ],

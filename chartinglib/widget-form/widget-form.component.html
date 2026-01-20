@@ -414,18 +414,21 @@
                     let rule;
                     let field = field;
                     let options = options;
-                    type: 'MultiSelect';
+                    type: 'GuidArray';
                     let onChange = onChange
                   ">
                   <div class="field-rule-container">
                     <div class="field-select-container">
                       <label class="form-label medium">Property value</label>
-                      <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
+                      <p-multiSelect [ngModelOptions]="{ standalone: true }" 
+                        [options]="options"
                         [(ngModel)]="rule.value"
+                        optionLabel="label" 
+                        optionValue="value"
                         placeholder="Select VideoSources" [showClear]="true"
                         (ngModelChange)="onChange($event)" [appendTo]="'body'">
                       </p-multiSelect>
-                    </div>
+                      </div>
                   </div>
                 </ng-container>
   
@@ -564,7 +567,7 @@
                       : ''
                   ">Select Properties</label>
                 <p-multiSelect [options]="allFieldNames" formControlName="fieldNames" optionLabel="name" [filter]="true"
-                  placeholder="Select Properties" appendTo="body" [showToggleAll]="true"
+                  placeholder="Select Properties" appendTo="body" [showToggleAll]="true" dataKey="name"
                   (onChange)="onFieldNamesChange($event)" styleClass="form-multiselect"
                   [class.error]="hasFieldError('dataInputConfig.fieldNames')">
 

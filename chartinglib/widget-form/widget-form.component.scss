@@ -987,10 +987,16 @@ $transition: all 0.15s ease-in-out;
         }
       }
     }
-
+    p-multiselect {
+      display: block;
+      width: 100%;
+      height: 32px;
+    }
     // MultiSelect Components
     .p-multiselect {
       width: 100%;
+      height: 100%;
+      align-items: center;
 
       &.form-multiselect {
         .p-multiselect-label {

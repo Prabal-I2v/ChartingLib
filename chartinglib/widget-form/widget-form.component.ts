@@ -853,15 +853,24 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onFieldNamesChange(event: any): void {
-    const selectedFields = event.value as IWidgetFieldNameConfig[]
-    // Update form control
+    const newlySelectedFields = event.value as IWidgetFieldNameConfig[];
+    const currentFields = this.widgetForm.controls.dataInputConfig.controls.fieldNames.value || [];
+    //p-multiSelect sets array selectedItems array this can come from options,formControl.value or recreates
+    //option vale obj se mismatch hota h to vo selected nhi hota
+    //this prevents mixed references when selecting/deselecting fields
+    const mergedFields = newlySelectedFields.map(newField => {
+      const existingField = currentFields.find(f => f.name === newField.name);
+      return existingField ? existingField : newField;
+    });
+  
+    // Update form control with the merged array
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedFields
+        fieldNames: mergedFields
       }
     });
 
-    if (selectedFields?.length > 1) {
+    if (mergedFields?.length > 1) {
       this.disableGroupBy2();
     }
 
@@ -1311,8 +1320,32 @@ export class WidgetFormComponent implements OnInit {
   }
 
   convertRulesToPropertyFilters(): any {
-    return this.enablePropertyFilters ? this.ruleData : null;
+    if (!this.enablePropertyFilters || !this.ruleData) {
+      return null;
+    }
+    this.normalizeRuleValues(this.ruleData.rules);
+  
+    return this.ruleData;
+  }  
+  
+  private normalizeRuleValues(rules: any[]): void {
+    if (!rules || !rules.length) return;
+    rules.forEach(rule => {
+      if (rule.field === 'VideoSourceId') {
+        rule.type = EventPropertyType.GuidArray; 
+        rule.operator = Operators.Contains;      
+      }
+  
+      if (Array.isArray(rule.value)) {
+        rule.value = rule.value.join(',');
+      }
+  
+      if (Array.isArray(rule.rules)) {
+        this.normalizeRuleValues(rule.rules);
+      }
+    });
   }
+  
 
   // Utility Methods
   getAllAvailableProperties(): Property[] {
@@ -1678,24 +1711,28 @@ stringToOperator(value: string): number {
 
   createRuleGroupQueryBuilder(properties: Property[]): void {
     properties.forEach((property: Property) => {
-     
-        if (property.name.toLowerCase() === "videosourceid") {
-          const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
-          let videoSourcesName = "";
-          for (let i = 0; i < videoSources.length; i++) {
-            videoSourcesName += videoSources[i].name + ",";
-          }
-          property.defaultValues = videoSourcesName.slice(0, -1);
-          property.type = EventPropertyType.MultiSelect;
-        }
+      let options: any = property.defaultValues;
 
-        this.createFilterPropertyObject(
-          property.name,
-          property.columnName,
-          property.type,
-          property.defaultValues,
-        );
-      
+      if (property.name.toLowerCase() === "videosourceid") {
+        const sources = this.videoSourceManager.getAllVideoSourceInMemory();
+        
+        // Map sources to Label/Value objects
+        options = sources.map(vs => ({ label: vs.name, value: vs.id }));
+        
+        property.type = EventPropertyType.GuidArray;
+        
+        // --- IMPORTANT FIX: ---
+        // Clear the default value so it doesn't auto-select ALL cameras
+        property.defaultValues = ""; 
+      } else {
+         options = property.defaultValues;
+      }
+      this.createFilterPropertyObject(
+        property.name,
+        property.columnName,
+        property.type,
+        options 
+      );
     });
   }
 
@@ -1703,12 +1740,20 @@ stringToOperator(value: string): number {
     const operators = this.getOpertorsByType(type);
     const processedOptions = this.setDefaultValuesByType(options, type);
     let object: any = {};
-    if(type !== EventPropertyType.Guid) {
-    object = {
-      name: name,
-      type: EventPropertyType[type],
-      operators: operators
-    };} else {
+    if (type === EventPropertyType.GuidArray) {
+       object = {
+         name: name,
+         type: "GuidArray", 
+         operators: ["Contains"] 
+       };
+    } 
+    else if (type !== EventPropertyType.Guid) {
+      object = {
+        name: name,
+        type: EventPropertyType[type],
+        operators: operators
+      };
+    } else {
       object = {
         name: name,
         type: "String",
@@ -1899,6 +1944,9 @@ stringToOperator(value: string): number {
       updatedWidget.refreshInterval = formValue.refreshInterval;
       // Update showable properties
       updatedWidget.showableProperties = this.showableProperties;
+      updatedWidget.filterConfig = {
+        propertyFilters: this.convertRulesToPropertyFilters()
+      };
 
       return updatedWidget;
     }
@@ -2138,7 +2186,7 @@ stringToOperator(value: string): number {
     dimension: WidgetDimension
   ): any {
     const widgetType = this.widgetForm.controls.widgetType.value;
-
+    const isSpecificConfigEnabled = this.widgetForm.controls.enableWidgetSpecificConfig.value;
     // Handle widget-specific configurations
     if (widgetType === Enum_WidgetType.Donut1D) {
       const donutConf: DonutConf = {
@@ -2151,7 +2199,7 @@ stringToOperator(value: string): number {
         ...baseWidgetConfig,
         widgetType: widgetType,
         dataInputConfig: dataInputConfig,
-        donutConf: donutConf
+        donutConf: isSpecificConfigEnabled ? donutConf : null
       } as DonutChart1DWidget;
     }
 
@@ -2165,7 +2213,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig,
-        donutConf: donutConf
+        donutConf: isSpecificConfigEnabled ? donutConf : null
       } as DonutChart2DWidget;
     }
 
@@ -2183,7 +2231,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig,
-        kpiConf: kpiConf
+        kpiConf: isSpecificConfigEnabled ? kpiConf : null
       } as KPI1DWidgetConstructorProps;
     }
 
@@ -2201,7 +2249,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig as ITwoDimensionDataInputConfig,
-        kpiConf: kpiConf
+        kpiConf: isSpecificConfigEnabled ? kpiConf : null
       } as KPI2DWidgetConstructorProps;
     }
 
@@ -2215,7 +2263,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig as any,
-        tableConf: tableConf
+        tableConf: isSpecificConfigEnabled ? tableConf : null
       } as TableWidgetConstructorProps;
     }
 
@@ -2511,7 +2559,7 @@ stringToOperator(value: string): number {
       dataInputConfig: {
         entityTypeSelect: Enum_Schema.Events,
         entitySelect: "Highway_ATCC",
-        method: Enum_Method.Sum,
+        method: Enum_Method.Count,
         isDistinct: false
       },
       allowRefresh: false,
@@ -2740,9 +2788,6 @@ stringToOperator(value: string): number {
 
   private initializeFieldNames(dataInputConfig: any): void {
     const fieldNames: IWidgetFieldNameConfig[] = dataInputConfig.fieldNames || [];
-    fieldNames.forEach((field: any) => {
-      field.rule = null; // Initialize with no rule
-    });
 
     this.widgetForm.patchValue({
       dataInputConfig: {
@@ -2964,8 +3009,23 @@ stringToOperator(value: string): number {
       if (filterConfig.propertyFilters) {
         this.enablePropertyFilters = true;
         this.ruleData = filterConfig.propertyFilters;
+        this.convertStringToArrayForMultiselect(this.ruleData.rules);
       }
     }
+  }
+
+  convertStringToArrayForMultiselect(rules: any[]): void {
+    if (!rules) return;
+    
+    rules.forEach(rule => {
+      // If this is the VideoSourceId field and value is a string, split it into an array
+      if (rule.field === 'VideoSourceId' && typeof rule.value === 'string') {
+        rule.value = rule.value.split(',').map(v => v.trim());
+      }
+      if (rule.rules) {
+        this.convertStringToArrayForMultiselect(rule.rules);
+      }
+    });
   }
 
   hasFieldError(fieldPath: string): boolean {
@@ -3271,7 +3331,7 @@ stringToOperator(value: string): number {
   }
 
   isConfigurable(): boolean {
-    if(this.finalWidget){
+    if(this.finalWidget?.isPredefinedWidget){
       return this.finalWidget.isWidgetPredefinedAndConfigurable;
     }else{
       return true;

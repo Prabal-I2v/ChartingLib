@@ -420,13 +420,15 @@
                   <div class="field-rule-container">
                     <div class="field-select-container">
                       <label class="form-label medium">Property value</label>
-                      <p-multiSelect [ngModelOptions]="{ standalone: true }" 
+                      <p-multiSelect 
+                        [ngModelOptions]="{ standalone: true }" 
                         [options]="options"
-                        [(ngModel)]="rule.value"
+                        [ngModel]="ensureArray(rule.value)"    (ngModelChange)="handleMultiSelectChange($event, onChange)"     
                         optionLabel="label" 
                         optionValue="value"
-                        placeholder="Select VideoSources" [showClear]="true"
-                        (ngModelChange)="onChange($event)" [appendTo]="'body'">
+                        placeholder="Select VideoSources" 
+                        [showClear]="true"
+                        [appendTo]="'body'">
                       </p-multiSelect>
                       </div>
                   </div>

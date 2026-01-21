@@ -1323,21 +1323,20 @@ export class WidgetFormComponent implements OnInit {
     if (!this.enablePropertyFilters || !this.ruleData) {
       return null;
     }
-    this.normalizeRuleValues(this.ruleData.rules);
   
-    return this.ruleData;
-  }  
+    const clonedRuleData = JSON.parse(JSON.stringify(this.ruleData));
+    this.normalizeRuleValues(clonedRuleData.rules);
+    return clonedRuleData;
+  }
   
   private normalizeRuleValues(rules: any[]): void {
     if (!rules || !rules.length) return;
     rules.forEach(rule => {
-      if (rule.field === 'VideoSourceId') {
-        rule.type = EventPropertyType.GuidArray; 
-        rule.operator = Operators.Contains;      
-      }
   
-      if (Array.isArray(rule.value)) {
-        rule.value = rule.value.join(',');
+      if (rule.field === 'VideoSourceId') {
+        if (Array.isArray(rule.value)) {
+          rule.value = rule.value.join(',');
+        }
       }
   
       if (Array.isArray(rule.rules)) {
@@ -1717,13 +1716,15 @@ stringToOperator(value: string): number {
         const sources = this.videoSourceManager.getAllVideoSourceInMemory();
         
         // Map sources to Label/Value objects
-        options = sources.map(vs => ({ label: vs.name, value: vs.id }));
+        options = sources.slice(0, 50).map(vs => ({
+          label: vs.name,
+          value: vs.id
+        }));
+        
         
         property.type = EventPropertyType.GuidArray;
-        
-        // --- IMPORTANT FIX: ---
         // Clear the default value so it doesn't auto-select ALL cameras
-        property.defaultValues = ""; 
+        (property.defaultValues as any) = [];
       } else {
          options = property.defaultValues;
       }
@@ -1744,7 +1745,8 @@ stringToOperator(value: string): number {
        object = {
          name: name,
          type: "GuidArray", 
-         operators: ["Contains"] 
+         operators: ["Contains"], 
+         defaultValue: []
        };
     } 
     else if (type !== EventPropertyType.Guid) {
@@ -3020,12 +3022,42 @@ stringToOperator(value: string): number {
     rules.forEach(rule => {
       // If this is the VideoSourceId field and value is a string, split it into an array
       if (rule.field === 'VideoSourceId' && typeof rule.value === 'string') {
-        rule.value = rule.value.split(',').map(v => v.trim());
+        rule.value = rule.value ? rule.value.split(',').map(v => v.trim()) : [];
+      }
+      if (rule.field === 'VideoSourceId' && !rule.value) {
+        rule.value = [];
       }
       if (rule.rules) {
         this.convertStringToArrayForMultiselect(rule.rules);
       }
     });
+  }
+  ensureArray(value: any): any[] {
+    if (value == null) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.trim() === '') return []; 
+    return [value]; // Wraps single strings (like "cam1") into ["cam1"]
+  }
+  onQueryBuilderFieldChange(
+    event: any,
+    rule: Rule,
+    libraryOnChange: (val: any, r: Rule) => void
+  ): void {
+  
+    libraryOnChange(event, rule);
+  
+    if (rule.field === 'VideoSourceId') {
+  
+      // operator must be STRING
+      rule.operator = Operators[Operators.Contains];
+  
+      // value must be ANY (QueryBuilder limitation)
+      (rule as any).value = [];
+    }
+  }
+
+  handleMultiSelectChange(selectedValues: any[], onChange: Function): void {
+    onChange(selectedValues || []);
   }
 
   hasFieldError(fieldPath: string): boolean {

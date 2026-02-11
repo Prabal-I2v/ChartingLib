@@ -1841,7 +1841,12 @@ stringToOperator(value: string): number {
         this.normalizeRuleValues(finalWidget.filterConfig.propertyFilters.rules);
       }
       this.finalWidget = finalWidget;
-      this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
+      if (this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit) {
+        this.toastr.success(SUCCESS_MESSAGES.WIDGET_UPDATED);
+      } else {
+        this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
+      }
+      
       this.dialogRef.close({
         widgetData: this.finalWidget,
         operation: this.modalData.event?.data?.operation

@@ -1329,21 +1329,28 @@ export class WidgetFormComponent implements OnInit {
     return clonedRuleData;
   }
   
-  private normalizeRuleValues(rules: any[]): void {
-    if (!rules || !rules.length) return;
-    rules.forEach(rule => {
-  
-      if (rule.field === 'VideoSourceId') {
-        if (Array.isArray(rule.value)) {
-          rule.value = rule.value.join(',');
+  private normalizeRuleValues(rulesOrRuleset: any): void {
+    if (!rulesOrRuleset) return;
+
+    // 1. Agar ye Rules ka array hai
+    if (Array.isArray(rulesOrRuleset)) {
+        rulesOrRuleset.forEach(item => this.normalizeRuleValues(item));
+        return;
+    }
+
+    // 2. Agar ye ek Single Rule hai
+    if (rulesOrRuleset.field && rulesOrRuleset.field.toLowerCase() === 'videosourceid') {
+        if (Array.isArray(rulesOrRuleset.value)) {
+            rulesOrRuleset.value = rulesOrRuleset.value.join(',');
         }
-      }
-  
-      if (Array.isArray(rule.rules)) {
-        this.normalizeRuleValues(rule.rules);
-      }
-    });
-  }
+    }
+    if (rulesOrRuleset.rules) {
+        this.normalizeRuleValues(rulesOrRuleset.rules);
+    }
+    if (rulesOrRuleset.ruleset) {
+        this.normalizeRuleValues(rulesOrRuleset.ruleset);
+    }
+}
   
 
   // Utility Methods
@@ -1830,6 +1837,9 @@ stringToOperator(value: string): number {
 
     try {
       const finalWidget = this.createWidget();
+      if (finalWidget.filterConfig?.propertyFilters) {
+        this.normalizeRuleValues(finalWidget.filterConfig.propertyFilters.rules);
+      }
       this.finalWidget = finalWidget;
       this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
       this.dialogRef.close({
@@ -1946,8 +1956,10 @@ stringToOperator(value: string): number {
       updatedWidget.refreshInterval = formValue.refreshInterval;
       // Update showable properties
       updatedWidget.showableProperties = this.showableProperties;
+      const normalizedFilters = this.convertRulesToPropertyFilters();
       updatedWidget.filterConfig = {
-        propertyFilters: this.convertRulesToPropertyFilters()
+          ...this.finalWidget.filterConfig,
+          propertyFilters: normalizedFilters
       };
 
       return updatedWidget;
@@ -3006,7 +3018,9 @@ stringToOperator(value: string): number {
           propertyFilters: filterConfig.propertyFilters || null
         }
       });
-
+      if(!widget.isPredefinedWidget){
+        this.enablePropertyFilters=true;
+      }
       // Set property filters state
       if (filterConfig.propertyFilters) {
         this.enablePropertyFilters = true;

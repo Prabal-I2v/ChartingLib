@@ -86,12 +86,14 @@ export class PredefinedWidgetsComponent implements OnInit {
   
 
   private mapWidgets(widgets: Widget[]): IPredefinedWidgetTableModel[] {
-    return widgets.map(widget => ({
-      id: widget.id,
-      name: widget.displayConfig.heading,
-      description: "",
-      widgetType: Enum_WidgetType[widget.widgetType]
-    }));
+    return widgets
+      .filter(w => w && w.id)
+      .map(widget => ({
+        id: widget.id,
+        name: widget.displayConfig.heading,
+        description: "",
+        widgetType: Enum_WidgetType[widget.widgetType]
+      }));
   }
 
   setTableColumns() {

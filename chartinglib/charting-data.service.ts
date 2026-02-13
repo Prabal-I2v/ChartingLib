@@ -29,7 +29,7 @@ export class ChartingDataService {
    */
   public getChartingData(requestModel: Widget): Observable<any> {
     return this.http
-      .post<ApiResponse<any>>("/api/dashboard/GetWidgetOutputModel", requestModel)
+      .post<ApiResponse<any>>("/api/Widget/GetWidgetOutputModel", requestModel)
       .pipe(
         map(response => {
           if (!response.success) {
@@ -43,7 +43,7 @@ export class ChartingDataService {
 
   exportTableWidget(widgetRequest: Widget): Observable<Blob> {
     return this.http.post(
-      `/api/Dashboard/ExportWidget`,
+      `/api/Widget/ExportWidget`,
       widgetRequest,
       { responseType: "blob" }
     );

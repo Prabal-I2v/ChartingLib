@@ -3486,6 +3486,7 @@ stringToOperator(value: string): number {
     if (timeRange) {
       this.updateTimeFormState(selectedValue, timeRange);
     }
+    this.widgetForm.get('filterConfig.customFilters').markAsDirty();
   }
   
   private updateTimeFormState(label: string, range: ITimeRange) {
@@ -3526,6 +3527,7 @@ stringToOperator(value: string): number {
       },
       refreshInterval: newValue 
     });
+    this.widgetForm.get('filterConfig.customFilters').markAsDirty();
   }
 
   private calculateTimeRange(interval: string): ITimeRange | null {

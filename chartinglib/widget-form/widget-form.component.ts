@@ -271,7 +271,7 @@ export class WidgetFormComponent implements OnInit {
   enableCustomTime: boolean = false;
   dateRange: Date[];
   timeFilterValue: string;
-
+  isUserManuallyChangingFilters: boolean = false;
   readonly timeOptions = [
     { label: 'Today', value: 'Today' },
     { label: 'Last 7 days', value: 'Last 7 days' },
@@ -1996,7 +1996,8 @@ stringToOperator(value: string): number {
       updatedWidget.filterConfig = {
           ...this.finalWidget.filterConfig,
           customFilters:  formValue.filterConfig?.customFilters || this.finalWidget.filterConfig?.customFilters,
-          propertyFilters: normalizedFilters
+          propertyFilters: normalizedFilters,
+          isDashboardFilterApplied: this.isUserManuallyChangingFilters ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
       };
 
       return updatedWidget;
@@ -2164,7 +2165,6 @@ stringToOperator(value: string): number {
     this.addShowablePropertiesToForm(showableProperties);
 
     const displayConfigValue = this.widgetForm.controls.displayConfig.value;
-    const isFilterDirty = this.widgetForm.get('filterConfig')?.dirty || this.widgetForm.get('refreshInterval')?.dirty;
     const displayConfig: IWidgetDisplayConfig = {
       heading: displayConfigValue.heading || '',
       subHeading: displayConfigValue.subHeading || '',
@@ -2188,7 +2188,7 @@ stringToOperator(value: string): number {
         disableTimeFilter: true,
         startTime: this.widgetForm.get('filterConfig.startTime')?.value ?? this.timeObj.startTime,
         endTime: this.widgetForm.get('filterConfig.endTime')?.value ?? this.timeObj.endTime,
-        isDashboardFilterApplied: isFilterDirty ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
+        isDashboardFilterApplied: this.isUserManuallyChangingFilters ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
       refreshInterval: this.widgetForm.controls.refreshInterval.value
@@ -3464,6 +3464,7 @@ stringToOperator(value: string): number {
 
   onTimeChange(event: any) {
     // Handle both p-dropdown {value} and direct string from p-calendar onClose
+    this.isUserManuallyChangingFilters = true;
     const selectedValue = event?.value ?? event;
     
     if (selectedValue === 'Custom') {
@@ -3486,7 +3487,6 @@ stringToOperator(value: string): number {
     if (timeRange) {
       this.updateTimeFormState(selectedValue, timeRange);
     }
-    this.widgetForm.get('filterConfig.customFilters').markAsDirty();
   }
   
   private updateTimeFormState(label: string, range: ITimeRange) {
@@ -3510,6 +3510,7 @@ stringToOperator(value: string): number {
   }
   
   OnRefreshIntervalChange(event: any) {
+    this.isUserManuallyChangingFilters = true;
     const newValue = parseInt(event.target.value, 10) || 0;
     const existingFilters = this.widgetForm.get('filterConfig.customFilters')?.value || {};
 
@@ -3527,7 +3528,6 @@ stringToOperator(value: string): number {
       },
       refreshInterval: newValue 
     });
-    this.widgetForm.get('filterConfig.customFilters').markAsDirty();
   }
 
   private calculateTimeRange(interval: string): ITimeRange | null {

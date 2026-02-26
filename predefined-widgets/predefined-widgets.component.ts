@@ -5,6 +5,7 @@ import { DashboardService } from 'Analytic/ClientApp/src/app/modules/dashboard/d
 import { Enum_WidgetType } from '../chartinglib/Models/enums/enums';
 import { Widget } from '../chartinglib/Models/Widget';
 import { GridDataResult, PageChangeEvent, RowClassArgs } from '@progress/kendo-angular-grid';
+import {WidgetService} from "../../../modules/dashboard/widgetService.service";
 
 export interface IPredefinedWidgetTableModel {
     name: string;
@@ -15,7 +16,7 @@ export interface IPredefinedWidgetTableModel {
 @Component({
   selector: 'app-predefined-widgets',
   templateUrl: './predefined-widgets.component.html',
-  styleUrls: ['./predefined-widgets.component.css'] 
+  styleUrls: ['./predefined-widgets.component.css']
 })
 export class PredefinedWidgetsComponent implements OnInit {
 
@@ -31,17 +32,18 @@ export class PredefinedWidgetsComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
+    private widgetService: WidgetService,
     public dialogRef: MatDialogRef<PredefinedWidgetsComponent>
   ) {}
 
   ngOnInit(): void {
-    this.dashboardService.getAllPredefineWidgets().subscribe({
+    this.widgetService.getPredefinedWidgets().subscribe({
       next: (res) => {
         this.predefinedWidgets = res.filter(w => w.isCopied === false);
-        this.createWidgetTypeEntities();  
+        this.createWidgetTypeEntities();
         this.setTableColumns();
         this.predefinedWidgetGridData = this.mapWidgets(this.predefinedWidgets);
-      }      
+      }
     });
   }
 
@@ -50,14 +52,14 @@ export class PredefinedWidgetsComponent implements OnInit {
     const selectedWidgetObjects = this.predefinedWidgets.filter(widget =>
       this.selectedWidgets.some(selected => selected.id === widget.id)
     );
-  
+
     // Mutate properties before returning
     selectedWidgetObjects.forEach(w => {
       w.isCopied = true;
       w.isPredefinedWidget = false;
       w.canBeRemoved = true;
     });
-  
+
     // Return updated widgets
     this.dialogRef.close(selectedWidgetObjects);
   }
@@ -68,7 +70,7 @@ export class PredefinedWidgetsComponent implements OnInit {
 
   // Handle selection from child lib-entityselector
   selectWidgetType(selectedEntity: Entity) {
-    this.skip = 0; 
+    this.skip = 0;
     this.isAllSelected = selectedEntity.title === 'All';
     this.widgetTypes.forEach(widget => widget.isSelected = (widget === selectedEntity));
     if (this.isAllSelected) {
@@ -83,7 +85,7 @@ export class PredefinedWidgetsComponent implements OnInit {
       );
     }
   }
-  
+
 
   private mapWidgets(widgets: Widget[]): IPredefinedWidgetTableModel[] {
     return widgets.map(widget => ({
@@ -144,12 +146,12 @@ export class PredefinedWidgetsComponent implements OnInit {
     e.selectedRows.forEach((r: any) => {
       this.selectedIds.add(r.dataItem.id);
     });
-  
+
     // Remove unselected rows
     e.deselectedRows.forEach((r: any) => {
       this.selectedIds.delete(r.dataItem.id);
     });
-  
+
     // Map selected IDs → actual widget objects
     this.selectedWidgets = this.predefinedWidgets.filter(w =>
       this.selectedIds.has(w.id)

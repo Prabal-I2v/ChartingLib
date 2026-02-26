@@ -83,7 +83,7 @@ export abstract class Widget {
 
 // Dimension-specific widget classes
 export class OneDimensionWidget extends Widget {
-  dimension = WidgetDimension.OneDimensional;
+  dimension = WidgetDimension.OneDimension;
   dataInputConfig: IOneDimensionDataInputConfig;
 
   constructor(props: OneDimensionWidgetConstructorProps) {
@@ -100,7 +100,7 @@ export class OneDimensionWidget extends Widget {
 }
 
 export class TwoDimensionWidget extends Widget {
-  dimension = WidgetDimension.TwoDimensional;
+  dimension = WidgetDimension.TwoDimension;
   dataInputConfig: ITwoDimensionDataInputConfig;
 
   constructor(props: TwoDimensionWidgetConstructorProps) {
@@ -119,7 +119,7 @@ export class TwoDimensionWidget extends Widget {
 }
 
 export class ThreeDimensionWidget extends Widget {
-  dimension = WidgetDimension.ThreeDimensional;
+  dimension = WidgetDimension.ThreeDimension;
   dataInputConfig: IThreeDimensionDataInputConfig;
 
   constructor(props: ThreeDimensionWidgetConstructorProps) {
@@ -138,7 +138,7 @@ export class ThreeDimensionWidget extends Widget {
   }
 }
 export class NoDimensionWidget extends Widget {
-  dimension = WidgetDimension.NoDimension;
+  dimension = WidgetDimension.Zero;
   dataInputConfig: INoDimensionDataInputConfig;
 
   constructor(props: NoDimensionWidgetConstructorProps) {

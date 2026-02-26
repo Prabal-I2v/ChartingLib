@@ -277,11 +277,11 @@ export class WidgetFactory {
 
 
     // Determine the actual dimension of the provided data configuration
-    let actualDimension = WidgetDimension.OneDimensional;
+    let actualDimension = WidgetDimension.OneDimension;
     if (dataConfig.groupBy1 && dataConfig.groupBy2) {
-      actualDimension = WidgetDimension.ThreeDimensional;
+      actualDimension = WidgetDimension.ThreeDimension;
     } else if (dataConfig.groupBy1) {
-      actualDimension = WidgetDimension.TwoDimensional;
+      actualDimension = WidgetDimension.TwoDimension;
     }
 
     // Check if the provided dimension is compatible with the widget type
@@ -299,7 +299,7 @@ export class WidgetFactory {
       case Enum_WidgetType.PieChart1D:
       case Enum_WidgetType.Donut1D:
       case Enum_WidgetType.HeatMapChart1D:
-        if (targetDimension !== WidgetDimension.OneDimensional) {
+        if (targetDimension !== WidgetDimension.OneDimension) {
           errors.push(`${Enum_WidgetType[widgetType]} requires no group by fields`);
         }
         break;
@@ -316,7 +316,7 @@ export class WidgetFactory {
       case Enum_WidgetType.Donut2D:
       case Enum_WidgetType.AreaChart2D:
       case Enum_WidgetType.HeatMapChart2D:
-        if (targetDimension !== WidgetDimension.TwoDimensional) {
+        if (targetDimension !== WidgetDimension.TwoDimension) {
           errors.push(`${Enum_WidgetType[widgetType]} requires only 1 group by field`);
         }
 
@@ -330,7 +330,7 @@ export class WidgetFactory {
       case Enum_WidgetType.HeatMapChart3D:
       case Enum_WidgetType.StackedBarChart:
       case Enum_WidgetType.StackedColumnChart:
-        if (targetDimension !== WidgetDimension.ThreeDimensional) {
+        if (targetDimension !== WidgetDimension.ThreeDimension) {
           errors.push(`${Enum_WidgetType[widgetType]} requires 2 group by fields`);
         }
         break;

@@ -1354,8 +1354,8 @@ export class WidgetFormComponent implements OnInit {
   shouldShowGroupBy1(): boolean {
     const widgetType = this.widgetForm.controls.widgetType.value;
     if (this.isWidgetTypeSelectedInitially) {
-      var TwoDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
-      var ThreeDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      var TwoDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimension);
+      var ThreeDimensionalWidgetTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimension);
       var requiredTypes = [...TwoDimensionalWidgetTypes, ...ThreeDimensionalWidgetTypes];
       if (requiredTypes.some((type) => type.value == widgetType)) {
         return true;
@@ -1372,7 +1372,7 @@ export class WidgetFormComponent implements OnInit {
 
     const widgetType = this.widgetForm.controls.widgetType.value;
     if (this.isWidgetTypeSelectedInitially) {
-      var requiredTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      var requiredTypes = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimension);
       if (requiredTypes.some((type) => type.value == widgetType)) {
         return true;
       } else {
@@ -1495,11 +1495,11 @@ export class WidgetFormComponent implements OnInit {
     let availableWidgets = [...allWidgetTypes];
 
     if (fieldNames.length === 1 && groupBy1 && groupBy2) {
-      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimensional);
+      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.ThreeDimension);
     } else if (groupBy1) {
-      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimensional);
+      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.TwoDimension);
     } else {
-      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.OneDimensional);
+      availableWidgets = getWidgetDropdownItemsByDimension(WidgetDimension.OneDimension);
     }
 
     this.recommendedWidgets = availableWidgets;
@@ -1912,7 +1912,7 @@ stringToOperator(value: string): number {
 
     let showablePropertiesArray = [];
     if (fieldNames && fieldNames.length > 0) {
-      if (dimension === WidgetDimension.ThreeDimensional) {
+      if (dimension === WidgetDimension.ThreeDimension) {
         if (fieldNames.length > 1 && fieldsAggregationType != Enum_Method_Aggregation.None) {
           showablePropertiesArray = this.createShowableProperties([], true);
         }
@@ -1980,9 +1980,9 @@ stringToOperator(value: string): number {
     const groupBy2 = this.widgetForm.controls.dataInputConfig.controls.groupBy2.value;
 
     if (groupBy1) {
-      return groupBy2 ? WidgetDimension.ThreeDimensional : WidgetDimension.TwoDimensional;
+      return groupBy2 ? WidgetDimension.ThreeDimension : WidgetDimension.TwoDimension;
     }
-    return WidgetDimension.OneDimensional;
+    return WidgetDimension.OneDimension;
   }
 
   private createShowableProperties(props: IWidgetFieldNameConfig[], addFieldsAggregationType: boolean = false): IShowableProperty[] {
@@ -2109,17 +2109,17 @@ stringToOperator(value: string): number {
     };
 
     switch (dimension) {
-      case WidgetDimension.OneDimensional:
+      case WidgetDimension.OneDimension:
         return baseConfig as IOneDimensionDataInputConfig;
 
-      case WidgetDimension.TwoDimensional:
+      case WidgetDimension.TwoDimension:
         return {
           ...baseConfig,
           groupBy1: this.widgetForm.controls.dataInputConfig.controls.groupBy1.value,
           clubbingTime: this.widgetForm.controls.dataInputConfig.controls.clubbingTime.value,
         } as ITwoDimensionDataInputConfig;
 
-      case WidgetDimension.ThreeDimensional:
+      case WidgetDimension.ThreeDimension:
         return {
           ...baseConfig,
           groupBy1: this.widgetForm.controls.dataInputConfig.controls.groupBy1.value,
@@ -2221,17 +2221,17 @@ stringToOperator(value: string): number {
 
     // Default case for other widget types
     switch (dimension) {
-      case WidgetDimension.OneDimensional:
+      case WidgetDimension.OneDimension:
         return {
           ...baseWidgetConfig,
           dataInputConfig: dataInputConfig as IOneDimensionDataInputConfig
         } as OneDimensionWidgetConstructorProps;
-      case WidgetDimension.TwoDimensional:
+      case WidgetDimension.TwoDimension:
         return {
           ...baseWidgetConfig,
           dataInputConfig: dataInputConfig as ITwoDimensionDataInputConfig
         } as TwoDimensionWidgetConstructorProps;
-      case WidgetDimension.ThreeDimensional:
+      case WidgetDimension.ThreeDimension:
         return {
           ...baseWidgetConfig,
           dataInputConfig: dataInputConfig as IThreeDimensionDataInputConfig

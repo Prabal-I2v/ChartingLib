@@ -898,7 +898,7 @@ export function validateWidgetCompatibility(
   const dimension = widgetTypeDimensionMap[widgetType];
 
   //three dimension validations
-  if (dimension == WidgetDimension.ThreeDimensional) {
+  if (dimension == WidgetDimension.ThreeDimension) {
     if (!(dataInputConfig as IThreeDimensionDataInputConfig).groupBy2)
       errors.push("3D widgets require both Group By 1 and Group By 2");
 
@@ -913,7 +913,7 @@ export function validateWidgetCompatibility(
       );
   }
 
-  if (dimension == WidgetDimension.TwoDimensional) {
+  if (dimension == WidgetDimension.TwoDimension) {
     if (!(dataInputConfig as ITwoDimensionDataInputConfig).groupBy1)
       errors.push("2D widgets require at least Group By 1");
   }

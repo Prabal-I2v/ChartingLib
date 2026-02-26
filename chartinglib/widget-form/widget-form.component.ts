@@ -173,6 +173,8 @@ interface WidgetFormControls {
   filterConfig: FormGroup<{
     customFilters: FormControl<Record<string, any>>;
     propertyFilters: FormControl<RuleSet | null>;
+    startTime: FormControl<number | null>;
+    endTime: FormControl<number | null>;
   }>;
 
   enableWidgetSpecificConfig: FormControl<boolean>;
@@ -265,6 +267,18 @@ export class WidgetFormComponent implements OnInit {
   columnArray: any = { fields: {} };
   ruleData: RuleSet = new RuleSet();
   config: QueryBuilderConfig;
+
+  enableCustomTime: boolean = false;
+  dateRange: Date[];
+  timeFilterValue: string;
+
+  readonly timeOptions = [
+    { label: 'Today', value: 'Today' },
+    { label: 'Last 7 days', value: 'Last 7 days' },
+    { label: 'Last 30 days', value: 'Last 30 days' },
+    { label: 'Custom', value: 'Custom' }
+  ];
+
   get isFormValid() {
     return this.canSubmitForm();
   }
@@ -295,7 +309,7 @@ export class WidgetFormComponent implements OnInit {
   readonly PUBLIC_ENTITIES = PUBLIC_ENTITIES;
 
   EVENT_ENTITIES: EntityOption[] = []
-
+  protected operator = Operators;
   // Configuration Mode
   isAdvancedMode: boolean = true;
   formMode: Enum_WidgetFormMode = Enum_WidgetFormMode.normal;
@@ -458,6 +472,7 @@ export class WidgetFormComponent implements OnInit {
               this.initializeWidgetSpecificConfig(this.finalWidget);
               this.initializeFilterConfig(this.finalWidget);
               this.initializeWidgetTileConfig(this.finalWidget);
+              this.initializeRefreshConfig(this.finalWidget);
               this.updateUIStateAfterLoad();
 
               // For pre-defined widgets, mark steps 1 and 3 as complete and disable form controls
@@ -554,7 +569,9 @@ export class WidgetFormComponent implements OnInit {
 
       filterConfig: this.fb.group({
         customFilters: this.fb.control<Record<string, any>>({}, { nonNullable: true }),
-        propertyFilters: this.fb.control<RuleSet | null>(null)
+        propertyFilters: this.fb.control<RuleSet | null>(null),
+        startTime: this.fb.control<number | null>(null),
+        endTime: this.fb.control<number | null>(null)
       }),
 
       enableWidgetSpecificConfig: this.fb.control(false),
@@ -1003,18 +1020,20 @@ export class WidgetFormComponent implements OnInit {
   // Field Rules Management
   toggleFieldRule(index: any, event: Event): void {
     const target = event.target as HTMLInputElement;
-    const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
-    if (existingField) {
+    const currentFields = [...(this.widgetForm.get('dataInputConfig.fieldNames')?.value || [])];
+    const field = currentFields[index];
+  
+    if (field) {
       if (target.checked) {
-        existingField.rule = new Rule();
-        existingField.rule.field = existingField.name;
-        existingField.rule.operator = this.getOpertorsByType[existingField.type][0];
-        existingField.rule.type = existingField.type;
-
+        field.rule = new Rule();
+        field.rule.field = field.name;
+        field.rule.operator = this.getOpertorsByType(field.type)[0];
+        field.rule.type = field.type;
       } else {
-
-        existingField.rule = null;
+        field.rule = null;
       }
+
+      this.widgetForm.get('dataInputConfig.fieldNames')?.patchValue(currentFields);
     }
   }
 
@@ -1030,12 +1049,24 @@ export class WidgetFormComponent implements OnInit {
   }
 
   private updateFieldRule(fieldIndex: number, property: string, value: any): void {
-    const existingField = this.selectedFieldNames[fieldIndex] as IWidgetFieldNameConfig;
-    if (existingField) {
-      existingField.rule[property] = value;
+    // 1. Current array ki ek shallow copy lein
+    const currentFields = [...(this.widgetForm.get('dataInputConfig.fieldNames')?.value || [])];
+    
+    if (currentFields[fieldIndex] && currentFields[fieldIndex].rule) {
+        // 2. Sirf us specific field aur uske rule ki deep copy bana kar update karein
+        // Isse reference change hoga aur Angular UI refresh karega
+        currentFields[fieldIndex] = {
+            ...currentFields[fieldIndex],
+            rule: {
+                ...currentFields[fieldIndex].rule,
+                [property]: value
+            }
+        };
+        
+        // 3. Updated array ko form mein patch karein
+        this.widgetForm.get('dataInputConfig.fieldNames')?.patchValue(currentFields, { emitEvent: true });
     }
-
-  }
+}
 
 
   hasGroupBy1TypeError(): boolean {
@@ -1964,6 +1995,7 @@ stringToOperator(value: string): number {
       const normalizedFilters = this.convertRulesToPropertyFilters();
       updatedWidget.filterConfig = {
           ...this.finalWidget.filterConfig,
+          customFilters:  formValue.filterConfig?.customFilters || this.finalWidget.filterConfig?.customFilters,
           propertyFilters: normalizedFilters
       };
 
@@ -2132,6 +2164,7 @@ stringToOperator(value: string): number {
     this.addShowablePropertiesToForm(showableProperties);
 
     const displayConfigValue = this.widgetForm.controls.displayConfig.value;
+    const isFilterDirty = this.widgetForm.get('filterConfig')?.dirty || this.widgetForm.get('refreshInterval')?.dirty;
     const displayConfig: IWidgetDisplayConfig = {
       heading: displayConfigValue.heading || '',
       subHeading: displayConfigValue.subHeading || '',
@@ -2150,12 +2183,12 @@ stringToOperator(value: string): number {
         max: 20
       },
       filterConfig: {
-        customFilters: {},
+        customFilters: this.widgetForm.get('filterConfig.customFilters')?.value || {},
         propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
-        disableTimeFilter: false,
-        startTime: this.timeObj.startTime,
-        endTime: this.timeObj.endTime,
-        isDashboardFilterApplied: true
+        disableTimeFilter: true,
+        startTime: this.widgetForm.get('filterConfig.startTime')?.value ?? this.timeObj.startTime,
+        endTime: this.widgetForm.get('filterConfig.endTime')?.value ?? this.timeObj.endTime,
+        isDashboardFilterApplied: isFilterDirty ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
       refreshInterval: this.widgetForm.controls.refreshInterval.value
@@ -2698,7 +2731,14 @@ stringToOperator(value: string): number {
       entityConfigType: this.determineEntityConfigType(widget)
     });
   }
-
+  private initializeRefreshConfig(widget: Widget): void {
+    if (widget) {
+      this.widgetForm.patchValue({
+        allowRefresh: widget.allowRefresh ?? false,
+        refreshInterval: widget.refreshInterval ?? 300
+      }, { emitEvent: false });
+    }
+  }
   private determineConfigurationApproach(widget: Widget): 'widgetFirst' | 'propertiesFirst' {
     // Logic to determine if this was created widget-first or properties-first
     return 'widgetFirst'; // Default, adjust based on your needs
@@ -3031,6 +3071,10 @@ stringToOperator(value: string): number {
         this.enablePropertyFilters = true;
         this.ruleData = filterConfig.propertyFilters;
         this.convertStringToArrayForMultiselect(this.ruleData.rules);
+      }
+      if (filterConfig.customFilters?.Time?.length > 0) {
+        this.timeFilterValue = filterConfig.customFilters.Time[0].displayName;
+        this.enableCustomTime = this.timeFilterValue === 'Custom';
       }
     }
   }
@@ -3398,5 +3442,122 @@ stringToOperator(value: string): number {
   // Update submit button text based on mode
   getSubmitButtonText(): string {
     return this.isEditMode() ? 'Update Widget' : 'Create Widget';
+  }
+
+  onAllowRefreshToggle(event: any) {
+    const isChecked = event.target.checked;
+    
+    if (!isChecked) {
+      this.widgetForm.get('refreshInterval')?.setValue(-1);
+      const currentFilters = { ...this.widgetForm.get('filterConfig.customFilters')?.value };
+      delete currentFilters['RefreshInterval'];
+      
+      this.widgetForm.patchValue({
+        filterConfig: { customFilters: currentFilters }
+      });
+      
+      console.log("Refresh disabled and interval set to -1");
+    } else {
+      this.widgetForm.get('refreshInterval')?.setValue(300);
+    }
+  }
+
+  onTimeChange(event: any) {
+    // Handle both p-dropdown {value} and direct string from p-calendar onClose
+    const selectedValue = event?.value ?? event;
+    
+    if (selectedValue === 'Custom') {
+      this.enableCustomTime = true;
+      
+      // Check if we actually have a full range selected [start, end]
+      if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
+        const timeRange = this.calculateTimeRange('Custom');
+        if (timeRange) {
+          this.updateTimeFormState('Custom', timeRange);
+        }
+      }
+      return; // Wait for full selection if range is incomplete
+    }
+    
+    // Standard options (Today, Last 7 days, etc.)
+    this.enableCustomTime = false;
+    const timeRange = this.calculateTimeRange(selectedValue);
+    
+    if (timeRange) {
+      this.updateTimeFormState(selectedValue, timeRange);
+    }
+  }
+  
+  private updateTimeFormState(label: string, range: ITimeRange) {
+    const existingFilters = this.widgetForm.get('filterConfig.customFilters')?.value || {};
+    
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...existingFilters,
+          Time: [
+            {
+              displayName: label,
+              returnValue: range
+            }
+          ]
+        },
+        startTime: range.startTime,
+        endTime: range.endTime
+      }
+    });
+  }
+  
+  OnRefreshIntervalChange(event: any) {
+    const newValue = parseInt(event.target.value, 10) || 0;
+    const existingFilters = this.widgetForm.get('filterConfig.customFilters')?.value || {};
+
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...existingFilters,
+          RefreshInterval: [
+            {
+              displayName: "Refresh Interval",
+              returnValue: newValue
+            }
+          ]
+        }
+      },
+      refreshInterval: newValue 
+    });
+  }
+
+  private calculateTimeRange(interval: string): ITimeRange | null {
+      const today = new Date();
+      let startDate: Date;
+      let endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
+
+      switch (interval) {
+          case "Today":
+              startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+              break;
+          case "Last 7 days":
+              startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
+              break;
+          case "Last 30 days":
+              startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
+              break;
+          case "Custom":
+              if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
+                  return { 
+                      startTime: this.dateRange[0].getTime(), 
+                      endTime: this.dateRange[1].getTime() 
+                  };
+              }
+              return null;
+          default: return null;
+      }
+
+      return { 
+          startTime: startDate.getTime(), 
+          endTime: endDate.getTime() 
+      };
   }
 }

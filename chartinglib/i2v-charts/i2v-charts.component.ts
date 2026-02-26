@@ -92,6 +92,12 @@ export abstract class I2vChartsComponent implements OnInit {
         this.setRefreshInterval()
       }
       this.widgetRequestModel.filterConfig = this.widgetRequestModel.filterConfig || { customFilters: {}, isDashboardFilterApplied: false };
+      if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
+        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue || {}));
+      } else {
+          this.isCustomFilterApplied = true;
+          this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
+      }
       this.widgetRequestModel.filterConfig.customFilters = this.widgetRequestModel.filterConfig.customFilters || {};
       if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
         // apply dashboard filters snapshot safely
@@ -106,6 +112,14 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if (changes.widgetRequestModel && !changes.widgetRequestModel.firstChange) {
+      const prevModel = changes.widgetRequestModel.previousValue as Widget;
+      const currModel = changes.widgetRequestModel.currentValue as Widget;
+      if (prevModel?.refreshInterval !== currModel?.refreshInterval || 
+          prevModel?.allowRefresh !== currModel?.allowRefresh) {
+        this.setRefreshInterval(); 
+      }
+    }
     // dashboard filter value changed
     if (changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue) {
       this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
@@ -635,31 +649,22 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   updateCustomFiltersValues() {
-    if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied || this.applyToAllEnabled) {
-      //apply time without checking apply to all
-      this.setValueAsPerWidgetCustomFiltersValue({ 'Time': this.dashboardCustomFilterValue['Time'] });
-
-      if (this.isCustomFilterApplied) {
-        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = this.applyToAllEnabled;
-        const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
-        if (isCustomFilterValuesEmpty) {
-          this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
-        }
-      }
-      if (!this.applyToAllEnabled) {
-        this.widgetRequestModel.filterConfig.customFilters = {
-          ...(this.customFilterValues)
-        };
-        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.filterConfig.customFilters);
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
-      } else {
-        this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
-        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
+    if (this.applyToAllEnabled || this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
+      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
+  
+      this.widgetRequestModel.filterConfig.customFilters = structuredClone(this.dashboardCustomFilterValue);
+  
+      if (this.applyToAllEnabled) {
         this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
       }
-      this.cd.detectChanges();
+    } 
+    else {
+      if (this.customFilterValues) {
+        this.widgetRequestModel.filterConfig.customFilters = structuredClone(this.customFilterValues);
+      }
     }
+  
+    this.cd.detectChanges();
   }
 
   appendNameToAggregatedProperty(chartData: ClientChartModel): ChartSeries[] {

@@ -603,7 +603,7 @@
                   @if(widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count){
                   <div class="field-rule-header">
                     <div class="checkbox-label">
-                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [value]="field.rule"
+                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [checked]="!!field.rule"
                         class="form-checkbox" />
                       <span class="checkbox-text">{{ field.name }}</span>
                     </div>
@@ -613,30 +613,38 @@
                   <div class="field-rule-controls">
                     <div class="rule-control">
                       <label class="form-label">Operator</label>
-                      <select class="form-control" [value]="field.rule.operator"
-                        (change)="onFieldRuleOperatorChange($index, $event)">
-                        @for (condition of getOpertorsByType(field.type); track
-                        condition) {
-                        <option [value]="condition">{{ condition }}</option>
-                        }
-                      </select>
+                      <p-dropdown
+                        [options]="getOpertorsByType(field.type)"
+                        [ngModel]="operatorToString(field?.rule.operator)"
+                        (onChange)="field?.rule.operator = stringToOperator($event.value);"
+                        [ngModelOptions]="{ standalone: true }"
+                        placeholder="Select"
+                        appendTo="body" 
+                      >
+                        <ng-template let-value pTemplate="item">
+                          {{ value | humanize | translate }}
+                        </ng-template>
+                      </p-dropdown>
                     </div>
 
                     <div class="rule-control">
-                      <label class="form-label">Value</label>
+                      <label class="form-label">Value {{field.type}}</label>
 
-                      @if (field.type === EventPropertyType.String) {
-                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)" />
+                      @if (field.type === EventPropertyType.String || field.type === EventPropertyType.Guid) {
+                        <input type="text" class="form-control" 
+                               [placeholder]="'Enter value for ' + field.name"
+                               [value]="field.rule.value || ''" 
+                               (input)="onFieldRuleValueChange($index, $event)" />
                       } @if (field.type === EventPropertyType.Boolean) {
                       <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
                         <option value="true">True</option>
                         <option value="false">False</option>
                       </select>
-                      } @if (field.type === EventPropertyType.Integer ||
-                      field.type === EventPropertyType.Float) {
-                      <input type="number" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)" />
+                      } @if (field.type === EventPropertyType.Integer || field.type === EventPropertyType.Float) {
+                        <input type="number" class="form-control" 
+                               [placeholder]="'Enter value for ' + field.name"
+                               [value]="field.rule.value"
+                               (input)="onFieldRuleValueChange($index, $event)" />
                       }
                     </div>
                   </div>
@@ -1002,19 +1010,55 @@
 
           <div class="form-group">
             <div class="checkbox-label">
-              <input type="checkbox" formControlName="allowRefresh" class="form-checkbox" />
+              <input type="checkbox" formControlName="allowRefresh" (change)="onAllowRefreshToggle($event)" class="form-checkbox" />
               <span class="checkbox-text">Allow Auto Refresh for widgets</span>
-              @if(allowRefresh == true){
-              <input class="i2v-input primary-default medium" type="number" formControlName="refreshInterval"
-                [class.error]="hasFieldError('refreshInterval')" min="30" max="3600"
-                (blur)="markFieldAsTouched('refreshInterval')" />
-              (in seconds) @if(hasFieldError('refreshInterval')) {
-              <div class="field-error">
-                {{ getFieldError("refreshInterval") }}
-              </div>
-              } }
+              
+              @if(widgetForm.get('allowRefresh')?.value){
+                <input 
+                  class="i2v-input primary-default medium" 
+                  type="number" 
+                  [value]="widgetForm.get('refreshInterval')?.value"
+                  (input)="OnRefreshIntervalChange($event)"
+                  min="30" max="3600" />
+                <span> (in seconds)</span>
+              }
             </div>
           </div>
+          
+          <hr class="config-divider" />
+          
+          <div class="form-group">
+            <label class="form-label">{{ 'Select Time Range' | translate }}</label>
+            <p-dropdown 
+              [options]="timeOptions" 
+              [(ngModel)]="timeFilterValue" 
+              [ngModelOptions]="{standalone: true}"
+              (onChange)="onTimeChange($event)"
+              placeholder="{{ 'Select Time' | translate }}" 
+              appendTo="body"
+              styleClass="form-dropdown">
+              <ng-template let-option pTemplate="item">
+                {{ option.label | translate }}
+              </ng-template>
+            </p-dropdown>
+          </div>
+          
+          @if (enableCustomTime) {
+            <div class="form-group mt-2">
+              <label class="form-label">{{ 'Custom Date Range' | translate }}</label>
+              <p-calendar 
+                [(ngModel)]="dateRange" 
+                [ngModelOptions]="{standalone: true}"
+                selectionMode="range" 
+                [showTime]="true" 
+                [appendTo]="'body'"
+                placeholder="Select Start and End Date"
+                (onSelect)="onTimeChange('Custom')"
+                (onClose)="onTimeChange('Custom')"
+                styleClass="form-calendar w-full">
+              </p-calendar>
+            </div>
+          }
 
           <div class="form-group" *ngIf="requiresWidgetSpecificConfig()">
             <div class="checkbox-label">

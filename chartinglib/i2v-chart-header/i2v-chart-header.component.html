@@ -18,17 +18,7 @@
   </div>
   <ng-content></ng-content>
 
-  @if (!widgetModel.filterConfig.isDashboardFilterApplied && !isEditModeOn) {
-  <div class="filter-button-container">
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default filter-toggle-btn" [matTooltip]="showFilterValues ? 'Hide Filter Values' : 'Show Filter Values'" (click)="toggleShowFilterValues()">
-    <lib-svg [path]="'assets/Outline/filter.svg'" [size]="'20'"></lib-svg></button>
-  </div>
-  }
-
   <div class="menu-container">
-    @if (isEditModeOn && !widgetModel.filterConfig.isDashboardFilterApplied) {
-      <lib-svg class="status-indicator" [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
-    }
     @if (isEditModeOn) {
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
       <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
@@ -40,9 +30,6 @@
 <i2v-context-menu [open]="isContexMenuOpen" (menuClosed)="onMenuClosed()" [position]="position">
   <i2v-context-menu-item icon='assets/Outline/pencil.svg' label="Edit Widget"
     (click)="onEditWidget()"></i2v-context-menu-item>
-
-  <i2v-context-menu-item icon='assets/Outline/filter.svg' label="Add Custom Filter"
-    (click)="onMenuClick()"></i2v-context-menu-item>
 
   @if(!this.removeWidget){
   <i2v-context-menu-item [icon]="hideWidget ? 'assets/Outline/eye-off.svg' : 'assets/Outline/eye.svg'"

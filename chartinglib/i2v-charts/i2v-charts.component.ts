@@ -32,7 +32,8 @@ export abstract class I2vChartsComponent implements OnInit {
   isLoading: boolean;
   dataExists: boolean;
   dataExistsForShowableProperties: boolean = true;
-
+  private widgetLevelFilterBackup: ICustomFilter = {};
+  private previousApplyToAllState: boolean = false;
   isCustomFilterApplied: boolean = false;
   isChartToBeRemoved: boolean = false;
   @Input() showEntity: boolean = true;
@@ -67,7 +68,6 @@ export abstract class I2vChartsComponent implements OnInit {
   private refreshCallSubjectSubscription: Subscription;
   private debounceTime = 500; // milliseconds
   componentId: string;
-  customFilterValues: Record<string, CustomFilterValueModel[]>;
 
   constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef,private toastr?: ToastrService,) {
     // Generate and store a UUID when component is created
@@ -96,7 +96,6 @@ export abstract class I2vChartsComponent implements OnInit {
         this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue || {}));
       } else {
           this.isCustomFilterApplied = true;
-          this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
       }
       this.widgetRequestModel.filterConfig.customFilters = this.widgetRequestModel.filterConfig.customFilters || {};
       if (this.widgetRequestModel.filterConfig["customFilters"]["ApplyToAll"]?.[0]?.returnValue) {
@@ -129,7 +128,6 @@ export abstract class I2vChartsComponent implements OnInit {
     if (changes.isEditModeOn && changes.isEditModeOn.currentValue !== changes.isEditModeOn.previousValue) {
       // when edit mode turns off -> refresh size/filters as before
       if (!changes.isEditModeOn.currentValue) {
-        this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
         this.showFilterValues = false;
         if (this.isCustomFilterApplied && this.applyToAllEnabled) {
           this.isCustomFilterApplied = false;
@@ -638,22 +636,61 @@ export abstract class I2vChartsComponent implements OnInit {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  clearCustomFiltersValues(event) {
-    if (event) {
-      this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
-      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-      this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
-      this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
-      this.cd.detectChanges();
+  clearCustomFiltersValues(event: boolean) {
+
+    if (!event || !this.widgetRequestModel?.filterConfig) {
+      return;
     }
+  
+    const clonedDashboardFilters =
+      structuredClone(this.dashboardCustomFilterValue || {});
+  
+    this.setValueAsPerWidgetCustomFiltersValue(clonedDashboardFilters);
+  
+    this.widgetRequestModel.filterConfig = structuredClone({
+      ...this.widgetRequestModel.filterConfig,
+      customFilters: clonedDashboardFilters,
+      isDashboardFilterApplied: true
+    });
+  
+    this.cd.detectChanges();
   }
 
   updateCustomFiltersValues() {
-    if (this.applyToAllEnabled) {
-      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-  
-      this.widgetRequestModel.filterConfig.customFilters = structuredClone(this.dashboardCustomFilterValue);
+
+    if (!this.widgetRequestModel?.filterConfig) {
+      return;
     }
+  
+    // Detect transition: FALSE → TRUE
+    if (this.applyToAllEnabled && !this.previousApplyToAllState) {
+  
+      // Backup ONLY once before overwriting
+      this.widgetLevelFilterBackup = structuredClone(
+        this.widgetRequestModel.filterConfig.customFilters || {}
+      );
+  
+      const clonedDashboardFilters =
+        structuredClone(this.dashboardCustomFilterValue || {});
+  
+      this.setValueAsPerWidgetCustomFiltersValue(clonedDashboardFilters);
+  
+      this.widgetRequestModel.filterConfig.customFilters = clonedDashboardFilters;
+      this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
+    }
+  
+    // Detect transition: TRUE → FALSE
+    else if (!this.applyToAllEnabled && this.previousApplyToAllState) {
+  
+      const restoredFilter =
+        structuredClone(this.widgetLevelFilterBackup || {});
+  
+      this.widgetRequestModel.filterConfig.customFilters = restoredFilter;
+      this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
+    }
+  
+    // Save current state
+    this.previousApplyToAllState = this.applyToAllEnabled;
   
     this.cd.detectChanges();
   }

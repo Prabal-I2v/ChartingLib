@@ -87,7 +87,6 @@ export class PredefinedWidgetsComponent implements OnInit {
 
   private mapWidgets(widgets: Widget[]): IPredefinedWidgetTableModel[] {
     return widgets
-      .filter(w => w && w.id)
       .map(widget => ({
         id: widget.id,
         name: widget.displayConfig.heading,

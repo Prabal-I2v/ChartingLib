@@ -614,9 +614,9 @@
                     <div class="rule-control">
                       <label class="form-label">Operator</label>
                       <p-dropdown
-                        [options]="getOpertorsByType(field.type)"
+                        [options]="RuleOperators[field.type]"
                         [ngModel]="operatorToString(field?.rule.operator)"
-                        (onChange)="field?.rule.operator = stringToOperator($event.value);"
+                        (onChange)="onFieldRuleOperatorChange($index, $event.value)"
                         [ngModelOptions]="{ standalone: true }"
                         placeholder="Select"
                         appendTo="body" 

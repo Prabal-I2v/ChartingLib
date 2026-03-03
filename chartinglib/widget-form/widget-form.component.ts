@@ -1041,9 +1041,8 @@ export class WidgetFormComponent implements OnInit {
   }
 
 
-  onFieldRuleOperatorChange(fieldIndex: number, event: Event): void {
-    const operator = (event.target as HTMLSelectElement).value;
-    this.updateFieldRule(fieldIndex, 'operator', operator);
+  onFieldRuleOperatorChange(index: number, value: string): void {
+    this.updateFieldRule(index, 'operator', Operators[value]);
   }
 
   onFieldRuleValueChange(fieldIndex: number, event: Event): void {

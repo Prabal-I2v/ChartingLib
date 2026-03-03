@@ -355,7 +355,10 @@ export class WidgetFormComponent implements OnInit {
     public dialogRef: MatDialogRef<WidgetFormComponent, IWidgetFormDataResponseModel>,
   ) {
     if (modalData.event?.data?.data) {
-      this.finalWidget = modalData.event?.data?.data;
+      const incomingWidget = modalData.event?.data?.data;
+      this.finalWidget = incomingWidget
+        ? structuredClone(incomingWidget)
+        : null;
     }
     if (modalData.event?.data.dashboardId) {
       this.dashboardId = modalData.event?.data.dashboardId;
@@ -2294,8 +2297,8 @@ stringToOperator(value: string): number {
         imageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
         showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
         dataAggregationMethod: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
-        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
-        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
+        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
+        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
       };
 
       return {

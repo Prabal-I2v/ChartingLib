@@ -26,6 +26,8 @@ export enum Enum_Method {
 export enum Enum_Schema {
   Public,
   Events,
+  Frs,
+  Shared
 }
 
 export enum Enum_TimePeriod {

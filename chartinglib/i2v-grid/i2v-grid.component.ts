@@ -5,15 +5,15 @@ import moment from 'moment';
 import { ColumnModel } from 'Analytic/ClientApp/src/app/Models/columns.model';
 import { GridInputFormat } from 'Analytic/ClientApp/src/app/Models/GridInputFormat.model';
 import { KendoGridComponent } from 'Analytic/ClientApp/src/app/kendo-grid/kendo-grid.component';
-import { ReplaySubject, Subscription } from 'rxjs';
+import { firstValueFrom, ReplaySubject, Subscription } from 'rxjs';
 import { TableOutputModel } from '../Models/TableOutputModel';
 import { TranslateService } from '@ngx-translate/core';
 import { exportReportModel, SignalRService } from 'Analytic/ClientApp/src/app/services/signalR.service';
 import { CommonService } from 'Analytic/ClientApp/src/app/services/common.service';
+import { EventService } from 'Analytic/ClientApp/src/app/services/event.service';
 import { MatDialog } from '@angular/material/dialog';
 import { LogServices } from 'Shared.Client/ClientApp/src/Services/log.service';
 import { PopUpComponent } from '@i2v-systems/i2v-utility';
-import { ReportType } from 'Analytic/ClientApp/src/app/modules/report/reportType.enum';
 
 @Component({
   selector: 'i2v-table-grid',
@@ -44,8 +44,9 @@ export class I2vGridComponent extends I2vChartsComponent {
     chartingDataService: ChartingDataService,
     elementRef: ElementRef,
     private translate: TranslateService,
-    private signalRService: SignalRService, 
-    private commonService: CommonService, 
+    private signalRService: SignalRService,
+    private commonService: CommonService,
+    private eventService: EventService,
     private logService: LogServices,
     private dialog: MatDialog
   ) {
@@ -223,8 +224,8 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   private async IsExportInProgress() {
-    const data = await this.commonService.isReportInProgress("widgetExport");
-    if (data) {
+    const data = await firstValueFrom(this.eventService.getExportStatus("widgetExport"));
+    if (data.inProgress) {
       this.isExporting = true;
       localStorage.setItem('isExportInProgress', 'true');
       this.subscribeForNotifier();
@@ -301,7 +302,7 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   cancelExport() {
-    this.commonService.cancelExport(ReportType.Tabular, "widgetExport").subscribe(() => {
+    this.eventService.cancelExport("widgetExport").subscribe(() => {
       this.isExporting = false;
       localStorage.setItem('isExportInProgress', 'false');
       this.unsubscribeForNotifier();

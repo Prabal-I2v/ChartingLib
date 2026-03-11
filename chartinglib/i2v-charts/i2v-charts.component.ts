@@ -121,6 +121,11 @@ export abstract class I2vChartsComponent implements OnInit {
       // Restore runtime filterConfig — don't let dashboard save reset filters
       if (runtimeFilterConfig && this.localWidgetRequestModel) {
         this.localWidgetRequestModel.filterConfig = runtimeFilterConfig;
+      } else if (this.applyToAllEnabled) {
+        this.widgetLevelFilterBackup = structuredClone(
+          this.widgetRequestModel.filterConfig?.customFilters || {}
+        );
+        this.updateCustomFiltersValues();
       }
   
       if (

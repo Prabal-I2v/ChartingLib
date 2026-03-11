@@ -1051,12 +1051,9 @@ export class WidgetFormComponent implements OnInit {
   }
 
   private updateFieldRule(fieldIndex: number, property: string, value: any): void {
-    // 1. Current array ki ek shallow copy lein
     const currentFields = [...(this.widgetForm.get('dataInputConfig.fieldNames')?.value || [])];
     
     if (currentFields[fieldIndex] && currentFields[fieldIndex].rule) {
-        // 2. Sirf us specific field aur uske rule ki deep copy bana kar update karein
-        // Isse reference change hoga aur Angular UI refresh karega
         currentFields[fieldIndex] = {
             ...currentFields[fieldIndex],
             rule: {
@@ -1064,8 +1061,6 @@ export class WidgetFormComponent implements OnInit {
                 [property]: value
             }
         };
-        
-        // 3. Updated array ko form mein patch karein
         this.widgetForm.get('dataInputConfig.fieldNames')?.patchValue(currentFields, { emitEvent: true });
     }
 }

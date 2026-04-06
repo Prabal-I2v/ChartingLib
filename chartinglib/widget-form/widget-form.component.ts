@@ -1360,13 +1360,11 @@ export class WidgetFormComponent implements OnInit {
   private normalizeRuleValues(rulesOrRuleset: any): void {
     if (!rulesOrRuleset) return;
 
-    // 1. Agar ye Rules ka array hai
     if (Array.isArray(rulesOrRuleset)) {
         rulesOrRuleset.forEach(item => this.normalizeRuleValues(item));
         return;
     }
 
-    // 2. Agar ye ek Single Rule hai
     if (rulesOrRuleset.field && rulesOrRuleset.field.toLowerCase() === 'videosourceid') {
         if (Array.isArray(rulesOrRuleset.value)) {
             rulesOrRuleset.value = rulesOrRuleset.value.join(',');

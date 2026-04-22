@@ -876,7 +876,6 @@ export class WidgetFormComponent implements OnInit {
     const newlySelectedFields = event.value as IWidgetFieldNameConfig[];
     const currentFields = this.widgetForm.controls.dataInputConfig.controls.fieldNames.value || [];
     //p-multiSelect sets array selectedItems array this can come from options,formControl.value or recreates
-    //option vale obj se mismatch hota h to vo selected nhi hota
     //this prevents mixed references when selecting/deselecting fields
     const mergedFields = newlySelectedFields.map(newField => {
       const existingField = currentFields.find(f => f.name === newField.name);

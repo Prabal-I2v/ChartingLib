@@ -254,7 +254,7 @@ export class I2vGridComponent extends I2vChartsComponent {
             }
           }
           this.isExporting = false;
-          this.logService.removeExportsFromDirectory().subscribe();
+          // this.logService.removeExportsFromDirectory().subscribe();
           this.unsubscribeForNotifier();
         }
         this.progressNotifier = data;

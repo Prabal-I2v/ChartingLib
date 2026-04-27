@@ -299,7 +299,7 @@
                     let onChange = onChange
                   ">
                   <mat-form-field class="entity-select-field">
-                    <mat-select [(ngModel)]="rule.entity" (ngModelChange)="onChange($event, rule)">
+                    <mat-select [(ngModel)]="rule.entity" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onChange($event, rule)">
                       <mat-option *ngFor="let entity of entities" [value]="entity.value">
                         {{ entity.name }}
                       </mat-option>

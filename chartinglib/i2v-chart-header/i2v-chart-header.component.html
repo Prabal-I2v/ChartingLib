@@ -18,6 +18,11 @@
   </div>
   <ng-content></ng-content>
 
+  @if (widgetModel.filterConfig.isCustomFilterApplied) {
+    <div class="filter-button-container">
+      <lib-svg class="status-indicator" [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
+    </div>
+    }
   <div class="menu-container">
     @if (isEditModeOn) {
     <button class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">

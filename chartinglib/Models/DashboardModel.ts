@@ -8,5 +8,25 @@ export class dashboard {
   priority: number;
   description: string
   name: string;
-  Dashboardtype: DashboardType
+  Dashboardtype: DashboardType;
+  globalFilterConfig?: GlobalFilterConfig | null;
+}
+
+export interface GlobalFilterConfig {
+  timeRange: ITimeRange;
+  refreshInterval: number;
+  videoSources: string[];
+  applyToAll: boolean;
+}
+
+export interface ITimeRange {
+  displayName: string;
+  startTime: number;
+  endTime: number;
+}
+
+export interface Filter {
+  timeRange: ITimeRange;
+  refreshInterval: number;
+  videoSources: string[]; // array of videoSource IDs
 }

@@ -117,7 +117,7 @@ export class I2vChartHeaderComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     // // Only update if the relevant inputs changed
-    if (changes.widgetModel?.currentValue?.isDashboardFilterApplied && changes.widgetModel.currentValue.isDashboardFilterApplied != changes.widgetModel.previousValue?.isDashboardFilterApplied) {
+    if (!changes.widgetModel?.currentValue?.isCustomFilterApplied && !changes?.widgetModel?.currentValue?.isCustomFilterApplied != changes.widgetModel?.previousValue?.isCustomFilterApplied) {
       // this.setFilterValueAsPerCustomFiltersAndWidgetCustomFilter();
       this.selectedCustomFilterkey = "";
       this.selectedCustomFilterValue = [];

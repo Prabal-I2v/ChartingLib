@@ -1741,6 +1741,18 @@ stringToOperator(value: string): number {
   }
 
   createRuleGroupQueryBuilder(properties: Property[]): void {
+
+    // CLEAN INVALID RULES
+    if (this.ruleData?.rules?.length) {
+      const validFields = properties.map(p => p.name.toLowerCase());
+  
+      this.ruleData.rules = this.ruleData.rules.filter(rule =>
+        validFields.includes(rule.field?.toLowerCase())
+      );
+    }
+  
+    const fields: any = {};
+  
     properties.forEach((property: Property) => {
       let options: any = property.defaultValues;
 
@@ -1757,29 +1769,42 @@ stringToOperator(value: string): number {
         property.type = EventPropertyType.GuidArray;
         // Clear the default value so it doesn't auto-select ALL cameras
         (property.defaultValues as any) = [];
-      } else {
-         options = property.defaultValues;
       }
-      this.createFilterPropertyObject(
+  
+      const fieldConfig = this.createFilterPropertyObject(
         property.name,
         property.columnName,
         property.type,
-        options 
+        options
       );
+  
+      fields[property.name] = fieldConfig;
     });
+  
+    this.config = {
+      fields: fields
+    };
   }
 
-  createFilterPropertyObject(propertyName: string, name: string, type: EventPropertyType, options: any): void {
+  createFilterPropertyObject(
+    propertyName: string,
+    name: string,
+    type: EventPropertyType,
+    options: any
+  ): any {
+  
     const operators = this.getOpertorsByType(type);
     const processedOptions = this.setDefaultValuesByType(options, type);
+  
     let object: any = {};
+  
     if (type === EventPropertyType.GuidArray) {
-       object = {
-         name: name,
-         type: "GuidArray", 
-         operators: ["Contains"], 
-         defaultValue: []
-       };
+      object = {
+        name: name,
+        type: "GuidArray",
+        operators: ["Contains"],
+        defaultValue: []
+      };
     } 
     else if (type !== EventPropertyType.Guid) {
       object = {
@@ -1787,19 +1812,20 @@ stringToOperator(value: string): number {
         type: EventPropertyType[type],
         operators: operators
       };
-    } else {
+    } 
+    else {
       object = {
         name: name,
         type: "String",
-        operators: operators}
+        operators: operators
+      };
     }
-
+  
     if (processedOptions !== null) {
       object.options = processedOptions;
     }
-
-    this.columnArray.fields[propertyName] = object;
-    this.setConfig();
+  
+    return object; 
   }
 
   getOpertorsByType(type: EventPropertyType): string[] {
@@ -1851,21 +1877,61 @@ stringToOperator(value: string): number {
   onSubmit(): void {
     this.attemptedSubmit = true;
     this.markFormGroupTouched(this.widgetForm);
-
+  
     if (!this.canSubmitForm()) {
-      // Scroll to first error
       this.scrollToFirstError();
       return;
     }
-
+  
     this.showValidationWarnings();
-
+  
     try {
       const finalWidget = this.createWidget();
+      finalWidget.filterConfig.customFilters['IsCustomFilterApplied'] = [
+        { displayName: 'Custom Applied', returnValue: true }
+      ];
+      
+      finalWidget.filterConfig.isCustomFilterApplied = true;
+      const propertyFilters = finalWidget.filterConfig?.propertyFilters;
+  
+      if (propertyFilters?.rules?.length) {
+  
+        const videoRule = propertyFilters.rules.find(
+          r => r.field === 'VideoSourceId'
+        );
+  
+        if (videoRule?.value) {
+  
+          const ids = String(videoRule.value).split(',');
+  
+          // ensure object exists
+          if (!finalWidget.filterConfig.customFilters) {
+            finalWidget.filterConfig.customFilters = {};
+          }
+  
+          finalWidget.filterConfig.customFilters['Video Sources'] = ids.map(id => ({
+            displayName: id,
+            returnValue: id
+          }));
+        }
+      }
+  
+      if (!finalWidget.filterConfig.customFilters) {
+        finalWidget.filterConfig.customFilters = {};
+      }
+
+      finalWidget.filterConfig.customFilters['IsCustomFilterApplied'] = [
+        {
+          displayName: 'Custom Applied',
+          returnValue: true
+        }
+      ];
+      finalWidget.filterConfig.isCustomFilterApplied = true;
       if (finalWidget.filterConfig?.propertyFilters) {
         this.normalizeRuleValues(finalWidget.filterConfig.propertyFilters.rules);
       }
-      this.finalWidget = finalWidget;
+      this.finalWidget = structuredClone(finalWidget);
+
       if (this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit) {
         this.toastr.success(SUCCESS_MESSAGES.WIDGET_UPDATED);
       } else {
@@ -1991,7 +2057,9 @@ stringToOperator(value: string): number {
           ...this.finalWidget.filterConfig,
           customFilters:  formValue.filterConfig?.customFilters || this.finalWidget.filterConfig?.customFilters,
           propertyFilters: normalizedFilters,
-          isDashboardFilterApplied: this.isUserManuallyChangingFilters ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
+          isCustomFilterApplied: (this.enablePropertyFilters || this.isUserManuallyChangingFilters)
+    ? (this.finalWidget?.filterConfig?.isCustomFilterApplied ?? true)
+    : false
       };
 
       return updatedWidget;
@@ -2066,6 +2134,7 @@ stringToOperator(value: string): number {
       finalWidget.isWidgetPredefinedAndConfigurable = this.finalWidget.isWidgetPredefinedAndConfigurable;
       finalWidget.query = this.finalWidget.query;
     }
+    
     return finalWidget;
   }
 
@@ -2182,7 +2251,11 @@ stringToOperator(value: string): number {
         disableTimeFilter: true,
         startTime: this.widgetForm.get('filterConfig.startTime')?.value ?? this.timeObj.startTime,
         endTime: this.widgetForm.get('filterConfig.endTime')?.value ?? this.timeObj.endTime,
-        isDashboardFilterApplied: this.isUserManuallyChangingFilters ? false : (this.finalWidget?.filterConfig?.isDashboardFilterApplied ?? false)
+        isCustomFilterApplied: this.enablePropertyFilters 
+    ? false 
+    : (this.isUserManuallyChangingFilters 
+        ? (this.finalWidget?.filterConfig?.isCustomFilterApplied ?? true)
+        : false)
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
       refreshInterval: this.widgetForm.controls.refreshInterval.value
@@ -3051,6 +3124,27 @@ stringToOperator(value: string): number {
     const filterConfig = widget.filterConfig;
 
     if (filterConfig) {
+      const propertyFilters = this.finalWidget?.filterConfig?.propertyFilters;
+
+if (propertyFilters?.rules?.length) {
+  const videoRule = propertyFilters.rules.find(r => r.field === 'VideoSourceId');
+
+  if (videoRule?.value) {
+    const ids = videoRule.value.split(',');
+
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...this.widgetForm.value.filterConfig.customFilters,
+          "Video Sources": ids.map(id => ({
+            displayName: id,
+            returnValue: id
+          }))
+        }
+      }
+    });
+  }
+}
       this.widgetForm.patchValue({
         filterConfig: {
           customFilters: filterConfig.customFilters || {},

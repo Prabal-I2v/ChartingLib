@@ -1,33 +1,33 @@
 <div class="header-container">
   <div class="content-section">
     @if (svgIcon) {
-    <div class="icon-box">
-      <lib-svg [path]="svgIcon" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
-    </div>
+      <div class="icon-box">
+        <lib-svg [path]="svgIcon" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
+      </div>
     }
     <div class="text-container">
       @if (heading) {
-      <span class="heading-text" [title]="heading">
-        {{ heading }}
-      </span>
+        <span class="heading-text" [title]="heading">{{ heading }}</span>
       }
       @if (subHeading) {
-      <span class="subheading-text" [title]="subHeading">({{ subHeading }})</span>
+        <span class="subheading-text" [title]="subHeading">({{ subHeading }})</span>
       }
     </div>
   </div>
+
   <ng-content></ng-content>
 
-  @if (widgetModel.filterConfig.isCustomFilterApplied) {
-    <div class="filter-button-container">
-      <lib-svg class="status-indicator" [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
-    </div>
-    }
   <div class="menu-container">
+    @if (widgetModel.filterConfig.isCustomFilterApplied) {
+      <div class="filter-button-container">
+        <lib-svg class="status-indicator" [path]="'assets/Solid/status.svg'" [size]="'8'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
+      </div>
+    }
+    
     @if (isEditModeOn) {
-    <button class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
-      <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
-    </button>
+      <button class="flex-row-center-center i2v-btn-icon tertiary-default" (click)="onContextMenuEvent($event)">
+        <lib-svg [path]="'assets/Outline/menu.svg'" [size]="'20'" [color]="'var(--tertiary-default-text-color)'"></lib-svg>
+      </button>
     }
   </div>
 </div>

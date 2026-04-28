@@ -173,6 +173,8 @@ interface WidgetFormControls {
   filterConfig: FormGroup<{
     customFilters: FormControl<Record<string, any>>;
     propertyFilters: FormControl<RuleSet | null>;
+    startTime: FormControl<number | null>;
+    endTime: FormControl<number | null>;
   }>;
 
   enableWidgetSpecificConfig: FormControl<boolean>;
@@ -265,6 +267,18 @@ export class WidgetFormComponent implements OnInit {
   columnArray: any = { fields: {} };
   ruleData: RuleSet = new RuleSet();
   config: QueryBuilderConfig;
+
+  enableCustomTime: boolean = false;
+  dateRange: Date[];
+  timeFilterValue: string;
+  isUserManuallyChangingFilters: boolean = false;
+  readonly timeOptions = [
+    { label: 'Today', value: 'Today' },
+    { label: 'Last 7 days', value: 'Last 7 days' },
+    { label: 'Last 30 days', value: 'Last 30 days' },
+    { label: 'Custom', value: 'Custom' }
+  ];
+
   get isFormValid() {
     return this.canSubmitForm();
   }
@@ -295,7 +309,7 @@ export class WidgetFormComponent implements OnInit {
   readonly PUBLIC_ENTITIES = PUBLIC_ENTITIES;
 
   EVENT_ENTITIES: EntityOption[] = []
-
+  protected operator = Operators;
   // Configuration Mode
   isAdvancedMode: boolean = true;
   formMode: Enum_WidgetFormMode = Enum_WidgetFormMode.normal;
@@ -341,7 +355,10 @@ export class WidgetFormComponent implements OnInit {
     public dialogRef: MatDialogRef<WidgetFormComponent, IWidgetFormDataResponseModel>,
   ) {
     if (modalData.event?.data?.data) {
-      this.finalWidget = modalData.event?.data?.data;
+      const incomingWidget = modalData.event?.data?.data;
+      this.finalWidget = incomingWidget
+        ? structuredClone(incomingWidget)
+        : null;
     }
     if (modalData.event?.data.dashboardId) {
       this.dashboardId = modalData.event?.data.dashboardId;
@@ -458,6 +475,7 @@ export class WidgetFormComponent implements OnInit {
               this.initializeWidgetSpecificConfig(this.finalWidget);
               this.initializeFilterConfig(this.finalWidget);
               this.initializeWidgetTileConfig(this.finalWidget);
+              this.initializeRefreshConfig(this.finalWidget);
               this.updateUIStateAfterLoad();
 
               // For pre-defined widgets, mark steps 1 and 3 as complete and disable form controls
@@ -554,7 +572,9 @@ export class WidgetFormComponent implements OnInit {
 
       filterConfig: this.fb.group({
         customFilters: this.fb.control<Record<string, any>>({}, { nonNullable: true }),
-        propertyFilters: this.fb.control<RuleSet | null>(null)
+        propertyFilters: this.fb.control<RuleSet | null>(null),
+        startTime: this.fb.control<number | null>(null),
+        endTime: this.fb.control<number | null>(null)
       }),
 
       enableWidgetSpecificConfig: this.fb.control(false),
@@ -853,15 +873,23 @@ export class WidgetFormComponent implements OnInit {
   }
 
   onFieldNamesChange(event: any): void {
-    const selectedFields = event.value as IWidgetFieldNameConfig[]
-    // Update form control
+    const newlySelectedFields = event.value as IWidgetFieldNameConfig[];
+    const currentFields = this.widgetForm.controls.dataInputConfig.controls.fieldNames.value || [];
+    //p-multiSelect sets array selectedItems array this can come from options,formControl.value or recreates
+    //this prevents mixed references when selecting/deselecting fields
+    const mergedFields = newlySelectedFields.map(newField => {
+      const existingField = currentFields.find(f => f.name === newField.name);
+      return existingField ? existingField : newField;
+    });
+  
+    // Update form control with the merged array
     this.widgetForm.patchValue({
       dataInputConfig: {
-        fieldNames: selectedFields
+        fieldNames: mergedFields
       }
     });
 
-    if (selectedFields?.length > 1) {
+    if (mergedFields?.length > 1) {
       this.disableGroupBy2();
     }
 
@@ -994,25 +1022,26 @@ export class WidgetFormComponent implements OnInit {
   // Field Rules Management
   toggleFieldRule(index: any, event: Event): void {
     const target = event.target as HTMLInputElement;
-    const existingField = this.selectedFieldNames[index] as IWidgetFieldNameConfig;
-    if (existingField) {
+    const currentFields = [...(this.widgetForm.get('dataInputConfig.fieldNames')?.value || [])];
+    const field = currentFields[index];
+  
+    if (field) {
       if (target.checked) {
-        existingField.rule = new Rule();
-        existingField.rule.field = existingField.name;
-        existingField.rule.operator = this.getOpertorsByType[existingField.type][0];
-        existingField.rule.type = existingField.type;
-
+        field.rule = new Rule();
+        field.rule.field = field.name;
+        field.rule.operator = this.getOpertorsByType(field.type)[0];
+        field.rule.type = field.type;
       } else {
-
-        existingField.rule = null;
+        field.rule = null;
       }
+
+      this.widgetForm.get('dataInputConfig.fieldNames')?.patchValue(currentFields);
     }
   }
 
 
-  onFieldRuleOperatorChange(fieldIndex: number, event: Event): void {
-    const operator = (event.target as HTMLSelectElement).value;
-    this.updateFieldRule(fieldIndex, 'operator', operator);
+  onFieldRuleOperatorChange(index: number, value: string): void {
+    this.updateFieldRule(index, 'operator', Operators[value]);
   }
 
   onFieldRuleValueChange(fieldIndex: number, event: Event): void {
@@ -1021,12 +1050,19 @@ export class WidgetFormComponent implements OnInit {
   }
 
   private updateFieldRule(fieldIndex: number, property: string, value: any): void {
-    const existingField = this.selectedFieldNames[fieldIndex] as IWidgetFieldNameConfig;
-    if (existingField) {
-      existingField.rule[property] = value;
+    const currentFields = [...(this.widgetForm.get('dataInputConfig.fieldNames')?.value || [])];
+    
+    if (currentFields[fieldIndex] && currentFields[fieldIndex].rule) {
+        currentFields[fieldIndex] = {
+            ...currentFields[fieldIndex],
+            rule: {
+                ...currentFields[fieldIndex].rule,
+                [property]: value
+            }
+        };
+        this.widgetForm.get('dataInputConfig.fieldNames')?.patchValue(currentFields, { emitEvent: true });
     }
-
-  }
+}
 
 
   hasGroupBy1TypeError(): boolean {
@@ -1311,8 +1347,36 @@ export class WidgetFormComponent implements OnInit {
   }
 
   convertRulesToPropertyFilters(): any {
-    return this.enablePropertyFilters ? this.ruleData : null;
+    if (!this.enablePropertyFilters || !this.ruleData) {
+      return null;
+    }
+  
+    const clonedRuleData = JSON.parse(JSON.stringify(this.ruleData));
+    this.normalizeRuleValues(clonedRuleData.rules);
+    return clonedRuleData;
   }
+  
+  private normalizeRuleValues(rulesOrRuleset: any): void {
+    if (!rulesOrRuleset) return;
+
+    if (Array.isArray(rulesOrRuleset)) {
+        rulesOrRuleset.forEach(item => this.normalizeRuleValues(item));
+        return;
+    }
+
+    if (rulesOrRuleset.field && rulesOrRuleset.field.toLowerCase() === 'videosourceid') {
+        if (Array.isArray(rulesOrRuleset.value)) {
+            rulesOrRuleset.value = rulesOrRuleset.value.join(',');
+        }
+    }
+    if (rulesOrRuleset.rules) {
+        this.normalizeRuleValues(rulesOrRuleset.rules);
+    }
+    if (rulesOrRuleset.ruleset) {
+        this.normalizeRuleValues(rulesOrRuleset.ruleset);
+    }
+}
+  
 
   // Utility Methods
   getAllAvailableProperties(): Property[] {
@@ -1677,50 +1741,91 @@ stringToOperator(value: string): number {
   }
 
   createRuleGroupQueryBuilder(properties: Property[]): void {
-    properties.forEach((property: Property) => {
-     
-        if (property.name.toLowerCase() === "videosourceid") {
-          const videoSources = this.videoSourceManager.getAllVideoSourceInMemory();
-          let videoSourcesName = "";
-          for (let i = 0; i < videoSources.length; i++) {
-            videoSourcesName += videoSources[i].name + ",";
-          }
-          property.defaultValues = videoSourcesName.slice(0, -1);
-          property.type = EventPropertyType.MultiSelect;
-        }
 
-        this.createFilterPropertyObject(
-          property.name,
-          property.columnName,
-          property.type,
-          property.defaultValues,
-        );
-      
+    // CLEAN INVALID RULES
+    if (this.ruleData?.rules?.length) {
+      const validFields = properties.map(p => p.name.toLowerCase());
+  
+      this.ruleData.rules = this.ruleData.rules.filter(rule =>
+        validFields.includes(rule.field?.toLowerCase())
+      );
+    }
+  
+    const fields: any = {};
+  
+    properties.forEach((property: Property) => {
+      let options: any = property.defaultValues;
+
+      if (property.name.toLowerCase() === "videosourceid") {
+        const sources = this.videoSourceManager.getAllVideoSourceInMemory();
+        
+        // Map sources to Label/Value objects
+        options = sources.slice(0, 50).map(vs => ({
+          label: vs.name,
+          value: vs.id
+        }));
+        
+        
+        property.type = EventPropertyType.GuidArray;
+        // Clear the default value so it doesn't auto-select ALL cameras
+        (property.defaultValues as any) = [];
+      }
+  
+      const fieldConfig = this.createFilterPropertyObject(
+        property.name,
+        property.columnName,
+        property.type,
+        options
+      );
+  
+      fields[property.name] = fieldConfig;
     });
+  
+    this.config = {
+      fields: fields
+    };
   }
 
-  createFilterPropertyObject(propertyName: string, name: string, type: EventPropertyType, options: any): void {
+  createFilterPropertyObject(
+    propertyName: string,
+    name: string,
+    type: EventPropertyType,
+    options: any
+  ): any {
+  
     const operators = this.getOpertorsByType(type);
     const processedOptions = this.setDefaultValuesByType(options, type);
+  
     let object: any = {};
-    if(type !== EventPropertyType.Guid) {
-    object = {
-      name: name,
-      type: EventPropertyType[type],
-      operators: operators
-    };} else {
+  
+    if (type === EventPropertyType.GuidArray) {
+      object = {
+        name: name,
+        type: "GuidArray",
+        operators: ["Contains"],
+        defaultValue: []
+      };
+    } 
+    else if (type !== EventPropertyType.Guid) {
+      object = {
+        name: name,
+        type: EventPropertyType[type],
+        operators: operators
+      };
+    } 
+    else {
       object = {
         name: name,
         type: "String",
-        operators: operators}
+        operators: operators
+      };
     }
-
+  
     if (processedOptions !== null) {
       object.options = processedOptions;
     }
-
-    this.columnArray.fields[propertyName] = object;
-    this.setConfig();
+  
+    return object; 
   }
 
   getOpertorsByType(type: EventPropertyType): string[] {
@@ -1772,19 +1877,67 @@ stringToOperator(value: string): number {
   onSubmit(): void {
     this.attemptedSubmit = true;
     this.markFormGroupTouched(this.widgetForm);
-
+  
     if (!this.canSubmitForm()) {
-      // Scroll to first error
       this.scrollToFirstError();
       return;
     }
-
+  
     this.showValidationWarnings();
-
+  
     try {
       const finalWidget = this.createWidget();
-      this.finalWidget = finalWidget;
-      this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
+      finalWidget.filterConfig.customFilters['IsCustomFilterApplied'] = [
+        { displayName: 'Custom Applied', returnValue: true }
+      ];
+      
+      finalWidget.filterConfig.isCustomFilterApplied = true;
+      const propertyFilters = finalWidget.filterConfig?.propertyFilters;
+  
+      if (propertyFilters?.rules?.length) {
+  
+        const videoRule = propertyFilters.rules.find(
+          r => r.field === 'VideoSourceId'
+        );
+  
+        if (videoRule?.value) {
+  
+          const ids = String(videoRule.value).split(',');
+  
+          // ensure object exists
+          if (!finalWidget.filterConfig.customFilters) {
+            finalWidget.filterConfig.customFilters = {};
+          }
+  
+          finalWidget.filterConfig.customFilters['Video Sources'] = ids.map(id => ({
+            displayName: id,
+            returnValue: id
+          }));
+        }
+      }
+  
+      if (!finalWidget.filterConfig.customFilters) {
+        finalWidget.filterConfig.customFilters = {};
+      }
+
+      finalWidget.filterConfig.customFilters['IsCustomFilterApplied'] = [
+        {
+          displayName: 'Custom Applied',
+          returnValue: true
+        }
+      ];
+      finalWidget.filterConfig.isCustomFilterApplied = true;
+      if (finalWidget.filterConfig?.propertyFilters) {
+        this.normalizeRuleValues(finalWidget.filterConfig.propertyFilters.rules);
+      }
+      this.finalWidget = structuredClone(finalWidget);
+
+      if (this.modalData.event?.data?.operation === Enum_WidgetFormOperation.edit) {
+        this.toastr.success(SUCCESS_MESSAGES.WIDGET_UPDATED);
+      } else {
+        this.toastr.success(SUCCESS_MESSAGES.WIDGET_CREATED);
+      }
+      
       this.dialogRef.close({
         widgetData: this.finalWidget,
         operation: this.modalData.event?.data?.operation
@@ -1899,6 +2052,15 @@ stringToOperator(value: string): number {
       updatedWidget.refreshInterval = formValue.refreshInterval;
       // Update showable properties
       updatedWidget.showableProperties = this.showableProperties;
+      const normalizedFilters = this.convertRulesToPropertyFilters();
+      updatedWidget.filterConfig = {
+          ...this.finalWidget.filterConfig,
+          customFilters:  formValue.filterConfig?.customFilters || this.finalWidget.filterConfig?.customFilters,
+          propertyFilters: normalizedFilters,
+          isCustomFilterApplied: (this.enablePropertyFilters || this.isUserManuallyChangingFilters)
+    ? (this.finalWidget?.filterConfig?.isCustomFilterApplied ?? true)
+    : false
+      };
 
       return updatedWidget;
     }
@@ -1972,6 +2134,7 @@ stringToOperator(value: string): number {
       finalWidget.isWidgetPredefinedAndConfigurable = this.finalWidget.isWidgetPredefinedAndConfigurable;
       finalWidget.query = this.finalWidget.query;
     }
+    
     return finalWidget;
   }
 
@@ -2083,12 +2246,16 @@ stringToOperator(value: string): number {
         max: 20
       },
       filterConfig: {
-        customFilters: {},
+        customFilters: this.widgetForm.get('filterConfig.customFilters')?.value || {},
         propertyFilters: this.enablePropertyFilters ? this.convertRulesToPropertyFilters() : null,
-        disableTimeFilter: false,
-        startTime: this.timeObj.startTime,
-        endTime: this.timeObj.endTime,
-        isDashboardFilterApplied: true
+        disableTimeFilter: true,
+        startTime: this.widgetForm.get('filterConfig.startTime')?.value ?? this.timeObj.startTime,
+        endTime: this.widgetForm.get('filterConfig.endTime')?.value ?? this.timeObj.endTime,
+        isCustomFilterApplied: this.enablePropertyFilters 
+    ? false 
+    : (this.isUserManuallyChangingFilters 
+        ? (this.finalWidget?.filterConfig?.isCustomFilterApplied ?? true)
+        : false)
       },
       allowRefresh: this.widgetForm.controls.allowRefresh.value,
       refreshInterval: this.widgetForm.controls.refreshInterval.value
@@ -2138,7 +2305,7 @@ stringToOperator(value: string): number {
     dimension: WidgetDimension
   ): any {
     const widgetType = this.widgetForm.controls.widgetType.value;
-
+    const isSpecificConfigEnabled = this.widgetForm.controls.enableWidgetSpecificConfig.value;
     // Handle widget-specific configurations
     if (widgetType === Enum_WidgetType.Donut1D) {
       const donutConf: DonutConf = {
@@ -2151,7 +2318,7 @@ stringToOperator(value: string): number {
         ...baseWidgetConfig,
         widgetType: widgetType,
         dataInputConfig: dataInputConfig,
-        donutConf: donutConf
+        donutConf: isSpecificConfigEnabled ? donutConf : null
       } as DonutChart1DWidget;
     }
 
@@ -2165,7 +2332,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig,
-        donutConf: donutConf
+        donutConf: isSpecificConfigEnabled ? donutConf : null
       } as DonutChart2DWidget;
     }
 
@@ -2183,7 +2350,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig,
-        kpiConf: kpiConf
+        kpiConf: isSpecificConfigEnabled ? kpiConf : null
       } as KPI1DWidgetConstructorProps;
     }
 
@@ -2194,14 +2361,14 @@ stringToOperator(value: string): number {
         imageColumnName: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.imageColumnName.value,
         showAggregation: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showAggregation.value,
         dataAggregationMethod: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.dataAggregationMethod.value,
-        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
-        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
+        hideLabel: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.hideLabel.value,
+        showChart: this.widgetForm.controls.widgetSpecificConfig.controls.kpiConf.controls.showChart.value,
       };
 
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig as ITwoDimensionDataInputConfig,
-        kpiConf: kpiConf
+        kpiConf: isSpecificConfigEnabled ? kpiConf : null
       } as KPI2DWidgetConstructorProps;
     }
 
@@ -2215,7 +2382,7 @@ stringToOperator(value: string): number {
       return {
         ...baseWidgetConfig,
         dataInputConfig: dataInputConfig as any,
-        tableConf: tableConf
+        tableConf: isSpecificConfigEnabled ? tableConf : null
       } as TableWidgetConstructorProps;
     }
 
@@ -2511,7 +2678,7 @@ stringToOperator(value: string): number {
       dataInputConfig: {
         entityTypeSelect: Enum_Schema.Events,
         entitySelect: "Highway_ATCC",
-        method: Enum_Method.Sum,
+        method: Enum_Method.Count,
         isDistinct: false
       },
       allowRefresh: false,
@@ -2631,7 +2798,14 @@ stringToOperator(value: string): number {
       entityConfigType: this.determineEntityConfigType(widget)
     });
   }
-
+  private initializeRefreshConfig(widget: Widget): void {
+    if (widget) {
+      this.widgetForm.patchValue({
+        allowRefresh: widget.allowRefresh ?? false,
+        refreshInterval: widget.refreshInterval ?? 300
+      }, { emitEvent: false });
+    }
+  }
   private determineConfigurationApproach(widget: Widget): 'widgetFirst' | 'propertiesFirst' {
     // Logic to determine if this was created widget-first or properties-first
     return 'widgetFirst'; // Default, adjust based on your needs
@@ -2740,9 +2914,6 @@ stringToOperator(value: string): number {
 
   private initializeFieldNames(dataInputConfig: any): void {
     const fieldNames: IWidgetFieldNameConfig[] = dataInputConfig.fieldNames || [];
-    fieldNames.forEach((field: any) => {
-      field.rule = null; // Initialize with no rule
-    });
 
     this.widgetForm.patchValue({
       dataInputConfig: {
@@ -2953,19 +3124,91 @@ stringToOperator(value: string): number {
     const filterConfig = widget.filterConfig;
 
     if (filterConfig) {
+      const propertyFilters = this.finalWidget?.filterConfig?.propertyFilters;
+
+if (propertyFilters?.rules?.length) {
+  const videoRule = propertyFilters.rules.find(r => r.field === 'VideoSourceId');
+
+  if (videoRule?.value) {
+    const ids = videoRule.value.split(',');
+
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...this.widgetForm.value.filterConfig.customFilters,
+          "Video Sources": ids.map(id => ({
+            displayName: id,
+            returnValue: id
+          }))
+        }
+      }
+    });
+  }
+}
       this.widgetForm.patchValue({
         filterConfig: {
           customFilters: filterConfig.customFilters || {},
           propertyFilters: filterConfig.propertyFilters || null
         }
       });
-
+      if(!widget.isPredefinedWidget){
+        this.enablePropertyFilters=true;
+      }
       // Set property filters state
       if (filterConfig.propertyFilters) {
         this.enablePropertyFilters = true;
         this.ruleData = filterConfig.propertyFilters;
+        this.convertStringToArrayForMultiselect(this.ruleData.rules);
+      }
+      if (filterConfig.customFilters?.Time?.length > 0) {
+        this.timeFilterValue = filterConfig.customFilters.Time[0].displayName;
+        this.enableCustomTime = this.timeFilterValue === 'Custom';
       }
     }
+  }
+
+  convertStringToArrayForMultiselect(rules: any[]): void {
+    if (!rules) return;
+    
+    rules.forEach(rule => {
+      // If this is the VideoSourceId field and value is a string, split it into an array
+      if (rule.field === 'VideoSourceId' && typeof rule.value === 'string') {
+        rule.value = rule.value ? rule.value.split(',').map(v => v.trim()) : [];
+      }
+      if (rule.field === 'VideoSourceId' && !rule.value) {
+        rule.value = [];
+      }
+      if (rule.rules) {
+        this.convertStringToArrayForMultiselect(rule.rules);
+      }
+    });
+  }
+  ensureArray(value: any): any[] {
+    if (value == null) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.trim() === '') return []; 
+    return [value]; // Wraps single strings (like "cam1") into ["cam1"]
+  }
+  onQueryBuilderFieldChange(
+    event: any,
+    rule: Rule,
+    libraryOnChange: (val: any, r: Rule) => void
+  ): void {
+  
+    libraryOnChange(event, rule);
+  
+    if (rule.field === 'VideoSourceId') {
+  
+      // operator must be STRING
+      rule.operator = Operators[Operators.Contains];
+  
+      // value must be ANY (QueryBuilder limitation)
+      (rule as any).value = [];
+    }
+  }
+
+  handleMultiSelectChange(selectedValues: any[], onChange: Function): void {
+    onChange(selectedValues || []);
   }
 
   hasFieldError(fieldPath: string): boolean {
@@ -3271,7 +3514,7 @@ stringToOperator(value: string): number {
   }
 
   isConfigurable(): boolean {
-    if(this.finalWidget){
+    if(this.finalWidget?.isPredefinedWidget){
       return this.finalWidget.isWidgetPredefinedAndConfigurable;
     }else{
       return true;
@@ -3287,5 +3530,124 @@ stringToOperator(value: string): number {
   // Update submit button text based on mode
   getSubmitButtonText(): string {
     return this.isEditMode() ? 'Update Widget' : 'Create Widget';
+  }
+
+  onAllowRefreshToggle(event: any) {
+    const isChecked = event.target.checked;
+    
+    if (!isChecked) {
+      this.widgetForm.get('refreshInterval')?.setValue(-1);
+      const currentFilters = { ...this.widgetForm.get('filterConfig.customFilters')?.value };
+      delete currentFilters['RefreshInterval'];
+      
+      this.widgetForm.patchValue({
+        filterConfig: { customFilters: currentFilters }
+      });
+      
+      console.log("Refresh disabled and interval set to -1");
+    } else {
+      this.widgetForm.get('refreshInterval')?.setValue(300);
+    }
+  }
+
+  onTimeChange(event: any) {
+    // Handle both p-dropdown {value} and direct string from p-calendar onClose
+    this.isUserManuallyChangingFilters = true;
+    const selectedValue = event?.value ?? event;
+    
+    if (selectedValue === 'Custom') {
+      this.enableCustomTime = true;
+      
+      // Check if we actually have a full range selected [start, end]
+      if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
+        const timeRange = this.calculateTimeRange('Custom');
+        if (timeRange) {
+          this.updateTimeFormState('Custom', timeRange);
+        }
+      }
+      return; // Wait for full selection if range is incomplete
+    }
+    
+    // Standard options (Today, Last 7 days, etc.)
+    this.enableCustomTime = false;
+    const timeRange = this.calculateTimeRange(selectedValue);
+    
+    if (timeRange) {
+      this.updateTimeFormState(selectedValue, timeRange);
+    }
+  }
+  
+  private updateTimeFormState(label: string, range: ITimeRange) {
+    const existingFilters = this.widgetForm.get('filterConfig.customFilters')?.value || {};
+    
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...existingFilters,
+          Time: [
+            {
+              displayName: label,
+              returnValue: range
+            }
+          ]
+        },
+        startTime: range.startTime,
+        endTime: range.endTime
+      }
+    });
+  }
+  
+  OnRefreshIntervalChange(event: any) {
+    this.isUserManuallyChangingFilters = true;
+    const newValue = parseInt(event.target.value, 10) || 0;
+    const existingFilters = this.widgetForm.get('filterConfig.customFilters')?.value || {};
+
+    this.widgetForm.patchValue({
+      filterConfig: {
+        customFilters: {
+          ...existingFilters,
+          RefreshInterval: [
+            {
+              displayName: "Refresh Interval",
+              returnValue: newValue
+            }
+          ]
+        }
+      },
+      refreshInterval: newValue 
+    });
+  }
+
+  private calculateTimeRange(interval: string): ITimeRange | null {
+      const today = new Date();
+      let startDate: Date;
+      let endDate = new Date();
+      endDate.setHours(23, 59, 59, 999);
+
+      switch (interval) {
+          case "Today":
+              startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+              break;
+          case "Last 7 days":
+              startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
+              break;
+          case "Last 30 days":
+              startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
+              break;
+          case "Custom":
+              if (this.dateRange && this.dateRange[0] && this.dateRange[1]) {
+                  return { 
+                      startTime: this.dateRange[0].getTime(), 
+                      endTime: this.dateRange[1].getTime() 
+                  };
+              }
+              return null;
+          default: return null;
+      }
+
+      return { 
+          startTime: startDate.getTime(), 
+          endTime: endDate.getTime() 
+      };
   }
 }

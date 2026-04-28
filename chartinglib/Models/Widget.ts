@@ -29,6 +29,7 @@ export abstract class Widget {
   canBeRemoved : boolean = false;
   isWidgetPredefinedAndConfigurable?: boolean;
   isCopied : boolean = false;
+  isCustomFilterApplied?: boolean;
   abstract dimension: WidgetDimension;
   abstract dataInputConfig: IOneDimensionDataInputConfig | ITwoDimensionDataInputConfig | IThreeDimensionDataInputConfig; // Placeholder for data input configuration
 
@@ -60,7 +61,7 @@ export abstract class Widget {
       disableTimeFilter: props.filterConfig?.disableTimeFilter ?? false,
       startTime: props.filterConfig?.startTime ?? Widget.getCurrentDayStart(),
       endTime: props.filterConfig?.endTime ?? moment(new Date()).valueOf(),
-      isDashboardFilterApplied: props.filterConfig?.isDashboardFilterApplied ?? true
+      isCustomFilterApplied: props.filterConfig?.isCustomFilterApplied ?? true
     };
 
     // Widget Interactivity configuration

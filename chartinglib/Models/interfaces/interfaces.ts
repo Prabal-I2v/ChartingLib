@@ -46,7 +46,7 @@ export interface IWidgetFilterConfig {
   disableTimeFilter?: boolean;
   startTime?: number;
   endTime?: number;
-  isDashboardFilterApplied?: boolean;
+  isCustomFilterApplied?: boolean;
 }
 
 export interface IWidgetDataOutputConfig {

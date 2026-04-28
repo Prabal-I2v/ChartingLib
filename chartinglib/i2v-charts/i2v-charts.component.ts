@@ -21,6 +21,7 @@ import { CustomFilterValueModel, RuleSet } from "../Models/types/types";
 import { ICustomFilter, ISetIntervalFilterOutputEmittorModel, IDateTimeFilterOutputEmittorModel, ICustomFilterOutputEmittorModel, ITimeRange, ICommonFilterOutputEmittorModel } from "../Models/interfaces/interfaces";
 import { ChartSeries, ClientChartModel } from "../Models/ClientChartModel";
 import { ToastrService } from "ngx-toastr";
+import { Filter } from "../Models/DashboardModel";
 
 @Component({
   selector: "i2v-charts",
@@ -32,9 +33,11 @@ export abstract class I2vChartsComponent implements OnInit {
   isLoading: boolean;
   dataExists: boolean;
   dataExistsForShowableProperties: boolean = true;
+  private widgetLevelFilterBackup: ICustomFilter = {};
 
-  isCustomFilterApplied: boolean = false;
   isChartToBeRemoved: boolean = false;
+  private localWidgetRequestModel: Widget;
+  private widgetLevelPropertyFiltersBackup: any = null;
   @Input() showEntity: boolean = true;
   @Input() showTimeFilter: boolean = true;
   @Input() showRefreshInterval: boolean = true;
@@ -45,6 +48,8 @@ export abstract class I2vChartsComponent implements OnInit {
   @Output() editWidgetOutput = new EventEmitter<any>();
   @Output() copiedWidgetOutput = new EventEmitter<any>();
 
+  @Input() globalFilterConfig: Filter;
+  @Input() applyToAll: boolean = false;
   //this property is used pass initial value for filters like all time filters, all videosources and all
   applyToAllEnabled: boolean = false;
   @Input() customFilters: ICustomFilter;
@@ -67,7 +72,6 @@ export abstract class I2vChartsComponent implements OnInit {
   private refreshCallSubjectSubscription: Subscription;
   private debounceTime = 500; // milliseconds
   componentId: string;
-  customFilterValues: Record<string, CustomFilterValueModel[]>;
 
   constructor(public cd: ChangeDetectorRef, protected chartingDataService: ChartingDataService, private elementRef?: ElementRef,private toastr?: ToastrService,) {
     // Generate and store a UUID when component is created
@@ -75,51 +79,83 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.applyToAllEnabled = this.dashboardCustomFilterValue?.['ApplyToAll']?.[0]?.returnValue as boolean;
     this.refreshCallSubjectSubscription = this.refreshCallSubject.subscribe(() => {
-      if (this.widgetRequestModel) this.getDataFromServer(this.widgetRequestModel);
+      this.getDataFromServer(this.localWidgetRequestModel);
     });
-
+    this.localWidgetRequestModel = structuredClone(this.widgetRequestModel);
     // Set up the debounced data fetching
     this.debouncedRefreshSubscription = this.debouncedRefreshSubject
       .pipe(debounce(() => timer(this.debounceTime)))
-      .subscribe((widgetRequestModel: Widget) => {
-        this.fetchDataFromServer(widgetRequestModel);
+      .subscribe((localWidgetRequestModel: Widget) => {
+        this.fetchDataFromServer(localWidgetRequestModel);
       });
-
-    if (this.widgetRequestModel) {
+  
+    if (this.localWidgetRequestModel) {
+      this.widgetLevelFilterBackup = structuredClone(
+        this.widgetRequestModel.filterConfig?.customFilters || {}
+      );
+      this.widgetLevelPropertyFiltersBackup = structuredClone(
+        this.widgetRequestModel.filterConfig?.propertyFilters || null
+      );
       this.isModel = true;
-      if (this.widgetRequestModel.allowRefresh) {
-        this.setRefreshInterval()
-      }
-      this.widgetRequestModel.filterConfig = this.widgetRequestModel.filterConfig || { customFilters: {}, isDashboardFilterApplied: false };
-      this.widgetRequestModel.filterConfig.customFilters = this.widgetRequestModel.filterConfig.customFilters || {};
-      if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied) {
-        // apply dashboard filters snapshot safely
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.dashboardCustomFilterValue || {}));
-      } else {
-        this.isCustomFilterApplied = true;
-      }
-      this.getDataFromServer(this.widgetRequestModel);
     } else {
       this.isModel = false;
     }
   }
 
+  updateCustomFiltersValues() {
+    if (!this.localWidgetRequestModel?.filterConfig) return;
+  
+    const customFilters = this.localWidgetRequestModel.filterConfig?.customFilters || {};
+    const hasCustomFilter =
+    customFilters['IsCustomFilterApplied']?.[0]?.returnValue === true
+  
+    if (this.applyToAllEnabled) {
+      // ✅ APPLY ALL
+      const clonedDashboardFilters = structuredClone(this.dashboardCustomFilterValue || {});
+      this.setValueAsPerWidgetCustomFiltersValue(clonedDashboardFilters);
+    } 
+    else {
+      // ✅ DEFAULT
+      this.localWidgetRequestModel.filterConfig.customFilters = structuredClone(
+        this.widgetLevelFilterBackup || {}
+      );
+    }
+  
+    this.getDataFromServer(this.localWidgetRequestModel);
+  }
+  
   ngOnChanges(changes: SimpleChanges) {
-    // dashboard filter value changed
-    if (changes.dashboardCustomFilterValue && changes.dashboardCustomFilterValue.currentValue !== changes.dashboardCustomFilterValue.previousValue) {
-      this.applyToAllEnabled = this.dashboardCustomFilterValue?.["ApplyToAll"]?.[0]?.returnValue as boolean;
+
+    if (changes['widgetRequestModel'] && !changes['widgetRequestModel'].firstChange) {
+  
+      const currModel = changes['widgetRequestModel'].currentValue as Widget;
+  
+      // ✅ always fresh clone
+      this.localWidgetRequestModel = structuredClone(currModel);
+      if (this.applyToAllEnabled) {
+        this.updateCustomFiltersValues();
+        return;
+      }
+  
+      this.getDataFromServer(this.localWidgetRequestModel);
+    }
+  
+    if (changes['dashboardCustomFilterValue']) {
+      this.applyToAllEnabled =
+        this.dashboardCustomFilterValue?.['ApplyToAll']?.[0]?.returnValue as boolean;
+  
       this.updateCustomFiltersValues();
       return;
     }
-    if (changes.isEditModeOn && changes.isEditModeOn.currentValue !== changes.isEditModeOn.previousValue) {
-      // when edit mode turns off -> refresh size/filters as before
-      if (!changes.isEditModeOn.currentValue) {
-        this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
+  
+    if (changes['isEditModeOn'] &&
+        changes['isEditModeOn'].currentValue !== changes['isEditModeOn'].previousValue) {
+      if (!changes['isEditModeOn'].currentValue) {
         this.showFilterValues = false;
-        if (this.isCustomFilterApplied && this.applyToAllEnabled) {
-          this.isCustomFilterApplied = false;
-          this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
+        if (this.applyToAllEnabled) {
+         
           this.widgetResizeCallback(this.showFilterValues);
         }
       }
@@ -148,46 +184,34 @@ export abstract class I2vChartsComponent implements OnInit {
 
         switch (customFilter.key) {
           case "Video Sources": {
-            this.widgetRequestModel.filterConfig.customFilters[customFilter.key] = this.customFilters[
-              customFilter.key
-            ].filter((x) => customFilter.value.includes(String(x.returnValue)));
 
-            if (this.widgetRequestModel.filterConfig.propertyFilters == null) {
-              this.widgetRequestModel.filterConfig.propertyFilters = new RuleSet();
+            // ✅ customFilters me daalo
+            this.localWidgetRequestModel.filterConfig.customFilters[key] =
+              this.customFilters[key].filter((x) =>
+                customFilter.value.includes(String(x.returnValue))
+              );
+          
+            // ✅ propertyFilters me bhi daalo (already hai)
+            if (!this.localWidgetRequestModel.filterConfig.propertyFilters) {
+              this.localWidgetRequestModel.filterConfig.propertyFilters = new RuleSet();
             }
-
-            if (this.widgetRequestModel.filterConfig.propertyFilters.ruleSet == null) {
-              this.widgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
-            } else {
-              this.widgetRequestModel.filterConfig.propertyFilters.condition = "and";
+          
+            if (!this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet) {
+              this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
             }
-
-            const index = this.isRuleSetAlreadyPresent(
-              this.widgetRequestModel.filterConfig.propertyFilters,
-              "VideoSourceId",
-            );
-            if (index != -1) {
-              if (customFilter.value && customFilter.value.length > 0) {
-                this.setAlreadyPresentRuleSetValue(
-                  this.widgetRequestModel.filterConfig.propertyFilters,
-                  "VideoSourceId",
-                  customFilter.value,
-                  index,
-                );
-              } else {
-                this.removeEmptyRuleSet(
-                  this.widgetRequestModel.filterConfig.propertyFilters,
-                  "VideoSourceId",
-                  index,
-                );
-              }
-            } else {
-              if (customFilter.value && customFilter.value.length > 0) {
-                this.widgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
-                  this.createRule(customFilter, "VideoSourceId"),
-                );
-              }
+          
+            // 🔥 REMOVE OLD RULES
+            this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet =
+              (this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet || [])
+                .filter(rs => !rs.rules?.some(r => r.field === "VideoSourceId"));
+          
+            // 🔥 ADD NEW RULE
+            if (customFilter.value?.length) {
+              this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
+                this.createRule(customFilter, "VideoSourceId"),
+              );
             }
+          
             break;
           }
         }
@@ -198,21 +222,21 @@ export abstract class I2vChartsComponent implements OnInit {
       const timeFilter = dashboardCustomFilterValue["Time"][0];
       const timeRange = timeFilter.returnValue as ITimeRange;
 
-      this.widgetRequestModel.filterConfig.customFilters["Time"] = [
+      this.localWidgetRequestModel.filterConfig.customFilters["Time"] = [
         { displayName: timeFilter.displayName, returnValue: timeRange },
       ];
-      this.widgetRequestModel.filterConfig.startTime = timeRange.startTime;
-      this.widgetRequestModel.filterConfig.endTime = timeRange.endTime;
+      this.localWidgetRequestModel.filterConfig.startTime = timeRange.startTime;
+      this.localWidgetRequestModel.filterConfig.endTime = timeRange.endTime;
     }
 
 
     if ("RefreshInterval" in dashboardCustomFilterValue) {
       var refreshIntervalValue = Number(dashboardCustomFilterValue["RefreshInterval"][0].returnValue);
 
-      this.widgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
+      this.localWidgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
         { displayName: "RefreshInterval", returnValue: refreshIntervalValue },
       ];
-      this.widgetRequestModel.refreshInterval = refreshIntervalValue;
+      this.localWidgetRequestModel.refreshInterval = refreshIntervalValue;
       this.setRefreshInterval();
     }
 
@@ -233,12 +257,12 @@ export abstract class I2vChartsComponent implements OnInit {
           break;
       }
     });
-    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
-    this.getDataFromServer(this.widgetRequestModel);
+    this.setRefreshInterval();
+    this.getDataFromServer(this.localWidgetRequestModel);
   }
 
   onEditWidgetOutput() {
-    this.editWidgetOutput.next(this.widgetRequestModel);
+    this.editWidgetOutput.next(structuredClone(this.widgetRequestModel));
   }
 
   onCustomFilterValuesChange(
@@ -248,49 +272,49 @@ export abstract class I2vChartsComponent implements OnInit {
     switch (event.key) {
       // case null: {
       //   // Check if Video Sources exists in the customFilters
-      //   if (this.widgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
+      //   if (this.localWidgetRequestModel.filterConfig.customFilters?.["Video Sources"]) {
       //     // Remove Video Sources from customFilters
-      //     delete this.widgetRequestModel.filterConfig.customFilters["Video Sources"];
+      //     delete this.localWidgetRequestModel.filterConfig.customFilters["Video Sources"];
       //     }
       //   }
 
       case "Video Sources": {
-        this.widgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
+        this.localWidgetRequestModel.filterConfig.customFilters[event.key] = this.customFilters[
           event.key
         ].filter((x) => event.value.includes(String(x.returnValue)));
 
-        if (this.widgetRequestModel.filterConfig.propertyFilters == null) {
-          this.widgetRequestModel.filterConfig.propertyFilters = new RuleSet();
+        if (this.localWidgetRequestModel.filterConfig.propertyFilters == null) {
+          this.localWidgetRequestModel.filterConfig.propertyFilters = new RuleSet();
         }
 
-        if (this.widgetRequestModel.filterConfig.propertyFilters.ruleSet == null) {
-          this.widgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
+        if (this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet == null) {
+          this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet = [];
         } else {
-          this.widgetRequestModel.filterConfig.propertyFilters.condition = "and";
+          this.localWidgetRequestModel.filterConfig.propertyFilters.condition = "and";
         }
 
         const index = this.isRuleSetAlreadyPresent(
-          this.widgetRequestModel.filterConfig.propertyFilters,
+          this.localWidgetRequestModel.filterConfig.propertyFilters,
           "VideoSourceId",
         );
         if (index != -1) {
           if (event.value && event.value.length > 0) {
             this.setAlreadyPresentRuleSetValue(
-              this.widgetRequestModel.filterConfig.propertyFilters,
+              this.localWidgetRequestModel.filterConfig.propertyFilters,
               "VideoSourceId",
               event.value,
               index,
             );
           } else {
             this.removeEmptyRuleSet(
-              this.widgetRequestModel.filterConfig.propertyFilters,
+              this.localWidgetRequestModel.filterConfig.propertyFilters,
               "VideoSourceId",
               index,
             );
           }
         } else {
           if (event.value && event.value.length > 0) {
-            this.widgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
+            this.localWidgetRequestModel.filterConfig.propertyFilters.ruleSet.push(
               this.createRule(event, "VideoSourceId"),
             );
           }
@@ -298,43 +322,43 @@ export abstract class I2vChartsComponent implements OnInit {
         break;
       }
     }
-    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
-    this.isCustomFilterApplied = true;
-    this.getDataFromServer(this.widgetRequestModel);
+    this.setRefreshInterval();
+    this.applyToAllEnabled = false;
+    this.getDataFromServer(this.localWidgetRequestModel);
   }
 
   onTimeChange(
     event: IDateTimeFilterOutputEmittorModel,
     commonCall: boolean = false,
   ) {
-    this.widgetRequestModel.filterConfig.customFilters["Time"] = [
+    this.localWidgetRequestModel.filterConfig.customFilters["Time"] = [
       { displayName: event.key, returnValue: event.value },
     ];
-    this.widgetRequestModel.filterConfig.startTime = event.value.startTime;
-    this.widgetRequestModel.filterConfig.endTime = event.value.endTime;
+    this.localWidgetRequestModel.filterConfig.startTime = event.value.startTime;
+    this.localWidgetRequestModel.filterConfig.endTime = event.value.endTime;
 
-    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
-    this.getDataFromServer(this.widgetRequestModel);
+    
+    this.setRefreshInterval();
+    this.getDataFromServer(this.localWidgetRequestModel);
   }
 
   onRefreshIntervalChange(event: ISetIntervalFilterOutputEmittorModel) {
-    this.widgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
+    this.localWidgetRequestModel.filterConfig.customFilters["RefreshInterval"] = [
       { displayName: event.key, returnValue: event.value },
     ];
-    this.widgetRequestModel.refreshInterval = event.value;
-    this.widgetRequestModel.filterConfig.isDashboardFilterApplied = false;
+    this.localWidgetRequestModel.refreshInterval = event.value;
+    
     this.setRefreshInterval();
     // this.refreshIntervalFilterOutput.emit(event);
   }
-
-  getDataFromServer(widgetRequestModel: Widget) {
-    if (!widgetRequestModel) {
+  getDataFromServer(localWidgetRequestModel: Widget) {
+    if (!localWidgetRequestModel) {
       return;
     }
     this.isLoading = true;
     this.cd.detectChanges();
     // Trigger the debounced subject instead of directly calling the API
-    this.debouncedRefreshSubject.next(widgetRequestModel);
+    this.debouncedRefreshSubject.next(structuredClone(localWidgetRequestModel));
   }
 
   // Type guard functions
@@ -346,97 +370,50 @@ export abstract class I2vChartsComponent implements OnInit {
     return data && 'columns' in data && 'rows' in data;
   }
 
-  // The actual API call is moved to this method
-  private setTimeAccordingToWidget(widgetRequestModel: Widget): void {
-    if (!widgetRequestModel?.filterConfig?.customFilters?.Time?.[0]) {
-      return;
-    }
-
-    const timeFilter = widgetRequestModel.filterConfig.customFilters.Time[0];
-    const today = new Date();
-    let startDate: Date;
-
-    switch (timeFilter.displayName) {
-      case 'Today':
-        // Set to start of today
-        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-        widgetRequestModel.filterConfig.startTime = startDate.getTime();
-        widgetRequestModel.filterConfig.endTime = today.getTime();
-        break;
-
-      case 'Last 7 days':
-        // Set to 7 days ago from start of today
-        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7, 0, 0, 0);
-        widgetRequestModel.filterConfig.startTime = startDate.getTime();
-        widgetRequestModel.filterConfig.endTime = today.getTime();
-        break;
-
-      case 'Last 30 days':
-        // Set to 30 days ago from start of today
-        startDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate(), 0, 0, 0);
-        widgetRequestModel.filterConfig.startTime = startDate.getTime();
-        widgetRequestModel.filterConfig.endTime = today.getTime();
-        break;
-
-      case 'Custom':
-        // For custom, use the timeRange values directly from the filter
-        const timeRange = timeFilter.returnValue as ITimeRange;
-        if (timeRange) {
-          widgetRequestModel.filterConfig.startTime = timeRange.startTime;
-          widgetRequestModel.filterConfig.endTime = timeRange.endTime;
-        }
-        break;
-    }
-
-    // Update the time range in customFilters as well
-    widgetRequestModel.filterConfig.customFilters.Time[0].returnValue = {
-      startTime: widgetRequestModel.filterConfig.startTime,
-      endTime: widgetRequestModel.filterConfig.endTime
-    };
-  }
-
-  private fetchDataFromServer(widgetRequestModel: Widget) {
+  private fetchDataFromServer(localWidgetRequestModel: Widget) {
     if (this.apiSubscription) {
       this.apiSubscription.unsubscribe();
     }
   
+    if (!this.localWidgetRequestModel) return;
+    const payload = this.preparePayload(localWidgetRequestModel);
+  
     // defensive guard
-    if (!widgetRequestModel || !widgetRequestModel.filterConfig) {
-      this.toastr.warning('fetchDataFromServer: missing widgetRequestModel or filterConfig');
+    if (!payload || !payload.filterConfig) {
+      this.toastr.warning('fetchDataFromServer: missing payload or filterConfig');
       this.isLoading = false;
       this.cd.detectChanges();
       return;
     }
-    this.setTimeAccordingToWidget(widgetRequestModel);
+  
     this.apiSubscription = this.chartingDataService
-      .getChartingData(widgetRequestModel)
+      .getChartingData(payload)
       .subscribe(
         (data: ChartsOutputModel | TableOutputModel) => {
           if (data === null || data === undefined) {
-            // do NOT set dataExists=false here — keep loading so UI doesn't show "No Data" immediately
             this.toastr.info('fetchDataFromServer: api returned null/undefined, keeping loader');
             return;
           }
+  
           if (this.isChartsOutputModel(data)) {
             const hasSeries = this.checkIfAnySeriesExists(data);
             this.dataExists = hasSeries;
             this.dataExistsForShowableProperties = true;
+  
             if (hasSeries) {
               this.transformChartData(data);
             } else {
-              // no series -> set flag so UI shows "No Data"
               this.dataExistsForShowableProperties = false;
             }
           } else if (this.isTableOutputModel(data)) {
-            // tables considered valid
             this.dataExists = true;
             this.dataExistsForShowableProperties = true;
             this.transformChartData(data);
           } else {
-            // unknown shape => no data
             this.dataExists = false;
             this.dataExistsForShowableProperties = true;
           }
+  
           this.isLoading = false;
           this.cd.detectChanges();
         },
@@ -448,6 +425,104 @@ export abstract class I2vChartsComponent implements OnInit {
       );
   }
 
+  private preparePayload(localWidgetRequestModel: Widget): Widget {
+    let payload: Widget;
+  
+    if (!localWidgetRequestModel.filterConfig.isCustomFilterApplied) {
+      const dashboardFilters = structuredClone(this.dashboardCustomFilterValue || {});
+      localWidgetRequestModel.filterConfig.customFilters = dashboardFilters || {};
+  
+      const updatedFilterConfig = this.buildFilterConfigFromCustomFilters(
+        this.localWidgetRequestModel.filterConfig,
+        this.dashboardCustomFilterValue
+      );
+  
+      payload = {
+        ...this.localWidgetRequestModel,
+        filterConfig: updatedFilterConfig
+      };
+    } else {
+      payload = structuredClone(this.localWidgetRequestModel);
+    }
+  
+    // 👉 2. Time filter apply
+    const timeFilter = payload.filterConfig?.customFilters?.Time?.[0];
+    if (timeFilter?.returnValue) {
+      const tr = timeFilter.returnValue as ITimeRange;
+      payload.filterConfig.startTime = tr.startTime;
+      payload.filterConfig.endTime = tr.endTime;
+    }
+  
+    // 👉 3. Refresh handling
+    if (this.localWidgetRequestModel.allowRefresh) {
+      this.setRefreshInterval();
+    }
+  
+    return payload;
+  }
+
+  private buildFilterConfigFromCustomFilters(
+    baseFilterConfig: any,
+    dashboardCustomFilterValue: ICustomFilter
+  ): any {
+  
+    if (!dashboardCustomFilterValue || Object.keys(dashboardCustomFilterValue).length === 0) {
+      return baseFilterConfig;
+    }
+  
+    const fc = structuredClone(baseFilterConfig || {});
+    fc.customFilters = fc.customFilters || {};
+    fc.propertyFilters = fc.propertyFilters || new RuleSet();
+    fc.propertyFilters.ruleSet = fc.propertyFilters.ruleSet || [];
+    //  VIDEO SOURCES
+    if (dashboardCustomFilterValue["Video Sources"]) {
+      const values = dashboardCustomFilterValue["Video Sources"]
+        .map(x => String(x.returnValue));
+  
+      // customFilters
+      fc.customFilters["Video Sources"] =
+        this.customFilters["Video Sources"].filter(x =>
+          values.includes(String(x.returnValue))
+        );
+  
+      // REMOVE OLD RULE
+      fc.propertyFilters.ruleSet = fc.propertyFilters.ruleSet
+        .filter(rs => !rs.rules?.some(r => r.field === "VideoSourceId"));
+  
+      //  ADD NEW RULE
+      if (values.length) {
+        fc.propertyFilters.ruleSet.push(
+          this.createRule({ key: "Video Sources", value: values } as any, "VideoSourceId")
+        );
+      }
+    }
+  
+
+    if (dashboardCustomFilterValue["Time"]) {
+      const timeFilter = dashboardCustomFilterValue["Time"][0];
+      const timeRange = timeFilter.returnValue as ITimeRange;
+  
+      fc.customFilters["Time"] = [
+        { displayName: timeFilter.displayName, returnValue: timeRange }
+      ];
+  
+      fc.startTime = timeRange.startTime;
+      fc.endTime = timeRange.endTime;
+    }
+  
+
+    if (dashboardCustomFilterValue["RefreshInterval"]) {
+      const value = Number(dashboardCustomFilterValue["RefreshInterval"][0].returnValue);
+  
+      fc.customFilters["RefreshInterval"] = [
+        { displayName: "RefreshInterval", returnValue: value }
+      ];
+  
+      fc.refreshInterval = value;
+    }
+  
+    return fc;
+  }
   // Chart transformation (your original logic)
   public abstract transformChartData(data: ChartsOutputModel | TableOutputModel): void;
 
@@ -503,14 +578,27 @@ export abstract class I2vChartsComponent implements OnInit {
 
   setRefreshInterval() {
     if (this.interval) {
-      clearInterval(this.interval);
+        clearInterval(this.interval);
     }
-    if (this.widgetRequestModel.refreshInterval != -1) {
-      this.interval = setInterval(() => {
-        this.getDataFromServer(this.widgetRequestModel);
-      }, this.widgetRequestModel.refreshInterval * 1000);
+    let refreshIntervalFilter = this.localWidgetRequestModel?.filterConfig?.customFilters?.['RefreshInterval']?.[0] || this.widgetRequestModel?.filterConfig?.customFilters?.['RefreshInterval']?.[0];
+    if(this.applyToAll && !this.localWidgetRequestModel?.filterConfig.isCustomFilterApplied){
+      refreshIntervalFilter = this.dashboardCustomFilterValue?.['RefreshInterval']?.[0] || refreshIntervalFilter;
     }
-  }
+    
+    if (!refreshIntervalFilter) {
+        return;
+    }
+    const intervalValue = Number(refreshIntervalFilter.returnValue);
+
+    this.interval = setInterval(() => {
+
+      // 🔥 ALWAYS CLONE LATEST STATE
+      const latestModel = structuredClone(this.localWidgetRequestModel);
+    
+      this.getDataFromServer(latestModel);
+    
+    }, intervalValue * 1000);
+}
 
   ngOnDestroy() {
     if (this.apiSubscription) {
@@ -574,8 +662,8 @@ export abstract class I2vChartsComponent implements OnInit {
     if (!newTimePeriod) {
       return;
     }
-    this.updateTimePeriodInWidget(this.widgetRequestModel, newTimePeriod);
-    this.getDataFromServer(this.widgetRequestModel);
+    this.updateTimePeriodInWidget(this.localWidgetRequestModel, newTimePeriod);
+    this.getDataFromServer(this.localWidgetRequestModel);
   }
 
   private updateTimePeriodInWidget(widgetModel: any, newTimePeriod: string) {
@@ -624,47 +712,30 @@ export abstract class I2vChartsComponent implements OnInit {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  clearCustomFiltersValues(event) {
-    if (event) {
-      this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
-      this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-      this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
-      this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
-      this.cd.detectChanges();
+  clearCustomFiltersValues(event: boolean) {
+
+    if (!event || !this.localWidgetRequestModel?.filterConfig) {
+      return;
     }
+  
+    const clonedDashboardFilters =
+      structuredClone(this.dashboardCustomFilterValue || {});
+  
+    this.setValueAsPerWidgetCustomFiltersValue(clonedDashboardFilters);
+  
+    this.localWidgetRequestModel.filterConfig = structuredClone({
+      ...this.localWidgetRequestModel.filterConfig,
+      customFilters: clonedDashboardFilters
+    });
+  
+    this.cd.detectChanges();
   }
 
-  updateCustomFiltersValues() {
-    if (this.widgetRequestModel.filterConfig.isDashboardFilterApplied || this.applyToAllEnabled) {
-      //apply time without checking apply to all
-      this.setValueAsPerWidgetCustomFiltersValue({ 'Time': this.dashboardCustomFilterValue['Time'] });
-
-      if (this.isCustomFilterApplied) {
-        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = this.applyToAllEnabled;
-        const isCustomFilterValuesEmpty = !this.customFilterValues || Object.keys(this.customFilterValues).length === 0;
-        if (isCustomFilterValuesEmpty) {
-          this.customFilterValues = { ...this.widgetRequestModel.filterConfig.customFilters };
-        }
-      }
-      if (!this.applyToAllEnabled) {
-        this.widgetRequestModel.filterConfig.customFilters = {
-          ...(this.customFilterValues)
-        };
-        this.setValueAsPerWidgetCustomFiltersValue(this.widgetRequestModel.filterConfig.customFilters);
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
-      } else {
-        this.widgetRequestModel.filterConfig.customFilters = { ...this.dashboardCustomFilterValue };
-        this.setValueAsPerWidgetCustomFiltersValue(this.dashboardCustomFilterValue);
-        this.widgetRequestModel.filterConfig.customFilters = JSON.parse(JSON.stringify(this.widgetRequestModel.filterConfig.customFilters));
-        this.widgetRequestModel.filterConfig.isDashboardFilterApplied = true;
-      }
-      this.cd.detectChanges();
-    }
-  }
+  
 
   appendNameToAggregatedProperty(chartData: ClientChartModel): ChartSeries[] {
-    if (this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Greatest || this.widgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Least) {
-      var aggregatedSeriesIndex = chartData.series.findIndex((x) => x.name.toLowerCase() == Enum_Method_Aggregation_With_Labels[this.widgetRequestModel.dataInputConfig.fieldsAggregationType].toLowerCase())
+    if (this.localWidgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Greatest || this.localWidgetRequestModel.dataInputConfig.fieldsAggregationType == Enum_Method_Aggregation.Least) {
+      var aggregatedSeriesIndex = chartData.series.findIndex((x) => x.name.toLowerCase() == Enum_Method_Aggregation_With_Labels[this.localWidgetRequestModel.dataInputConfig.fieldsAggregationType].toLowerCase())
       if (aggregatedSeriesIndex !== -1) {
         const aggregatedSeriesValueArray = chartData.series[aggregatedSeriesIndex].data;
 
@@ -682,7 +753,7 @@ export abstract class I2vChartsComponent implements OnInit {
   }
 
   isShowableSeries(chartSeries: ChartSeries): boolean {
-    var isSeriesShowable = this.widgetRequestModel.showableProperties.find(
+    var isSeriesShowable = this.localWidgetRequestModel.showableProperties.find(
       x =>
         x.displayName.toLowerCase() === chartSeries.name.toLowerCase() ||
         x.name.toLowerCase() === chartSeries.displayName.toLowerCase()

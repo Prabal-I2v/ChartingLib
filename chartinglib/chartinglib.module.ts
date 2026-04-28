@@ -32,7 +32,6 @@ import { MatBadgeModule } from "@angular/material/badge";
 import { I2vSankeyChartComponent } from "./i2v-sankey-chart/i2v-sankey-chart.component";
 import { GridstackModule } from 'gridstack/dist/angular';
 import { MatTooltip } from "@angular/material/tooltip";
-import { CustomFilterDialogComponent } from "./custom-filter-dialog/custom-filter-dialog.component";
 import { I2vGridComponent } from './i2v-grid/i2v-grid.component';
 import { TranslateModule } from "@ngx-translate/core";
 import { AnalyticClientSharedModule } from "../../AnalyticClientShare.module";
@@ -63,7 +62,7 @@ import { PredefinedWidgetsComponent } from "../predefined-widgets/predefined-wid
     I2vAreaChartComponent,
     DetailsWidgetComponent,
     I2vSankeyChartComponent,
-    CustomFilterDialogComponent,
+
     I2vGridComponent,
     WidgetFormComponent,
     WidgetFormPreviewComponent,

@@ -58,6 +58,7 @@ export enum Enum_WidgetType {
   KPI1D,
   KPI2D,
   Table,
+  Banner
 }
 
 // Dimension-based Widget Types
@@ -91,6 +92,7 @@ export const widgetTypeDimensionMap: Record<Enum_WidgetType, WidgetDimension> = 
   [Enum_WidgetType.StackedBarChart]: WidgetDimension.ThreeDimensional,
   [Enum_WidgetType.StackedColumnChart]: WidgetDimension.ThreeDimensional,
   [Enum_WidgetType.Table]: WidgetDimension.NoDimension,
+  [Enum_WidgetType.Banner]: WidgetDimension.NoDimension,
 };
 
 // Lists for dropdowns

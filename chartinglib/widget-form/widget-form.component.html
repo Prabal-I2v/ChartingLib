@@ -299,7 +299,7 @@
                     let onChange = onChange
                   ">
                   <mat-form-field class="entity-select-field">
-                    <mat-select [(ngModel)]="rule.entity" (ngModelChange)="onChange($event, rule)">
+                    <mat-select [(ngModel)]="rule.entity" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onChange($event, rule)">
                       <mat-option *ngFor="let entity of entities" [value]="entity.value">
                         {{ entity.name }}
                       </mat-option>
@@ -414,18 +414,23 @@
                     let rule;
                     let field = field;
                     let options = options;
-                    type: 'MultiSelect';
+                    type: 'GuidArray';
                     let onChange = onChange
                   ">
                   <div class="field-rule-container">
                     <div class="field-select-container">
                       <label class="form-label medium">Property value</label>
-                      <p-multiSelect [ngModelOptions]="{ standalone: true }" [options]="options"
-                        [(ngModel)]="rule.value"
-                        placeholder="Select VideoSources" [showClear]="true"
-                        (ngModelChange)="onChange($event)" [appendTo]="'body'">
+                      <p-multiSelect 
+                        [ngModelOptions]="{ standalone: true }" 
+                        [options]="options"
+                        [ngModel]="ensureArray(rule.value)"    (ngModelChange)="handleMultiSelectChange($event, onChange)"     
+                        optionLabel="label" 
+                        optionValue="value"
+                        placeholder="Select VideoSources" 
+                        [showClear]="true"
+                        [appendTo]="'body'">
                       </p-multiSelect>
-                    </div>
+                      </div>
                   </div>
                 </ng-container>
   
@@ -564,7 +569,7 @@
                       : ''
                   ">Select Properties</label>
                 <p-multiSelect [options]="allFieldNames" formControlName="fieldNames" optionLabel="name" [filter]="true"
-                  placeholder="Select Properties" appendTo="body" [showToggleAll]="true"
+                  placeholder="Select Properties" appendTo="body" [showToggleAll]="true" dataKey="name"
                   (onChange)="onFieldNamesChange($event)" styleClass="form-multiselect"
                   [class.error]="hasFieldError('dataInputConfig.fieldNames')">
 
@@ -598,7 +603,7 @@
                   @if(widgetForm.get('dataInputConfig.method')?.value === Enum_method.Count){
                   <div class="field-rule-header">
                     <div class="checkbox-label">
-                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [value]="field.rule"
+                      <input type="checkbox" (change)="toggleFieldRule($index, $event)" [checked]="!!field.rule"
                         class="form-checkbox" />
                       <span class="checkbox-text">{{ field.name }}</span>
                     </div>
@@ -608,30 +613,38 @@
                   <div class="field-rule-controls">
                     <div class="rule-control">
                       <label class="form-label">Operator</label>
-                      <select class="form-control" [value]="field.rule.operator"
-                        (change)="onFieldRuleOperatorChange($index, $event)">
-                        @for (condition of getOpertorsByType(field.type); track
-                        condition) {
-                        <option [value]="condition">{{ condition }}</option>
-                        }
-                      </select>
+                      <p-dropdown
+                        [options]="RuleOperators[field.type]"
+                        [ngModel]="operatorToString(field?.rule.operator)"
+                        (onChange)="onFieldRuleOperatorChange($index, $event.value)"
+                        [ngModelOptions]="{ standalone: true }"
+                        placeholder="Select"
+                        appendTo="body" 
+                      >
+                        <ng-template let-value pTemplate="item">
+                          {{ value | humanize | translate }}
+                        </ng-template>
+                      </p-dropdown>
                     </div>
 
                     <div class="rule-control">
                       <label class="form-label">Value</label>
 
-                      @if (field.type === EventPropertyType.String) {
-                      <input type="text" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)" />
+                      @if (field.type === EventPropertyType.String || field.type === EventPropertyType.Guid) {
+                        <input type="text" class="form-control" 
+                               [placeholder]="'Enter value for ' + field.name"
+                               [value]="field.rule.value || ''" 
+                               (input)="onFieldRuleValueChange($index, $event)" />
                       } @if (field.type === EventPropertyType.Boolean) {
                       <select class="form-control" (change)="onFieldRuleValueChange($index, $event)">
                         <option value="true">True</option>
                         <option value="false">False</option>
                       </select>
-                      } @if (field.type === EventPropertyType.Integer ||
-                      field.type === EventPropertyType.Float) {
-                      <input type="number" class="form-control" [placeholder]="'Enter value for ' + field.name"
-                        (input)="onFieldRuleValueChange($index, $event)" />
+                      } @if (field.type === EventPropertyType.Integer || field.type === EventPropertyType.Float) {
+                        <input type="number" class="form-control" 
+                               [placeholder]="'Enter value for ' + field.name"
+                               [value]="field.rule.value"
+                               (input)="onFieldRuleValueChange($index, $event)" />
                       }
                     </div>
                   </div>
@@ -997,19 +1010,55 @@
 
           <div class="form-group">
             <div class="checkbox-label">
-              <input type="checkbox" formControlName="allowRefresh" class="form-checkbox" />
+              <input type="checkbox" formControlName="allowRefresh" (change)="onAllowRefreshToggle($event)" class="form-checkbox" />
               <span class="checkbox-text">Allow Auto Refresh for widgets</span>
-              @if(allowRefresh == true){
-              <input class="i2v-input primary-default medium" type="number" formControlName="refreshInterval"
-                [class.error]="hasFieldError('refreshInterval')" min="30" max="3600"
-                (blur)="markFieldAsTouched('refreshInterval')" />
-              (in seconds) @if(hasFieldError('refreshInterval')) {
-              <div class="field-error">
-                {{ getFieldError("refreshInterval") }}
-              </div>
-              } }
+              
+              @if(widgetForm.get('allowRefresh')?.value){
+                <input 
+                  class="i2v-input primary-default medium" 
+                  type="number" 
+                  [value]="widgetForm.get('refreshInterval')?.value"
+                  (input)="OnRefreshIntervalChange($event)"
+                  min="30" max="3600" />
+                <span> (in seconds)</span>
+              }
             </div>
           </div>
+          
+          <hr class="config-divider" />
+          
+          <div class="form-group">
+            <label class="form-label">{{ 'Select Time Range' | translate }}</label>
+            <p-dropdown 
+              [options]="timeOptions" 
+              [(ngModel)]="timeFilterValue" 
+              [ngModelOptions]="{standalone: true}"
+              (onChange)="onTimeChange($event)"
+              placeholder="{{ 'Select Time' | translate }}" 
+              appendTo="body"
+              styleClass="form-dropdown">
+              <ng-template let-option pTemplate="item">
+                {{ option.label | translate }}
+              </ng-template>
+            </p-dropdown>
+          </div>
+          
+          @if (enableCustomTime) {
+            <div class="form-group mt-2">
+              <label class="form-label">{{ 'Custom Date Range' | translate }}</label>
+              <p-calendar 
+                [(ngModel)]="dateRange" 
+                [ngModelOptions]="{standalone: true}"
+                selectionMode="range" 
+                [showTime]="true" 
+                [appendTo]="'body'"
+                placeholder="Select Start and End Date"
+                (onSelect)="onTimeChange('Custom')"
+                (onClose)="onTimeChange('Custom')"
+                styleClass="form-calendar w-full">
+              </p-calendar>
+            </div>
+          }
 
           <div class="form-group" *ngIf="requiresWidgetSpecificConfig()">
             <div class="checkbox-label">

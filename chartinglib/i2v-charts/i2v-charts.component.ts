@@ -81,6 +81,7 @@ export abstract class I2vChartsComponent implements OnInit {
   ngOnInit() {
     this.applyToAllEnabled = this.dashboardCustomFilterValue?.['ApplyToAll']?.[0]?.returnValue as boolean;
     this.refreshCallSubjectSubscription = this.refreshCallSubject.subscribe(() => {
+      this.localWidgetRequestModel = structuredClone(this.widgetRequestModel);
       this.getDataFromServer(this.localWidgetRequestModel);
     });
     this.localWidgetRequestModel = structuredClone(this.widgetRequestModel);
@@ -111,13 +112,13 @@ export abstract class I2vChartsComponent implements OnInit {
     const hasCustomFilter =
     customFilters['IsCustomFilterApplied']?.[0]?.returnValue === true
   
-    if (this.applyToAllEnabled) {
-      // ✅ APPLY ALL
+    if (this.applyToAll && !hasCustomFilter) {
+      // APPLY ALL
       const clonedDashboardFilters = structuredClone(this.dashboardCustomFilterValue || {});
       this.setValueAsPerWidgetCustomFiltersValue(clonedDashboardFilters);
     } 
     else {
-      // ✅ DEFAULT
+      // DEFAULT
       this.localWidgetRequestModel.filterConfig.customFilters = structuredClone(
         this.widgetLevelFilterBackup || {}
       );
@@ -134,7 +135,7 @@ export abstract class I2vChartsComponent implements OnInit {
   
       // ✅ always fresh clone
       this.localWidgetRequestModel = structuredClone(currModel);
-      if (this.applyToAllEnabled) {
+      if (this.applyToAll) {
         this.updateCustomFiltersValues();
         return;
       }

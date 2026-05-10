@@ -65,7 +65,7 @@ export class I2vGridComponent extends I2vChartsComponent {
     super.ngOnInit();
     this.signalRService.$CancelExportSubject.subscribe(() => {
       this.isExporting = false;
-      localStorage.setItem('isExportInProgress', 'false');
+      
     });
   }
 
@@ -226,12 +226,12 @@ export class I2vGridComponent extends I2vChartsComponent {
     const data = await this.commonService.isReportInProgress("widgetExport");
     if (data) {
       this.isExporting = true;
-      localStorage.setItem('isExportInProgress', 'true');
+      
       this.subscribeForNotifier();
       return true;
     } else {
       this.isExporting = false;
-      localStorage.setItem('isExportInProgress', 'false');
+      
       this.unsubscribeForNotifier();
       return false;
     }
@@ -303,7 +303,7 @@ export class I2vGridComponent extends I2vChartsComponent {
   cancelExport() {
     this.commonService.cancelExport(ReportType.Tabular, "widgetExport").subscribe(() => {
       this.isExporting = false;
-      localStorage.setItem('isExportInProgress', 'false');
+      
       this.unsubscribeForNotifier();
     });
     this.dialog.closeAll();

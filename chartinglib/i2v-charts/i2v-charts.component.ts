@@ -446,20 +446,74 @@ export abstract class I2vChartsComponent implements OnInit {
       payload = structuredClone(this.localWidgetRequestModel);
     }
   
-    // 👉 2. Time filter apply
+    //  2. Time filter apply
     const timeFilter = payload.filterConfig?.customFilters?.Time?.[0];
-    if (timeFilter?.returnValue) {
-      const tr = timeFilter.returnValue as ITimeRange;
-      payload.filterConfig.startTime = tr.startTime;
-      payload.filterConfig.endTime = tr.endTime;
+    if (timeFilter) {
+      const freshRange = this.getFreshTimeRange(timeFilter);
+      payload.filterConfig.startTime = freshRange.startTime;
+      payload.filterConfig.endTime = freshRange.endTime;
+      // keep custom filter synced
+      timeFilter.returnValue = freshRange;
     }
   
-    // 👉 3. Refresh handling
+    //  3. Refresh handling
     if (this.localWidgetRequestModel.allowRefresh) {
       this.setRefreshInterval();
     }
   
     return payload;
+  }
+
+  private getFreshTimeRange(timeFilter: any): ITimeRange {
+
+    if (!timeFilter) {
+      return {
+        startTime: this.localWidgetRequestModel?.filterConfig?.startTime,
+        endTime: this.localWidgetRequestModel?.filterConfig?.endTime
+      };
+    }
+  
+    const label = timeFilter.displayName;
+    const now = new Date();
+  
+    // TODAY
+    if (label === 'Today') {
+  
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+  
+      return {
+        startTime: start.getTime(),
+        endTime: now.getTime()
+      };
+    }
+  
+    // LAST 7 DAYS
+    if (label === 'Last 7 days') {
+  
+      const start = new Date(now);
+      start.setDate(start.getDate() - 7);
+  
+      return {
+        startTime: start.getTime(),
+        endTime: now.getTime()
+      };
+    }
+  
+    // LAST 30 DAYS
+    if (label === 'Last 30 days') {
+  
+      const start = new Date(now);
+      start.setDate(start.getDate() - 30);
+  
+      return {
+        startTime: start.getTime(),
+        endTime: now.getTime()
+      };
+    }
+  
+    // CUSTOM RANGE
+    return timeFilter.returnValue as ITimeRange;
   }
 
   private buildFilterConfigFromCustomFilters(

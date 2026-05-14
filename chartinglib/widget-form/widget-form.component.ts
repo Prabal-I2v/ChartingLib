@@ -2436,14 +2436,15 @@ stringToOperator(value: string): number {
       case Enum_WidgetType.KPI1D:
       case Enum_WidgetType.KPI2D:
         (widget as any).kpiConf = {
-          CountValueColumnName: formValue.widgetSpecificConfig.kpiConf.countValueColumnName,
-          DisplayValueColumnName: formValue.widgetSpecificConfig.kpiConf.displayValueColumnName,
-          ImageColumnName: formValue.widgetSpecificConfig.kpiConf.imageColumnName,
+          countValueColumnName: formValue.widgetSpecificConfig.kpiConf.countValueColumnName,
+          displayValueColumnName: formValue.widgetSpecificConfig.kpiConf.displayValueColumnName,
+          imageColumnName: formValue.widgetSpecificConfig.kpiConf.imageColumnName,
           showChart: formValue.widgetSpecificConfig.kpiConf.showChart,
           hideLabel: formValue.widgetSpecificConfig.kpiConf.hideLabel,
           showAggregation: formValue.widgetSpecificConfig.kpiConf.showAggregation,
           dataAggregationMethod: formValue.widgetSpecificConfig.kpiConf.dataAggregationMethod
         };
+        widget.widgetSpecificConfig = JSON.stringify((widget as any).kpiConf);
         break;
 
       case Enum_WidgetType.Donut1D:
@@ -2453,6 +2454,7 @@ stringToOperator(value: string): number {
           centerLabelAggregation: formValue.widgetSpecificConfig.donutConf.centerLabelAggregation,
           showSeriesLabelValue: formValue.widgetSpecificConfig.donutConf.showSeriesLabelValue
         };
+        widget.widgetSpecificConfig = JSON.stringify((widget as any).donutConf);
         break;
 
       case Enum_WidgetType.Table:
@@ -2461,6 +2463,7 @@ stringToOperator(value: string): number {
           pageLimit: formValue.widgetSpecificConfig.tableConf.pageLimit,
           pageNumber: formValue.widgetSpecificConfig.tableConf.pageNumber
         };
+        widget.widgetSpecificConfig = JSON.stringify((widget as any).tableConf);
         break;
     }
   }

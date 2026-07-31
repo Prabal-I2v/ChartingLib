@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { ExportProgress, ExportStatus } from '../../../../services/export-status.model';
 import { ChartingDataService } from '../charting-data.service';
 import { I2vChartsComponent } from '../i2v-charts/i2v-charts.component';
 import moment from 'moment';
@@ -38,6 +39,8 @@ export class I2vGridComponent extends I2vChartsComponent {
   isExporting = false;
   exportSubjectSubscription: Subscription;
   progressNotifier: exportReportModel;
+  /** Bound to the progress notifier's status line while the export is in flight. */
+  exportStatusMessage: string | null = null;
 
   constructor(
     public cd: ChangeDetectorRef,
@@ -212,10 +215,6 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   async exportKendo() {
-    const result = await this.IsExportInProgress();
-    if (result) {
-      return;
-    }
     this.subscribeForNotifier();
     console.log(this.widgetRequestModel);
     this.chartingDataService.exportTableWidget(this.widgetRequestModel).subscribe(() => {
@@ -239,29 +238,64 @@ export class I2vGridComponent extends I2vChartsComponent {
   }
 
   async subscribeForNotifier() {
+    // An earlier subscription may still be attached (reattached on load, or a rapid
+    // second click). Assigning over the field would orphan it and leave two live
+    // handlers reacting to the same export.
+    this.exportSubjectSubscription?.unsubscribe();
     this.isExporting = true;
     this.exportSubjectSubscription = this.signalRService.$WidgetExportSubject.subscribe((data: exportReportModel) => {
       if (data) {
-        if (data.isCancelled || data.isCompleted) {
-          if (data.isCompleted) {
+        switch (data.status) {
+          case ExportStatus.Completed:
             window.open(data.filePath, '_blank');
             this.commonService.showSuccessToastr('Export file present in User logs.');
-          } else {
-            if (data.errorMessage) {
-              this.commonService.showErrorToastr(data.errorMessage);
-            } else {
-              this.commonService.showWarningToastr('Export cancelled by the user.');
-            }
+            this.finishExport();
+            break;
+
+          case ExportStatus.Cancelled:
+            this.commonService.showWarningToastr('Export cancelled by the user.');
+            this.finishExport();
+            break;
+
+          case ExportStatus.Failed:
+            this.commonService.showErrorToastr(data.errorMessage);
+            this.finishExport();
+            break;
+
+          case ExportStatus.Starting:
+          case ExportStatus.Preparing:
+          case ExportStatus.InProgress:
+          case ExportStatus.Finalizing:
+          case ExportStatus.Cancelling: {
+            // Non-terminal: the export is still running, so do not tear down the subscription.
+            // Shown on the progress notifier's status line rather than as a toast: these
+            // transitions fire several times per export and toasts would stack up.
+            this.exportStatusMessage = ExportProgress.message(data);
+            break;
           }
-          this.isExporting = false;
-          // this.logService.removeExportsFromDirectory().subscribe();
-          this.unsubscribeForNotifier();
+
+          default: {
+            // Every status is cased above, so this is unreachable. A newly added status narrows to
+            // something other than never here and fails the build until it is handled explicitly.
+            const exhaustiveCheck: never = data.status;
+            break;
+          }
         }
         this.progressNotifier = data;
       }
     }, () => {
       this.isExporting = false;
     });
+  }
+
+  /**
+   * Tears down export UI state once the export reaches a terminal status.
+   */
+  private finishExport(): void {
+    this.exportStatusMessage = null;
+    this.isExporting = false;
+    // this.logService.removeExportsFromDirectory().subscribe();
+    this.unsubscribeForNotifier();
   }
 
   private unsubscribeForNotifier() {
@@ -303,9 +337,10 @@ export class I2vGridComponent extends I2vChartsComponent {
 
   cancelExport() {
     this.eventService.cancelExport("widgetExport").subscribe(() => {
-      this.isExporting = false;
-      localStorage.setItem('isExportInProgress', 'false');
-      this.unsubscribeForNotifier();
+      // Deliberately no teardown here: cancellation has only been *requested*. The export
+      // keeps running until it unwinds, and its terminal Cancelled notification is what
+      // closes the notifier. Tearing down now would hide the progress UI and drop the
+      // subscription before that notification arrives.
     });
     this.dialog.closeAll();
   }

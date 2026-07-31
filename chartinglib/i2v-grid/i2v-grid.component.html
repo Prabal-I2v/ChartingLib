@@ -86,6 +86,6 @@
   }
 </div>
 <lib-progress-notifier *ngIf="isExporting" [progressDone]="progressNotifier.exportDoneCount"
-  [totalCount]="progressNotifier.totalExportCount" [showMaximise]="true" [headerText]="'Export in progress'"
+  [totalCount]="progressNotifier.totalExportCount" [LastStatus]="exportStatusMessage" [showMaximise]="true" [headerText]="'Export in progress'"
   [callback]="cancelCallback" [innerText]="'Exporting Resources status'" style="z-index: 9990; position: absolute">
 </lib-progress-notifier>

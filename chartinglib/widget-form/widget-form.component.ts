@@ -366,6 +366,9 @@ export class WidgetFormComponent implements OnInit {
     if (modalData.event?.data?.mode) {
       this.formMode = modalData.event.data.mode;
     }
+    if (this.finalWidget?.isPredefinedWidget || this.finalWidget?.isCopied) {
+      this.formMode = Enum_WidgetFormMode.predefined;
+    }
     if (modalData.event.data.timeObj) {
       this.timeObj = modalData.event.data.timeObj
     }
@@ -479,7 +482,7 @@ export class WidgetFormComponent implements OnInit {
               this.updateUIStateAfterLoad();
 
               // For pre-defined widgets, mark steps 1 and 3 as complete and disable form controls
-              if (this.formMode === Enum_WidgetFormMode.predefined) {
+              if (this.isPredefinedMode()) {
                 this.stepsCompleted[1] = true;
                 this.stepsCompleted[3] = true;
                 this.disableFormControlsForPredefinedMode();
@@ -503,7 +506,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   private disableFormControlsForPredefinedMode(): void {
-    if (this.formMode === Enum_WidgetFormMode.predefined) {
+    if (this.isPredefinedMode()) {
       // Disable Step 1 controls
       this.widgetForm.controls.configurationApproach.disable();
       this.widgetForm.controls.entityConfigType.disable();
@@ -645,7 +648,7 @@ export class WidgetFormComponent implements OnInit {
     labels.push('Review & Submit');
 
     // Add indicators for pre-defined mode
-    if (this.formMode === Enum_WidgetFormMode.predefined) {
+    if (this.isPredefinedMode()) {
       labels[0] = '🔒 Choose Approach'; // Step 1 - locked
       labels[2] = '🔒 Data Config & Filters'; // Step 3 - locked
     }
@@ -658,7 +661,7 @@ export class WidgetFormComponent implements OnInit {
   }
 
   isStepEditable(step: number): boolean {
-    if (this.formMode === Enum_WidgetFormMode.predefined) {
+    if (this.isPredefinedMode()) {
       // Only allow editing steps 2, 4, and 5 for pre-defined widgets
       return step === 2 || step === 4 || step === 5;
     }
@@ -669,7 +672,7 @@ export class WidgetFormComponent implements OnInit {
     if (step === 1) return true;
 
     // For pre-defined widgets, restrict navigation to steps 1 and 3
-    if (this.formMode === Enum_WidgetFormMode.predefined) {
+    if (this.isPredefinedMode()) {
       if (step === 1 || step === 3) {
         return false; // Disable steps 1 and 3
       }
@@ -1401,16 +1404,20 @@ export class WidgetFormComponent implements OnInit {
 
   getAvailableColumnNames(): string[] {
     const fieldNames = this.selectedFieldNames;
-    const columns = ['count'];
+    const columns: string[] = [];
 
     if (fieldNames?.length > 0) {
       fieldNames.forEach((field: IWidgetFieldNameConfig) => {
-        if (field?.name) {
+        if (field?.columnName) {
+          columns.push(field.columnName);
+        }
+        if (field?.name && field.name !== field.columnName) {
           columns.push(field.name);
         }
       });
     }
 
+    columns.push('count');
     columns.push('displayValue');
     return [...new Set(columns)];
   }
@@ -2022,7 +2029,7 @@ stringToOperator(value: string): number {
   // Widget Creation (Updated to use typed form)
   private createWidget(): Widget {
     // For pre-defined widgets, ensure we use the original data configuration
-    if (this.formMode === Enum_WidgetFormMode.predefined && this.finalWidget) {
+    if (this.isPredefinedMode() && this.finalWidget) {
       const formValue = this.widgetForm.getRawValue() as any; // Use getRawValue to include disabled controls
 
       // Create updated widget preserving original data configuration
@@ -2186,18 +2193,36 @@ stringToOperator(value: string): number {
 
   private createDataConfig(): IWidgetDataConfig[] {
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
+      const entity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
+      const schemaName = this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema;
+      const existingConfig = this.finalWidget?.dataInputConfig?.dataConfig?.find(
+        (dc: IWidgetDataConfig) => dc.entity === entity && dc.schemaName === schemaName
+      );
       return [{
-        entity: this.widgetForm.controls.dataInputConfig.controls.entitySelect.value,
-        schemaName: this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema
+        entity: entity,
+        schemaName: schemaName,
+        ...(existingConfig?.joinableEntities && existingConfig.joinableEntities.length > 0
+          ? { joinableEntities: existingConfig.joinableEntities }
+          : {})
       }];
     } else {
       const dataConfigs = this.getDataConfigControls();
       return dataConfigs
         .filter(config => config.get('schemaName')?.value)
-        .map(config => ({
-          entity: config.get('entity')?.value,
-          schemaName: config.get('schemaName')?.value as Enum_Schema
-        }));
+        .map(config => {
+          const entity = config.get('entity')?.value;
+          const schemaName = config.get('schemaName')?.value as Enum_Schema;
+          const existingConfig = this.finalWidget?.dataInputConfig?.dataConfig?.find(
+            (dc: IWidgetDataConfig) => dc.entity === entity && dc.schemaName === schemaName
+          );
+          return {
+            entity: entity,
+            schemaName: schemaName,
+            ...(existingConfig?.joinableEntities && existingConfig.joinableEntities.length > 0
+              ? { joinableEntities: existingConfig.joinableEntities }
+              : {})
+          };
+        });
     }
   }
 
@@ -2534,6 +2559,10 @@ stringToOperator(value: string): number {
 
     if (!widgetType) {
       warnings.push('Please select a widget type');
+      return warnings;
+    }
+
+    if (this.isPredefinedMode()) {
       return warnings;
     }
 
@@ -3506,18 +3535,18 @@ if (propertyFilters?.rules?.length) {
 
   // Update the form title based on mode
   getFormTitle(): string {
-    if (this.formMode === Enum_WidgetFormMode.predefined) {
+    if (this.isPredefinedMode()) {
       return this.isEditMode() ? 'Customize Pre-defined Widget' : 'Configure Pre-defined Widget';
     }
     return this.isEditMode() ? 'Edit Widget' : 'Create New Widget';
   }
 
   isPredefinedMode(): boolean {
-    return this.formMode === Enum_WidgetFormMode.predefined;
+    return this.formMode === Enum_WidgetFormMode.predefined || this.isCopied();
   }
 
   isConfigurable(): boolean {
-    if(this.finalWidget?.isPredefinedWidget){
+    if(this.finalWidget?.isPredefinedWidget || this.finalWidget?.isCopied){
       return this.finalWidget.isWidgetPredefinedAndConfigurable;
     }else{
       return true;

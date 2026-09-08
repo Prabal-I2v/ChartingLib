@@ -151,22 +151,24 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
             let label = `${series.displayName} - ${xAxisField}`
             let image = ''
             if (this.widgetRequestModel.kpiConf?.countValueColumnName) {
-              const series = this.chartData?.series?.find(s => 
-                s.name?.toLowerCase() === this.widgetRequestModel.kpiConf.countValueColumnName?.toLowerCase()
-              );
+              const series = this.findSeries(this.widgetRequestModel.kpiConf.countValueColumnName);
               if (series?.data?.[index] !== undefined) {
                 value = Number(series.data[index]);
               }
             }
 
             if (this.widgetRequestModel.kpiConf?.displayValueColumnName) {
-              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.displayValueColumnName.toLowerCase());
-              label = series.data[index].toString();
+              const series = this.findSeries(this.widgetRequestModel.kpiConf.displayValueColumnName);
+              if (series?.data?.[index] !== undefined) {
+                label = series.data[index].toString();
+              }
             }
 
             if (this.widgetRequestModel.kpiConf?.imageColumnName) {
-              const series = this.chartData?.series?.find(s => s.name.toLowerCase() === this.widgetRequestModel.kpiConf.imageColumnName.toLowerCase());
-              image = series.data[index].toString();
+              const series = this.findSeries(this.widgetRequestModel.kpiConf.imageColumnName);
+              if (series?.data?.[index] !== undefined) {
+                image = series.data[index].toString();
+              }
             }
 
             if (!isNaN(value)) {
@@ -238,9 +240,48 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     }
   }
 
+  findSeries(columnName?: string): ChartSeries | undefined {
+    if (!columnName || !this.chartData?.series?.length) return undefined;
+    const colLower = columnName.toLowerCase();
+
+    // 1. Direct match by name or displayName (case-insensitive)
+    let series = this.chartData.series.find(s =>
+      s.name?.toLowerCase() === colLower || s.displayName?.toLowerCase() === colLower
+    );
+    if (series) return series;
+
+    // 2. Match via dataInputConfig.fieldNames (e.g. 'personId' -> 'PersonCount')
+    if (this.widgetRequestModel?.dataInputConfig?.fieldNames?.length) {
+      const field = this.widgetRequestModel.dataInputConfig.fieldNames.find(f =>
+        f.name?.toLowerCase() === colLower || f.columnName?.toLowerCase() === colLower
+      );
+      if (field) {
+        series = this.chartData.series.find(s =>
+          s.name?.toLowerCase() === field.columnName?.toLowerCase() ||
+          s.name?.toLowerCase() === field.name?.toLowerCase() ||
+          s.displayName?.toLowerCase() === field.columnName?.toLowerCase()
+        );
+        if (series) return series;
+      }
+    }
+
+    // 3. Fallback for 'count': find aggregated field or series containing 'count'
+    if (colLower === 'count') {
+      const aggField = this.widgetRequestModel?.dataInputConfig?.fieldNames?.find(f => f.applyAggregation);
+      if (aggField) {
+        series = this.chartData.series.find(s => s.name?.toLowerCase() === aggField.columnName?.toLowerCase());
+        if (series) return series;
+      }
+      series = this.chartData.series.find(s => s.name?.toLowerCase().includes('count'));
+      if (series) return series;
+    }
+
+    return undefined;
+  }
+
   getSeriesDataByName(seriesName: string | undefined, index: number): any {
     if (!seriesName) return null;
-    const series = this.chartData?.series?.find(s => s.name === seriesName);
+    const series = this.findSeries(seriesName);
     return series?.data?.[index];
   }
 

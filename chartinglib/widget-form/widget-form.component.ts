@@ -366,9 +366,6 @@ export class WidgetFormComponent implements OnInit {
     if (modalData.event?.data?.mode) {
       this.formMode = modalData.event.data.mode;
     }
-    if (this.finalWidget?.isPredefinedWidget || this.finalWidget?.isCopied) {
-      this.formMode = Enum_WidgetFormMode.predefined;
-    }
     if (modalData.event.data.timeObj) {
       this.timeObj = modalData.event.data.timeObj
     }
@@ -2193,36 +2190,18 @@ stringToOperator(value: string): number {
 
   private createDataConfig(): IWidgetDataConfig[] {
     if (this.widgetForm.controls.entityConfigType.value === 'single') {
-      const entity = this.widgetForm.controls.dataInputConfig.controls.entitySelect.value;
-      const schemaName = this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema;
-      const existingConfig = this.finalWidget?.dataInputConfig?.dataConfig?.find(
-        (dc: IWidgetDataConfig) => dc.entity === entity && dc.schemaName === schemaName
-      );
       return [{
-        entity: entity,
-        schemaName: schemaName,
-        ...(existingConfig?.joinableEntities && existingConfig.joinableEntities.length > 0
-          ? { joinableEntities: existingConfig.joinableEntities }
-          : {})
+        entity: this.widgetForm.controls.dataInputConfig.controls.entitySelect.value,
+        schemaName: this.widgetForm.controls.dataInputConfig.controls.entityTypeSelect.value as Enum_Schema
       }];
     } else {
       const dataConfigs = this.getDataConfigControls();
       return dataConfigs
         .filter(config => config.get('schemaName')?.value)
-        .map(config => {
-          const entity = config.get('entity')?.value;
-          const schemaName = config.get('schemaName')?.value as Enum_Schema;
-          const existingConfig = this.finalWidget?.dataInputConfig?.dataConfig?.find(
-            (dc: IWidgetDataConfig) => dc.entity === entity && dc.schemaName === schemaName
-          );
-          return {
-            entity: entity,
-            schemaName: schemaName,
-            ...(existingConfig?.joinableEntities && existingConfig.joinableEntities.length > 0
-              ? { joinableEntities: existingConfig.joinableEntities }
-              : {})
-          };
-        });
+        .map(config => ({
+          entity: config.get('entity')?.value,
+          schemaName: config.get('schemaName')?.value as Enum_Schema
+        }));
     }
   }
 
@@ -2559,10 +2538,6 @@ stringToOperator(value: string): number {
 
     if (!widgetType) {
       warnings.push('Please select a widget type');
-      return warnings;
-    }
-
-    if (this.isPredefinedMode()) {
       return warnings;
     }
 
@@ -3542,11 +3517,11 @@ if (propertyFilters?.rules?.length) {
   }
 
   isPredefinedMode(): boolean {
-    return this.formMode === Enum_WidgetFormMode.predefined || this.isCopied();
+    return this.formMode === Enum_WidgetFormMode.predefined;
   }
 
   isConfigurable(): boolean {
-    if(this.finalWidget?.isPredefinedWidget || this.finalWidget?.isCopied){
+    if(this.finalWidget?.isPredefinedWidget){
       return this.finalWidget.isWidgetPredefinedAndConfigurable;
     }else{
       return true;

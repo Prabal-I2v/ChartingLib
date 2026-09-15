@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit } from "@angular/core";
 import { I2vChartsComponent } from "../i2v-charts/i2v-charts.component";
 import { ChartingDataService } from "../charting-data.service";
 import { ChartsOutputModel } from "../Models/ChartsOutputModel";
@@ -22,9 +22,9 @@ import { Kpi2DWidget } from "../Models/widgetRequestModel/KpiWidget2DModel";
   templateUrl: "./i2v-kpi-chart.component.html",
   styleUrl: "./i2v-kpi-chart.component.scss",
 })
-export class I2vKpiChartComponent extends I2vChartsComponent {
+export class I2vKpiChartComponent extends I2vChartsComponent implements OnInit {
   chartData: ClientChartModel;
-  @Input() override widgetRequestModel: Kpi1DWidget | Kpi2DWidget = null;
+  @Input() override widgetRequestModel: Kpi1DWidget | Kpi2DWidget | null = null;
   percentValue: number = 0;
   svgIcon: string = "";
   ResSvgIcon: string = "";
@@ -47,10 +47,10 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     super(cd, chartingDataService, elementRef);
   }
 
-  ngOnInit(): void {
+  override ngOnInit(): void {
     super.ngOnInit();
   }
-  transformChartData(data: ChartsOutputModel) {
+  transformChartData(data: ChartsOutputModel): void {
     this.dataExistsForShowableProperties = true;
     const chartData = new ClientChartModel();
     chartData.series = data.seriesData.map((x) => {
@@ -65,7 +65,7 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
     if (data.labels.useXAxisFieldValue && data.labels.xAxisFields.length > 0) {
       if (isMonthData) {
-        const monthData: any[] = [];
+        const monthData: string[] = []; 
         data.labels.xAxisFields.forEach((x) => {
           monthData.push(Enum_Month[parseInt(x) - 1]);
         });
@@ -136,39 +136,45 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     if (this.chartData.series.length == 0) {
       this.dataExistsForShowableProperties = false;
     }
-    if (this.widgetRequestModel.kpiConf?.showAggregation) {
-      const aggregationMethod =
-        this.widgetRequestModel.kpiConf.dataAggregationMethod;
+    
+    // Aggregation Logic with Performance Optimization
+    if (this.widgetRequestModel?.kpiConf?.showAggregation) {
+      const aggregationMethod = this.widgetRequestModel.kpiConf.dataAggregationMethod;
 
       // Collect all relevant values with labels in one step
       const valuesToAggregate: { value: number; label: string, image: string }[] = [];
+
+      // Resolve series references ONCE outside the loops (O(N) instead of O(N*M))
+      const countSeries = this.widgetRequestModel.kpiConf.countValueColumnName 
+        ? this.findSeries(this.widgetRequestModel.kpiConf.countValueColumnName) 
+        : undefined;
+
+      const displaySeries = this.widgetRequestModel.kpiConf.displayValueColumnName 
+        ? this.findSeries(this.widgetRequestModel.kpiConf.displayValueColumnName) 
+        : undefined;
+
+      const imageSeries = this.widgetRequestModel.kpiConf.imageColumnName 
+        ? this.findSeries(this.widgetRequestModel.kpiConf.imageColumnName) 
+        : undefined;
 
       this.chartData.series.forEach((series) => {
         if (this.chartData.xAxisFields.length > 0) {
           // Case: xAxisFields are present
           this.chartData.xAxisFields.forEach((xAxisField, index) => {
             let value = Number(series.data[index]);
-            let label = `${series.displayName} - ${xAxisField}`
-            let image = ''
-            if (this.widgetRequestModel.kpiConf?.countValueColumnName) {
-              const series = this.findSeries(this.widgetRequestModel.kpiConf.countValueColumnName);
-              if (series?.data?.[index] !== undefined) {
-                value = Number(series.data[index]);
-              }
+            let label = `${series.displayName} - ${xAxisField}`;
+            let image = '';
+
+            if (countSeries?.data?.[index] !== undefined) {
+              value = Number(countSeries.data[index]);
             }
 
-            if (this.widgetRequestModel.kpiConf?.displayValueColumnName) {
-              const series = this.findSeries(this.widgetRequestModel.kpiConf.displayValueColumnName);
-              if (series?.data?.[index] !== undefined) {
-                label = series.data[index].toString();
-              }
+            if (displaySeries?.data?.[index] !== undefined) {
+              label = displaySeries.data[index].toString();
             }
 
-            if (this.widgetRequestModel.kpiConf?.imageColumnName) {
-              const series = this.findSeries(this.widgetRequestModel.kpiConf.imageColumnName);
-              if (series?.data?.[index] !== undefined) {
-                image = series.data[index].toString();
-              }
+            if (imageSeries?.data?.[index] !== undefined) {
+              image = imageSeries.data[index].toString();
             }
 
             if (!isNaN(value)) {
@@ -290,27 +296,23 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
     return undefined;
   }
 
-  getSeriesDataByName(seriesName: string | undefined, index: number): any {
+  getSeriesDataByName(seriesName: string | undefined, index: number): number | string | null {
     if (!seriesName) return null;
     const series = this.findSeries(seriesName);
-    return series?.data?.[index];
+    return series?.data?.[index] ?? null;
   }
 
   getFormattedLabel(displayName: string): string {
     return displayName
       .toLowerCase()
-
       // Remove the words "lowest", "least", "greatest"
       .replace(/\b(greatest|lowest|least)\b/g, '')
-
       // Remove parentheses but keep their content
       .replace(/[()]/g, '')
-
       // Clean up extra spaces and convert to uppercase
       .trim()
       .toUpperCase();
   }
-
 
   showDetail() {
     //   const data: any = {};

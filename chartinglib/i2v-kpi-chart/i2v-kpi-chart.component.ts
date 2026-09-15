@@ -242,38 +242,49 @@ export class I2vKpiChartComponent extends I2vChartsComponent {
 
   findSeries(columnName?: string): ChartSeries | undefined {
     if (!columnName || !this.chartData?.series?.length) return undefined;
+  
     const colLower = columnName.toLowerCase();
-
-    // 1. Direct match by name or displayName (case-insensitive)
-    let series = this.chartData.series.find(s =>
-      s.name?.toLowerCase() === colLower || s.displayName?.toLowerCase() === colLower
-    );
+    const safeLower = (val?: string) => val?.toLowerCase();
+  
+    // 1. Direct match by name or displayName
+    let series = this.chartData.series.find(s => {
+      const sName = safeLower(s.name);
+      const sDisplay = safeLower(s.displayName);
+      return sName === colLower || sDisplay === colLower;
+    });
     if (series) return series;
-
-    // 2. Match via dataInputConfig.fieldNames (e.g. 'personId' -> 'PersonCount')
-    if (this.widgetRequestModel?.dataInputConfig?.fieldNames?.length) {
-      const field = this.widgetRequestModel.dataInputConfig.fieldNames.find(f =>
-        f.name?.toLowerCase() === colLower || f.columnName?.toLowerCase() === colLower
+  
+    // 2. Match via dataInputConfig.fieldNames
+    const fieldNames = this.widgetRequestModel?.dataInputConfig?.fieldNames;
+    if (fieldNames?.length) {
+      const field = fieldNames.find(f => 
+        safeLower(f.name) === colLower || safeLower(f.columnName) === colLower
       );
+      
       if (field) {
-        series = this.chartData.series.find(s =>
-          s.name?.toLowerCase() === field.columnName?.toLowerCase() ||
-          s.name?.toLowerCase() === field.name?.toLowerCase() ||
-          s.displayName?.toLowerCase() === field.columnName?.toLowerCase()
-        );
+        const fCol = safeLower(field.columnName);
+        const fName = safeLower(field.name);
+        
+        series = this.chartData.series.find(s => {
+          const sName = safeLower(s.name);
+          return sName === fCol || 
+                 sName === fName || 
+                 safeLower(s.displayName) === fCol;
+        });
         if (series) return series;
       }
     }
-
-    // 3. Fallback for 'count': find aggregated field or series containing 'count'
+  
+    // 3. Fallback for 'count'
     if (colLower === 'count') {
-      const aggField = this.widgetRequestModel?.dataInputConfig?.fieldNames?.find(f => f.applyAggregation);
+      const aggField = fieldNames?.find(f => f.applyAggregation);
       if (aggField) {
-        series = this.chartData.series.find(s => s.name?.toLowerCase() === aggField.columnName?.toLowerCase());
+        const aggCol = safeLower(aggField.columnName);
+        series = this.chartData.series.find(s => safeLower(s.name) === aggCol);
         if (series) return series;
       }
-      series = this.chartData.series.find(s => s.name?.toLowerCase().includes('count'));
-      if (series) return series;
+      
+      return this.chartData.series.find(s => safeLower(s.name)?.includes('count'));
     }
 
     return undefined;

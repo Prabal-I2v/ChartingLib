@@ -121,13 +121,7 @@
               </div>
 
               <div class="digits">
-                @if(widgetRequestModel.kpiConf?.countValueColumnName){
-                {{ getSeriesDataByName(widgetRequestModel.kpiConf?.countValueColumnName, $index) }}
-
-                }
-                @else{
-                {{ series.data[chartData.xAxisFields.indexOf(xAxisField)] }}
-                }
+                {{ getSeriesDataByName(widgetRequestModel.kpiConf?.countValueColumnName, $index) ?? series.data[chartData.xAxisFields.indexOf(xAxisField)] }}
               </div>
             </div>
           </div>
